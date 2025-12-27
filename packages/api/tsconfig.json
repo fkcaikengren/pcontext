@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
+      "@pcontext/*": ["../../packages/*/src/index.ts"]
+    },
+    "resolveJsonModule": true,
+    "strict": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "drizzle-sqlite.config.ts",
+    "drizzle-pg.config.ts",
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+  ]
+}

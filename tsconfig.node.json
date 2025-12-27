@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",           // src 目录下的所有文件
+    "src/**/*.ts",        // src 目录下的所有 .ts 文件
+    "types/**/*.d.ts"     // types 目录下的所有声明文件
+  ]
+}

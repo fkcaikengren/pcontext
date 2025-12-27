@@ -1,0 +1,21 @@
+@proto = http
+@host = localhost
+@port = 3000
+@api_prefix = /api
+@csrf_token = 7d63bd91-c32f-469a-bd6a-078673262785
+
+@taskId = test-task-1
+
+### Login 以管理员身份获取最新 token（可选）
+# @name login
+POST {{proto}}://{{host}}:{{port}}{{api_prefix}}/users/login
+Content-Type: application/json
+
+{
+	"username": "admin",
+	"password": "admin123"
+}
+
+### 订阅任务进度 SSE 流
+GET {{proto}}://{{host}}:{{port}}{{api_prefix}}/tasks/{{taskId}}/progress
+Accept: text/event-stream

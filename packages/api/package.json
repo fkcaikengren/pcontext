@@ -1,0 +1,20 @@
+{
+  "name": "@pcontext/api",
+  "version": "0.0.1",
+  "public": true,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=development bun run --hot src/dev.ts",
+    "build": "NODE_ENV=production bun build ./src/index.ts --target node",
+    "test": "NODE_ENV=test bun run src/index.ts",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "db:generate": "bun run scripts/drizzle-generate.ts"
+  },
+  "dependencies": {
+    "@pcontext/shared": "workspace:*"
+  }
+}

@@ -108,10 +108,12 @@ web_modules/
 .parcel-cache
 
 # Next.js build output
+
 .next
 out
 
 # Nuxt.js build / generate output
+
 .nuxt
 dist
 
@@ -165,6 +167,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.\*
-
-# 配置文件
-pcontext.config.local.js

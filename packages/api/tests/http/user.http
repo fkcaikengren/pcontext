@@ -1,0 +1,29 @@
+@proto = http
+@host = localhost
+@port = 3000
+@api_prefix = /api
+
+@csrf_token = 7d63bd91-c32f-469a-bd6a-078673262785
+
+### 测试根路径
+GET {{proto}}://{{host}}:{{port}}{{api_prefix}}
+
+### 测试 /api/health
+GET {{proto}}://{{host}}:{{port}}{{api_prefix}}/health
+
+### Login
+# @name login
+POST {{proto}}://{{host}}:{{port}}{{api_prefix}}/users/login
+Content-Type: application/json
+
+{
+	"username": "admin",
+	"password": "admin123"
+}
+
+### Get Me
+GET {{proto}}://{{host}}:{{port}}{{api_prefix}}/users/me
+
+### Logout
+POST {{proto}}://{{host}}:{{port}}{{api_prefix}}/users/logout
+X-CSRF-Token: {{csrf_token}}

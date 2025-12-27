@@ -1,0 +1,17 @@
+{
+  "name": "@pcontext/server",
+  "version": "0.0.1",
+  "type": "module",
+  "bin": {
+    "pcontext-server": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external minimist --external @hono/node-server && bun build ./src/server.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external @hono/node-server"
+  },
+  "dependencies": {
+    "@pcontext/shared": "workspace:*",
+    "@pcontext/api": "workspace:*"
+  }
+  
+}

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "resolveJsonModule": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+  },
+  "paths": {
+    "@/*": ["src/*"],
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+}
