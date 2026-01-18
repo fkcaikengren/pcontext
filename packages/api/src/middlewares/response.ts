@@ -4,6 +4,7 @@ export const responseWrapper: MiddlewareHandler = async (c, next) => {
   await next()
 
   const originalResponse = c.res
+
   const contentType = originalResponse.headers.get('Content-Type') || ''
 
   if (!contentType.toLowerCase().startsWith('application/json')) {
