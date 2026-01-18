@@ -4,7 +4,16 @@
     "lib": [
       "ESNext"
     ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
+      "@pcontext/*": ["../../packages/*/src/index.ts"]
+    },
     "jsx": "preserve",
     "allowImportingTsExtensions": true,
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+  ]
 }

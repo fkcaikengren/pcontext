@@ -6,7 +6,8 @@
     "pcontext-server": "dist/cli.js"
   },
   "scripts": {
-    "dev": "bun run src/cli.ts",
+    "init": "bun run src/cli.ts init",
+    "dev": "bun run src/cli.ts start --config ./pcontext.config.js",
     "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external minimist --external @hono/node-server && bun build ./src/server.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external @hono/node-server"
   },
   "dependencies": {

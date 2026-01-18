@@ -15,5 +15,8 @@
       "bun-types",
       "vitest/globals"
     ],
-  }
+  },
+  "include": [
+    "*.ts",
+  ]
 }
