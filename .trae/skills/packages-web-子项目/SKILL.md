@@ -1,9 +1,12 @@
-## chat-web
-### chat-web项目基础说明
+---
+name: packages/web 开发规范
+description: packages/web 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
+---
 
-基于 `@pcontext/api`和`@pcontext/server`提供API服务，构建一个Rag 应用，主要用于索引文档和根据查询的文档进行聊天。
+# packages/web 子项目开发规范
 
-`packages/chat-web/app`目录下是chat-web项目的源代码，主要包括以下几个部分：
+## chat-web项目结构
+`packages/web/app`目录下是chat-web项目的源代码，主要包括以下几个部分：
 ```
 app/
 ├── components/
@@ -22,42 +25,41 @@ app/
 └── routes.ts               # Route configuration file
 ```
 
-### chat-web技术栈和规范
+## 项目运行和操作
 
-主要技术栈： React19 + React Router v7 + Shadcn UI + TailwindCSS + Vite
-其他技术： 
-- `react-hook-form`处理表单；
-- `zod`验证表单数据；
-- 使用vercel提供的`ai` v5库处理聊天功能；
+### 运行项目
+该子项目 作为monorepo的子项目，主要基于 Vite + Bun.js + pnpm 进行项目开发和管理，
 
-#### Shadcn安装与配置
+### npm包安装和组件安装
 
+安装npm包，优先全局安装，避免在子项目中安装。
+```bash
+# 安装项目依赖
+bun add [npm包]
+```
+
+Shadcn安装UI组件
 ```bash
 # 初始化配置
 bunx --bun shadcn@latest init
 # 安装单个组件
-bunx --bun shadcn@latest add button
-```
-
-##### UI组件项目结构
-
-```
-packages/
-├──chat-web/
-    └──app/
-        ├── components/
-        │   ├── ui/           # Shadcn 组件目录
-        │   │   ├── button.tsx
-        │   │   ├── card.tsx
-        │   │   └── ...
-        │   └── ...           # 其他自定义组件
-        ├── lib/
-        │   └── utils.ts      # cn() 工具函数
-    
+bunx --bun shadcn@latest add [组件]
 ```
 
 
-#### Tailwind CSS总体规范
+
+## chat-web技术栈和规范
+
+### 技术栈
+主要技术栈： React19 + React Router v7 + Shadcn UI + TailwindCSS  v4 + Tanstack 
+其他技术： 
+- 查询数据和修改数据的请求优先使用 `@tanstack/react-query`
+- 表单和表格相关功能优先使用 `@tanstack/react-form`和`@tanstack/react-table`
+- `zod`验证表单数据；
+- 使用vercel提供的`ai` v5库处理聊天功能；
+
+
+### Tailwind CSS总体规范
 
 1. 尽量避免写自定义样式，使用 Tailwind CSS 提供的类名。
 2. 不推荐 @apply 自定义的类名，使用Class Variance Authority。
@@ -126,17 +128,6 @@ export function CustomButton({ children, ...props }) {
 }
 ```
 
-#### 表单处理
-
-结合 React Hook Form 和 Zod：
-
-```tsx
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-```
-
 #### 响应式设计
 
 使用 Tailwind 响应式前缀：
@@ -147,7 +138,7 @@ import { Input } from "@/components/ui/input"
 
 #### 主题定制
 
-在 `packages/chat-web/app/app.css` 中使用 CSS 变量：
+在 `packages/web/app/app.css` 中使用 CSS 变量：
 
 ```css
 :root {
@@ -161,5 +152,3 @@ import { Input } from "@/components/ui/input"
   --foreground: 210 40% 98%;
 }
 ```
-
-
