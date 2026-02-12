@@ -3,14 +3,24 @@ import { getCookie } from 'hono/cookie'
 import { getEnforcer } from '@/infrastructure/casbin/enforcer'
 import { logger } from '@/lib/logger'
 
-export function authorization() {
+
+const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+const SAFE_PATHS = ['/api/users/login']
+
+export function authorization(config?: {
+  safeMethods?: string[]
+  safePaths?: string[]
+}) {
+  const {
+    safeMethods = SAFE_METHODS,
+    safePaths = SAFE_PATHS,
+  } = config || {}
   return async (c: Context, next: Next)=> {
     if (c.req.method === 'OPTIONS') return next()
     const user = c.get('user') as { id: number; username: string; role: string | null } | undefined
     const hasRole = typeof user?.role === 'string' && user.role.length > 0
 
-    const safeMethods = ['GET', 'HEAD', 'OPTIONS']
-    const safePaths = ['/api/users/login']
+    
     if (!safeMethods.includes(c.req.method) && !safePaths.includes(c.req.path)) {
       const csrfCookie = getCookie(c, 'csrf_token')
       const csrfHeader = c.req.header('X-CSRF-Token')

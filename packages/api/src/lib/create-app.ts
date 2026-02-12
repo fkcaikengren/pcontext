@@ -43,7 +43,7 @@ export default function createApp() {
       credentials: true,
     }))
     .use(`${config.api_prefix}/*`, jwt())
-    .use(`${config.api_prefix}/*`,  authorization())
+    .use(`${config.api_prefix}/*`,  authorization({}))
     .use(`${config.api_prefix}/*`, responseWrapper)
 
 

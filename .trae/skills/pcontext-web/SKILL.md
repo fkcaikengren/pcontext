@@ -1,6 +1,6 @@
 ---
-name: packages/web 开发规范
-description: packages/web 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
+name: packages/web 子项目开发规范
+description: pcontext项目的 packages/web 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
 ---
 
 # packages/web 子项目开发规范

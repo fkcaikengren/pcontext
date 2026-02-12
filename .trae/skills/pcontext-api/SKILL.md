@@ -1,6 +1,6 @@
 ---
-name: packages/api  开发规范
-description: packages/api 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
+name: packages/api 项目开发规范
+description: pcontext项目的 packages/api 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
 ---
 
 ## 数据库 
