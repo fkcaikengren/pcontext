@@ -10,6 +10,10 @@
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "resolveJsonModule": true,
+    // "composite": true, // 必须开启
+    "noEmit": true,
+    "declaration": true,     // 必须生成声明文件
+    "declarationMap": true,  // 建议开启，方便点击跳转到源码
     "strict": true,
     "outDir": "./dist",
     "esModuleInterop": true,

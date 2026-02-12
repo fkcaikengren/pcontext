@@ -1,8 +1,6 @@
 import { createRouter } from '@/lib/create-app'
 import { getEnforcer } from '@/infrastructure/casbin/enforcer'
 
-const router = createRouter()
-
 const ROLE_META: Record<string, { name: string, description: string }> = {
   admin: {
     name: '管理员',
@@ -14,63 +12,62 @@ const ROLE_META: Record<string, { name: string, description: string }> = {
   },
 }
 
-router.get('/', async (c) => {
-  const enforcer = getEnforcer()
-  const policies = await enforcer.getPolicy()
-  const roleIds = Array.from(new Set(policies.map(policy => policy[0]).filter(Boolean)))
+const router = createRouter()
+  .get('/', async (c) => {
+    const enforcer = getEnforcer()
+    const policies = await enforcer.getPolicy()
+    const roleIds = Array.from(new Set(policies.map(policy => policy[0]).filter(Boolean)))
 
-  const roles = roleIds.map((id) => {
+    const roles = roleIds.map((id) => {
+      const meta = ROLE_META[id] ?? { name: id, description: '' }
+      return {
+        id,
+        name: meta.name,
+        description: meta.description,
+      }
+    })
+
+    return c.json({ roles })
+  })
+  .get('/:id', async (c) => {
+    const { id } = c.req.param()
+    if (!id) {
+      return c.json({ message: '角色ID不能为空' }, 400)
+    }
+
+    const enforcer = getEnforcer()
+    const policies = await enforcer.getFilteredPolicy(0, id)
+    if (!policies || policies.length === 0) {
+      return c.json({ message: '角色不存在' }, 404)
+    }
+
     const meta = ROLE_META[id] ?? { name: id, description: '' }
-    return {
+    const permissions = policies.map(([, obj, act]) => `${act}:${obj}`)
+
+    return c.json({
       id,
       name: meta.name,
       description: meta.description,
+      permissions,
+    })
+  })
+  .get('/:id/permissions', async (c) => {
+    const { id } = c.req.param()
+    if (!id) {
+      return c.json({ message: '角色ID不能为空' }, 400)
     }
+
+    const enforcer = getEnforcer()
+    const policies = await enforcer.getFilteredPolicy(0, id)
+    if (!policies || policies.length === 0) {
+      return c.json({ message: '角色不存在' }, 404)
+    }
+
+    const permissions = policies.map(([, obj, act]) => `${act}:${obj}`)
+    return c.json({
+      id,
+      permissions,
+    })
   })
-
-  return c.json({ roles })
-})
-
-router.get('/:id', async (c) => {
-  const { id } = c.req.param()
-  if (!id) {
-    return c.json({ message: '角色ID不能为空' }, 400)
-  }
-
-  const enforcer = getEnforcer()
-  const policies = await enforcer.getFilteredPolicy(0, id)
-  if (!policies || policies.length === 0) {
-    return c.json({ message: '角色不存在' }, 404)
-  }
-
-  const meta = ROLE_META[id] ?? { name: id, description: '' }
-  const permissions = policies.map(([, obj, act]) => `${act}:${obj}`)
-
-  return c.json({
-    id,
-    name: meta.name,
-    description: meta.description,
-    permissions,
-  })
-})
-
-router.get('/:id/permissions', async (c) => {
-  const { id } = c.req.param()
-  if (!id) {
-    return c.json({ message: '角色ID不能为空' }, 400)
-  }
-
-  const enforcer = getEnforcer()
-  const policies = await enforcer.getFilteredPolicy(0, id)
-  if (!policies || policies.length === 0) {
-    return c.json({ message: '角色不存在' }, 404)
-  }
-
-  const permissions = policies.map(([, obj, act]) => `${act}:${obj}`)
-  return c.json({
-    id,
-    permissions,
-  })
-})
 
 export default router

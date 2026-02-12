@@ -8,8 +8,6 @@ import { getCurrentUserId } from '../utils/user'
 import { getUserById, updateSelf, login } from '@/services/user.service'
 import AppSettings from '@/settings'
 
-const router = createRouter()
-
 const loginSchema = z.object({
   username: z.string(),
   password: z.string(),
@@ -17,103 +15,98 @@ const loginSchema = z.object({
 
 const { config } = AppSettings
 
-router.post('/login', zValidator('json', loginSchema), async (c) => {
-  const { username, password } = c.req.valid('json')
-  try {
-    const { user, token } = await login({ username, password })
+const router = createRouter()
+  .post('/login', zValidator('json', loginSchema), async (c) => {
+    const { username, password } = c.req.valid('json')
+    try {
+      const { user, token } = await login({ username, password })
 
-    const csrfToken = randomUUID()
+      const csrfToken = randomUUID()
 
-    setCookie(c, 'access_token', token, {
-      httpOnly: true,
-      secure: !config.is_dev,
-      sameSite: 'Strict',
-      path: '/',
-      maxAge: 3600,
-    })
+      setCookie(c, 'access_token', token, {
+        httpOnly: true,
+        secure: !config.is_dev,
+        sameSite: 'Strict',
+        path: '/',
+        maxAge: 3600,
+      })
 
-    setCookie(c, 'csrf_token', csrfToken, {
-      httpOnly: false,
-      secure: !config.is_dev,
-      sameSite: 'Strict',
-      path: '/',
-      maxAge: 3600,
-    })
+      setCookie(c, 'csrf_token', csrfToken, {
+        httpOnly: false,
+        secure: !config.is_dev,
+        sameSite: 'Strict',
+        path: '/',
+        maxAge: 3600,
+      })
 
-    return c.json(user)
-  } catch (e: any) {
-    return c.json({ message: e.message }, 401)
-  }
-})
+      return c.json(user)
+    } catch (e: any) {
+      return c.json({ message: e.message }, 401)
+    }
+  })
+  .post('/logout', async (c) => {
+    const csrfToken = getCookie(c, 'csrf_token')
 
-router.post('/logout', async (c) => {
-  const csrfToken = getCookie(c, 'csrf_token')
+    deleteCookie(c, 'access_token', { path: '/' })
+    deleteCookie(c, 'csrf_token', { path: '/' })
 
-  deleteCookie(c, 'access_token', { path: '/' })
-  deleteCookie(c, 'csrf_token', { path: '/' })
+    return c.json({ message: 'logout success', csrfToken })
+  })
+  .get('/me', async (c) => {
+    const userId = getCurrentUserId(c)
+    const routes:any = {
+      '/': true,
+      '/login': true,
+      '/profile': true,
 
-  return c.json({ message: 'logout success', csrfToken })
-})
+      '/docs': true,
+      '/docs/*': true,
+      '/add-docs': true,
 
-// 获取当前用户的角色权限信息
-router.get('/me', async (c) => {
-  const userId = getCurrentUserId(c)
-  // 前端路由权限
-  const routes:any = {
-    '/': true,
-    '/login': true,
-    '/profile': true,
+      '/tasks': true,
+      '/tasks/*': true,
 
-    '/docs': true,
-    '/docs/*': true,
-    '/add-docs': true,
+      '/users': true,
+      '/permissions': true,
 
-    '/tasks': true,
-    '/tasks/*': true,
-
-    '/users': true,
-    '/permissions': true,
-
-    '/pcontext-setting': true,
-  }
-  let me:any = null
-  if (userId) {
-    const user = await getUserById(userId)
-    if (user) {
-      me = {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        permissions: {routes}
+      '/pcontext-setting': true,
+    }
+    let me:any = null
+    if (userId) {
+      const user = await getUserById(userId)
+      if (user) {
+        me = {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          permissions: {routes}
+        }
       }
     }
-  }
 
-  me = me || {
-    id: null,
-    name: null,
-    role: 'guest',
-    permissions: {
-      routes : {
-        ...routes,
-        '/users': false,
-        '/permissions': false,
-      },
-    }
-  } // for guest
-    
-  return c.json(me)
-})
+    me = me || {
+      id: null,
+      name: null,
+      role: 'guest',
+      permissions: {
+        routes : {
+          ...routes,
+          '/users': false,
+          '/permissions': false,
+        },
+      }
+    } // for guest
+      
+    return c.json(me)
+  })
+  .get('/profile', async (c) => {
+    const userId = getCurrentUserId(c)
+    if (!userId) return c.json({ message: '用户未登录' }, 401)
 
-// 获取用户个人信息
-router.get('/profile', async (c) => {
-  const userId = getCurrentUserId(c)
-  if (!userId) return c.json({ message: '用户未登录' }, 401)
+    const user = await getUserById(userId)
+    if (!user) return c.json({ message: '用户不存在' }, 404)
 
-  const user = await getUserById(userId)
-  if (!user) return c.json({ message: '用户不存在' }, 404)
-
-  return c.json(user)
-})
+    return c.json(user)
+  })
 
 export default router

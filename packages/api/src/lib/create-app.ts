@@ -50,7 +50,6 @@ export default function createApp() {
   // app.use(etag()) TODO：自定义etag中间件，过滤sse '/tasks/:id/progress'
 
 
-
   app.notFound(notFound)
   app.onError(errorHandler)
 

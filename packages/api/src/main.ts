@@ -10,17 +10,20 @@ import { initEnforcer } from '@/infrastructure/casbin/enforcer'
 import { initDb } from '@/infrastructure/db/connection'
 import { bootstrap } from '@/infrastructure/db/bootstrap'
 import { initSettings } from './infrastructure/agent/settings'
+import { Hono } from 'hono'
 
 const { config } = AppSettings
 
-const app = createApp()
 
-app.route(`${config.api_prefix}/`, index)
-app.route(`${config.api_prefix}/health`, health)
-app.route(`${config.api_prefix}/users`, users)
-app.route(`${config.api_prefix}/docs`, docs)
-app.route(`${config.api_prefix}/chat`, chat)
-app.route(`${config.api_prefix}/tasks`, tasks)
+const api = new Hono()
+  .route('/', index)
+  .route('/health', health)
+  .route('/users', users)
+  .route('/docs', docs)
+  .route('/chat', chat)
+  .route('/tasks', tasks)
+
+const app = createApp().route(config.api_prefix, api)
 
 await initDb()
 await bootstrap()
@@ -31,3 +34,5 @@ export default {
   port: AppSettings.config.port,
   fetch: app.fetch,
 }
+
+export type AppType = typeof api
