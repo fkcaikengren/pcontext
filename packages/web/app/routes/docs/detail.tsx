@@ -6,20 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { DocInfoCard } from "@/components/doc-info-card";
 import { 
-  CheckCircle2, 
-  Search,
   TrendingUp,
   Clock,
   FileText,
   ArrowUpDown,
   Copy,
   Link2,
-  Send,
-  Settings
+  Send
 } from 'lucide-react';
-import { useParams } from 'react-router';
-import { alovaInstance } from "@/lib/alova";
-import { useRequest } from "alova/client";
+import { data, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+
+// import {client } from '@pcontext/api'
+
+import { client, parseRes } from '@/APIs'
 
 interface DocDetailFromApi {
 	id: number
@@ -31,21 +31,36 @@ interface DocDetailFromApi {
 	updatedAt: string | number
 }
 
+
+
+
+
+
 export default function DocsDetail() {
-	const params = useParams<{ docId: string }>();
-	const docId = params.docId;
-	const { loading, data: doc, error } = useRequest(
-		() => alovaInstance.Get<DocDetailFromApi>(`/docs/${docId}`),
-		{
-			immediate: !!docId,
-		}
-	);
+	const params = useParams<{ docSlug: string; topic:string; tokens:string }>();
+	const {docSlug:slug , topic, tokens} = params;
+  if(!slug){
+    return 
+  }
+	const docQuery = useQuery({
+		queryKey: ['docs', 'detail', slug],
+		enabled: !!slug,
+		queryFn: async () => parseRes(client.docs[':slug'].$get({ param: { slug } })),
+	});
 	const [message, setMessage] = useState('');
 	const [activeTab, setActiveTab] = useState('chat');
 	const [searchQuery, setSearchQuery] = useState('');
-	const [contextText, setContextText] = useState('');
-	const [contextLoading, setContextLoading] = useState(false);
-	const [contextError, setContextError] = useState<string | null>(null);
+	const llmTextQuery = useQuery({
+		queryKey: ['docs', slug, 'llm.txt', searchQuery],
+		enabled: false,
+		queryFn: async () => {
+      const res = await client.docs[':slug']['llm.txt'].$get({
+        param: { slug },
+        query: { topic, tokens },
+      });
+      return res.text()
+    },
+	});
 
   const suggestedQuestions = [
     "How do I install this library?",
@@ -54,40 +69,21 @@ export default function DocsDetail() {
 	];
 
 	const handleViewContext = async () => {
-		if (!docId) return;
-		try {
-			setContextLoading(true);
-			setContextError(null);
-			const baseUrl = import.meta.env.VITE_BASE_URL;
-			const params = new URLSearchParams();
-			if (searchQuery) params.set('topic', searchQuery);
-			params.set('tokens', '10000');
-			const url = `${baseUrl}/api/docs/${docId}/llm.txt?${params.toString()}`;
-			const res = await fetch(url, { credentials: 'include' });
-			if (!res.ok) {
-				throw new Error(`请求失败: ${res.status}`);
-			}
-			const text = await res.text();
-			setContextText(text);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : '加载上下文失败';
-			setContextError(message);
-		} finally {
-			setContextLoading(false);
-		}
+		if (!slug) return;
+		await llmTextQuery.refetch();
 	};
 
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<main className="max-w-5xl mx-auto px-6 py-8">
 				<DocInfoCard
-					title={doc?.name || "文档详情"}
-					url={doc?.url}
-					description={doc ? undefined : loading ? "加载中..." : (error ? error.message : undefined)}
+					title={docQuery.data?.name || "文档详情"}
+					url={docQuery.data?.url}
+					description={docQuery.data ? undefined : docQuery.isPending ? "加载中..." : (docQuery.isError ? docQuery.error.message : undefined)}
           status='completed'
-					labels={doc ? [
-						`来源: ${doc.source}`,
-						`访问次数: ${doc.accessCount}`,
+					labels={docQuery.data ? [
+						`来源: ${docQuery.data.source}`,
+						`访问次数: ${docQuery.data.accessCount}`,
 					] : []}
 				/>
 
@@ -181,7 +177,7 @@ export default function DocsDetail() {
 							<Button
 								variant="outline"
 								onClick={handleViewContext}
-								disabled={contextLoading || !docId}
+								disabled={llmTextQuery.isFetching || !slug}
 							>
 								查看结果
 							</Button>
@@ -211,10 +207,10 @@ export default function DocsDetail() {
 
 					<div className="bg-white p-4 rounded border font-mono text-sm overflow-auto max-h-96">
 						<pre className="text-gray-800 whitespace-pre-wrap">
-							{contextLoading && '加载中...'}
-							{!contextLoading && contextError && `错误：${contextError}`}
-							{!contextLoading && !contextError && contextText && contextText}
-							{!contextLoading && !contextError && !contextText && '暂无内容，请在上方输入查询内容并点击“查看结果”。'}
+							{llmTextQuery.isFetching && '加载中...'}
+							{!llmTextQuery.isFetching && llmTextQuery.isError && `错误：${llmTextQuery.error.message}`}
+							{!llmTextQuery.isFetching && !llmTextQuery.isError && llmTextQuery.data && llmTextQuery.data}
+							{!llmTextQuery.isFetching && !llmTextQuery.isError && !llmTextQuery.data && '暂无内容，请在上方输入查询内容并点击“查看结果”。'}
 						</pre>
 					</div>
               </div>

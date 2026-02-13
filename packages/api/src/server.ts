@@ -23,16 +23,18 @@ const api = new Hono()
   .route('/chat', chat)
   .route('/tasks', tasks)
 
-const app = createApp().route(config.api_prefix, api)
+export const app = createApp().route(config.api_prefix, api)
+export type AppType = typeof api // 是 api 作为app type
 
 await initDb()
 await bootstrap()
 await initEnforcer()
 initSettings()
 
+
 export default {
   port: AppSettings.config.port,
   fetch: app.fetch,
+  idleTimeout: 60
 }
 
-export type AppType = typeof api

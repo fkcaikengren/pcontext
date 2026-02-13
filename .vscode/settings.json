@@ -7,5 +7,6 @@
   "editor.quickSuggestions": {
     "strings": true
   },
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "commentTranslate.targetLanguage": "zh-CN"
 }

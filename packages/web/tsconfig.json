@@ -16,6 +16,7 @@
       "~/*": ["./app/*"],
       "@/*": ["./app/*"],
       "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
+      "@pcontext/api/client": ["../../packages/api/src/client.ts"],
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "esModuleInterop": true,

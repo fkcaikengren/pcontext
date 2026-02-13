@@ -15,7 +15,11 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 
+
+
+
 export default function Home() {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('popular');
 

@@ -19,7 +19,7 @@ GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}?type=favorites
 x-role: user
 
 ### 2. 添加文档索引
-POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}/add
+POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}
 Content-Type: application/json
 x-role: user
 
@@ -30,29 +30,19 @@ x-role: user
 
 ### 3. 收藏/取消收藏文档
 # 假设 slug 为 github_fkcaikengren_create-mcp
-POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_create-mcp/favorite
-Content-Type: application/json
+PUT {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_create-mcp/favorite
 x-role: user
-
-{
-  "like": true
-}
 
 ### 3.1 取消收藏
-POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_drizzle_team_drizzle-orm/favorite
-Content-Type: application/json
+DELETE {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_drizzle_team_drizzle-orm/favorite
 x-role: user
 
-{
-  "like": false
-}
-
 ### 4. 增加访问计数 (Check)
-POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/check
+POST {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/accesses
 x-role: guest
 
 ### 5. 获取 LLM 上下文文本 (llm.txt)
 GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/llm.txt?topic=uni-hooks&tokens=1000
 
 ### 6. 查询文档片段 (Query)
-GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/query?topic=uni-hooks&tokens=1000
+GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/snippets?q=uni-hooks&tokens=1000

@@ -12,8 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { alovaInstance } from "@/lib/alova"
-import type { DocEntity,  } from '@pcontext/shared/types'
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
+import { client, parseRes } from "@/APIs"
+import type { DocEntity } from '@pcontext/shared/types'
 import {
   flexRender,
   getCoreRowModel,
@@ -25,7 +26,7 @@ import {
 
 type DocSource = "git" | "website"
 
-type DocRecord = DocEntity<number>
+type DocRecord = DocEntity<number | string>
 
 interface DocListResponse {
   list: DocRecord[]
@@ -42,7 +43,7 @@ function normalizeDate(value: string | number): number {
   return parsed
 }
 
-function formatDate(timestamp: number): string {
+function formatDate(timestamp: number | string): string {
   if (!timestamp) return "-"
   const date = new Date(timestamp)
   if (Number.isNaN(date.getTime())) return "-"
@@ -56,9 +57,6 @@ export default function DocsPage() {
   const [source, setSource] = useState<"all" | DocSource>("all")
   const [createdFrom, setCreatedFrom] = useState("")
   const [createdTo, setCreatedTo] = useState("")
-  const [data, setData] = useState<DocListResponse | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdAt", desc: true },
   ])
@@ -67,62 +65,33 @@ export default function DocsPage() {
     setPage(1)
   }, [name, source, createdFrom, createdTo, limit])
 
-  useEffect(() => {
-    let cancelled = false
-    const fetchDocs = async () => {
-      setLoading(true)
-      setError(null)
-      const params: Record<string, string | number> = {
-        page,
-        limit,
+  const query = useQuery({
+    queryKey: ['docs', 'list', { page, limit, name, source, createdFrom, createdTo }],
+    queryFn: async () => {
+      const queryParams: any = {
+        page: page.toString(),
+        limit: limit.toString(),
       }
       const trimmedName = name.trim()
-      if (trimmedName) params.name = trimmedName
-      if (source !== "all") params.source = source
+      if (trimmedName) queryParams.name = trimmedName
+      if (source !== 'all') queryParams.source = source
       if (createdFrom) {
-        const from = new Date(createdFrom).getTime()
-        if (!Number.isNaN(from)) params.createdFrom = from
+        const t = new Date(createdFrom).getTime()
+        if (!Number.isNaN(t)) queryParams.createdFrom = t.toString()
       }
       if (createdTo) {
-        const to = new Date(createdTo).getTime()
-        if (!Number.isNaN(to)) params.createdTo = to
+        const t = new Date(createdTo).getTime()
+        if (!Number.isNaN(t)) queryParams.createdTo = t.toString()
       }
-      try {
-        const method = alovaInstance.Get<DocListResponse>("/docs", {
-          params,
-        })
-        const result = await method.send()
-        if (cancelled) return
-        // const normalizedContent: DocEntity[] = result.list.map((item) => ({
-        //   id: item.id,
-        //   slug: item.slug,
-        //   name: item.name,
-        //   source: item.source,
-        //   url: item.url,
-        //   accessCount: item.accessCount,
-        //   createdAt: normalizeDate(item.createdAt),
-        //   updatedAt: normalizeDate(item.updatedAt),
-        // }))
-        setData({
-          list: result.list,
-          total: result.total,
-          page: result.page,
-          limit: result.limit,
-          totalPages: result.totalPages,
-        })
-      } catch (err) {
-        if (cancelled) return
-        const message = err instanceof Error ? err.message : "加载失败"
-        setError(message)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-    fetchDocs()
-    return () => {
-      cancelled = true
-    }
-  }, [page, limit, name, source, createdFrom, createdTo])
+
+      return parseRes(client.docs.$get({ query: queryParams }))
+    },
+    placeholderData: keepPreviousData,
+  })
+
+  const data = query.data
+  const loading = query.isPending
+  const error = query.error?.message
 
   const rows = data?.list ?? []
 
@@ -387,7 +356,7 @@ export default function DocsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={!canPrev || loading}
+                  disabled={!canPrev || loading || query.isFetching}
                   onClick={() => canPrev && setPage((prev) => prev - 1)}
                   className="h-8 px-3"
                 >
@@ -397,7 +366,7 @@ export default function DocsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={!canNext || loading}
+                  disabled={!canNext || loading || query.isFetching}
                   onClick={() => canNext && setPage((prev) => prev + 1)}
                   className="h-8 px-3"
                 >

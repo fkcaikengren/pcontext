@@ -26,6 +26,7 @@
     "@llamaindex/workflow": "~1.1.8",
     "@react-router/node": "7.10.1",
     "@react-router/serve": "7.10.1",
+    "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-table": "^8.21.3",
     "@zilliz/milvus2-sdk-node": "^2.6.5",
     "ai": "^5.0.106",

@@ -1,4 +1,4 @@
-import { createRouter } from '@/lib/create-app'
+import { createRouter } from '../lib/create-app'
 import { chatHandler } from '@/services/chat.service'
 
 const router = createRouter()

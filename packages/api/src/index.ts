@@ -1,2 +1,3 @@
-export type { AppType } from './main'
+import { app } from './server'
 
+export default app

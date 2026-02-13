@@ -5,7 +5,7 @@ export default [
 	layout("components/layout.tsx", [
 		index("routes/home.tsx"),
 		route("docs", "routes/docs/list.tsx"),
-		route("docs/:docId", "routes/docs/detail.tsx"),
+		route("docs/:docSlug", "routes/docs/detail.tsx"),
 		route("add-docs", "routes/docs/add.tsx"),
 		route("tasks", "routes/tasks/list.tsx"),
 		route("tasks/:taskId", "routes/tasks/detail.tsx"),

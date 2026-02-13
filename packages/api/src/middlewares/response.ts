@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from 'hono'
-
+// TODO: 移除中间件
 export const responseWrapper: MiddlewareHandler = async (c, next) => {
   await next()
 
@@ -23,26 +23,30 @@ export const responseWrapper: MiddlewareHandler = async (c, next) => {
   const isSuccess = status >= 200 && status < 300
 
   const bodyObject = (rawBody && typeof rawBody === 'object') ? rawBody as Record<string, unknown> : {}
-  const alreadyWrapped = 'code' in bodyObject && 'errMsg' in bodyObject && 'data' in bodyObject
+  const alreadyWrapped =
+    'code' in bodyObject
+    && (
+      ('errMsg' in bodyObject && 'data' in bodyObject)
+      || ('message' in bodyObject && 'data' in bodyObject)
+      || ('message' in bodyObject && 'error' in bodyObject)
+    )
+
+  if (alreadyWrapped) {
+    return
+  }
 
   let code: number
   let errMsg: string
   let data: unknown
 
-  if (alreadyWrapped) {
-    code = typeof bodyObject.code === 'number' ? bodyObject.code : status
-    errMsg = typeof bodyObject.errMsg === 'string' ? bodyObject.errMsg : ''
-    data = bodyObject.data ?? {}
+  code = status
+  if (isSuccess) {
+    errMsg = ''
+    data = rawBody ?? {}
   } else {
-    code = status
-    if (isSuccess) {
-      errMsg = ''
-      data = rawBody ?? {}
-    } else {
-      const message = typeof (bodyObject.message) === 'string' ? bodyObject.message : ''
-      errMsg = message
-      data = {}
-    }
+    const message = typeof (bodyObject.message) === 'string' ? bodyObject.message : ''
+    errMsg = message
+    data = {}
   }
 
   const headers = new Headers(originalResponse.headers)

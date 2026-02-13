@@ -6,7 +6,6 @@ import { etag } from 'hono/etag'
 import { requestId } from 'hono/request-id'
 import { notFound, serveEmojiFavicon } from 'stoker/middlewares'
 import { limiter } from '../middlewares/limiter'
-import { responseWrapper } from '../middlewares/response'
 import { authorization } from '../middlewares/authorization'
 import { httpLogger } from '../middlewares/http-logger'
 import { jwt } from '../middlewares/jwt'
@@ -24,7 +23,8 @@ const { config } = AppSettings
 
 
 export function createRouter(limit: number = config.rate_limit_max) {
-  return new Hono<AppBindings>().use(limiter(limit))
+  return new Hono<AppBindings>()
+  // .use(limiter(limit))
 }
 
 export function createCron() {
@@ -44,7 +44,6 @@ export default function createApp() {
     }))
     .use(`${config.api_prefix}/*`, jwt())
     .use(`${config.api_prefix}/*`,  authorization({}))
-    .use(`${config.api_prefix}/*`, responseWrapper)
 
 
   // app.use(etag()) TODO：自定义etag中间件，过滤sse '/tasks/:id/progress'
