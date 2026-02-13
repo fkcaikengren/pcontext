@@ -10,8 +10,9 @@
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "resolveJsonModule": true,
-    // "composite": true, // 必须开启
-    "noEmit": true,
+    "composite": true, // 必须开启（for reference of web , for hono rpc）
+    "noEmit": false, // 允许生成js文件
+    "emitDeclarationOnly": true, // 只生成声明文件，不生成js文件
     "declaration": true,     // 必须生成声明文件
     "declarationMap": true,  // 建议开启，方便点击跳转到源码
     "strict": true,

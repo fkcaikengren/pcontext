@@ -1,5 +1,5 @@
 
-import { getCookie } from '@/utils/cookie'
+import { getCookie } from '~/utils/cookie'
 import { createClient } from '@pcontext/api/client'
 
 const baseUrl = import.meta.env.VITE_BASE_URL || ''

@@ -1,8 +1,8 @@
 {
   "extends": "../../tsconfig.app.json",
-  // "references": [
-  //   { "path": "../../packages/api" } // 指向后端项目的目录
-  // ],
+  "references": [
+    { "path": "../../packages/api" } // 指向后端项目的目录
+  ],
   "include": [
     "**/*",
     "**/.server/**/*",

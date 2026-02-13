@@ -1,26 +1,30 @@
 import AppSettings from './settings'
-import createApp from './lib/create-app'
-import index from './routes/index.route'
-import health from './routes/health.route'
-import users from './routes/user.route'
-import docs from './routes/doc.route'
-import chat from './routes/chat.route'
-import tasks from './routes/task.route'
-import { initEnforcer } from '@/infrastructure/casbin/enforcer'
-import { initDb } from '@/infrastructure/db/connection'
-import { bootstrap } from '@/infrastructure/db/bootstrap'
-import { initSettings } from './infrastructure/agent/settings'
+import createApp from '@/shared/create-app'
+import users from './modules/user/user.route'
+import docs from './modules/doc/doc.route'
+import tasks from './modules/task/task.route'
+import { initEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
+import { initDb } from '@/shared/db/connection'
+import { bootstrap } from '@/shared/db/bootstrap'
+import { initSettings } from '@/modules/doc/infrastructure/agent/settings'
 import { Hono } from 'hono'
+import { ApiSuccess } from './types'
 
 const { config } = AppSettings
 
 
+const health = new Hono().get('/', (c)=>{
+  return c.json({
+    code: 200,
+    message: 'ok',
+  } as ApiSuccess)
+})
+
 const api = new Hono()
-  .route('/', index)
   .route('/health', health)
   .route('/users', users)
   .route('/docs', docs)
-  .route('/chat', chat)
+  // .route('/chat', chat) //TODO: 移除chat?
   .route('/tasks', tasks)
 
 export const app = createApp().route(config.api_prefix, api)
