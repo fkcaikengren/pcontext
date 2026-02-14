@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { getRepoDeps } from '@/shared/deps'
 import { jsonValidator, queryValidator } from '@/shared/utils/validator'
 import { createRouter } from '@/shared/create-app'
 import { listDocs, getDocDetail, indexGitDoc, toggleFavorite, incrementDocAccess, generateLlmText, queryDocSnippets, prepareGitDoc } from '@/modules/doc/doc.service'
@@ -14,11 +15,11 @@ const router = createRouter()
     '/',
     queryValidator(DocListQuerySchema),
     async (c) => {
-      const { page, limit, name, source, type, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query')
+      const { page, pageSize, name, source, type, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query')
       const userId = getCurrentUserId(c)
 
       try {
-        const result = await listDocs(page, limit, type, userId || undefined, { q: name, source, createdFrom, createdTo, updatedFrom, updatedTo })
+        const result = await listDocs(page, pageSize, type, userId || undefined, { q: name, source, createdFrom, createdTo, updatedFrom, updatedTo })
         return c.json(Res200(result) as ApiSuccess, 200)
       } catch (e: any) {
         return c.json(Res400(null, e?.message) as ApiError, 400)
@@ -35,17 +36,30 @@ const router = createRouter()
         return c.json(Res409({ slug: prepared.slug, docName: prepared.docName }, '文档已存在') as ApiError, 409)
       }
 
-      const task = docTaskManager.createTask({ url, source: 'git', name: prepared.docName })
+      const { taskRepo } = getRepoDeps()
+      const taskRecord = await taskRepo.create({
+        type: 'doc_index',
+      })
 
-      indexGitDoc(url, prepared.docName, prepared.slug, task)
+      const task = docTaskManager.createTask({
+        id: taskRecord.id,
+        slug: prepared.slug,
+        name: prepared.docName,
+        url,
+        source: 'git',
+      })
+
+      indexGitDoc(task)
         .then(() => {
           task.endWithCompleted()
+          taskRepo.updateStatus(taskRecord.id, 'completed')
         })
-        .catch(() => {
+        .catch((err) => {
           task.endWithFailed()
+          taskRepo.updateStatus(taskRecord.id, 'failed', err.message)
         })
 
-      return c.json(Res201({ taskId: task.id, slug: prepared.slug, docName: prepared.docName }, 'success') as ApiSuccess, 201)
+      return c.json(Res201({ taskId: task.id, dbTaskId: taskRecord.id, slug: prepared.slug, docName: prepared.docName }, 'success') as ApiSuccess, 201)
     })
   .get('/:slug', async (c) => {
     const { slug } = c.req.param()

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { client, parseRes } from "@/APIs"
-import type { DocEntity } from '@pcontext/shared/types'
+import type { DocEntity } from '@pcontext/api/client'
 import {
   flexRender,
   getCoreRowModel,
@@ -32,7 +32,7 @@ interface DocListResponse {
   list: DocRecord[]
   total: number
   page: number
-  limit: number
+  pageSize: number
   totalPages: number
 }
 
@@ -52,7 +52,7 @@ function formatDate(timestamp: number | string): string {
 
 export default function DocsPage() {
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const [pageSize, setPageSize] = useState(10)
   const [name, setName] = useState("")
   const [source, setSource] = useState<"all" | DocSource>("all")
   const [createdFrom, setCreatedFrom] = useState("")
@@ -63,14 +63,14 @@ export default function DocsPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [name, source, createdFrom, createdTo, limit])
+  }, [name, source, createdFrom, createdTo, pageSize])
 
   const query = useQuery({
-    queryKey: ['docs', 'list', { page, limit, name, source, createdFrom, createdTo }],
+    queryKey: ['docs', 'list', { page, pageSize, name, source, createdFrom, createdTo }],
     queryFn: async () => {
       const queryParams: any = {
         page: page.toString(),
-        limit: limit.toString(),
+        pageSize: pageSize.toString(),
       }
       const trimmedName = name.trim()
       if (trimmedName) queryParams.name = trimmedName
@@ -342,9 +342,9 @@ export default function DocsPage() {
               <div className="flex items-center gap-2">
                 <span>每页</span>
                 <select
-                  value={limit}
+                  value={pageSize}
                   onChange={(event) =>
-                    setLimit(Number.parseInt(event.target.value, 10) || 10)
+                    setPageSize(Number.parseInt(event.target.value, 10) || 10)
                   }
                   className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                 >

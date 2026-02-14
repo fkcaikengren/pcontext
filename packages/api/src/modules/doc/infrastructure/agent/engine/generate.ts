@@ -3,7 +3,7 @@ import { storageContextFromDefaults, VectorStoreIndex } from 'llamaindex'
 import { VectorStoreProvider } from '../storage/vector-store'
 import { GitRepositoryReader } from '../loaders/git-repository-reader'
 import type { Task } from '@/modules/task/infrastructure/log-task'
-import { DocTaskModel } from '@pcontext/shared/types'
+import { TaskDocDTO } from '@/modules/doc/doc.dto'
 
 
 export interface GenerateGitRepositoryDataOptions {
@@ -15,7 +15,7 @@ export interface GenerateGitRepositoryDataOptions {
 export async function generateGitRepositoryData({
   url,
   bizDocId,
-}: GenerateGitRepositoryDataOptions, task: Task<DocTaskModel>) {
+}: GenerateGitRepositoryDataOptions, task: Task<TaskDocDTO>) {
   task.logInfo({ url, bizDocId }, 'generateGitRepositoryData: start')
 
   // 处理url为git格式

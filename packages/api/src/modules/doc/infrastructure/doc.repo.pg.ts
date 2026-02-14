@@ -1,7 +1,7 @@
 import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
 import type { PostgresqlDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import type { DocEntity } from '@pcontext/shared/types'
+import type { DocEntity } from '@/modules/doc/doc.entity'
 import type { CreateDocDTO } from '@/modules/doc/doc.dto'
 import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import { docPg, type DocPgPO, favoritePg } from './doc.po.ts'
@@ -13,6 +13,7 @@ function mapper(row: DocPgPO): DocEntity<Date> {
     name: row.name,
     source: row.source as DocEntity<Date>['source'],
     url: row.url,
+    taskId: row.taskId ?? undefined,
     accessCount: row.accessCount || 0,
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
@@ -97,6 +98,7 @@ export class PgDocRepository implements IDocRepository {
       name: input.name,
       source: input.source,
       url: input.url,
+      taskId: input.taskId,
     }).returning()
     return mapper(row)
   }

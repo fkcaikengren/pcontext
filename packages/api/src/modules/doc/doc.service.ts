@@ -4,12 +4,13 @@ import { getIndex } from '@/modules/doc/infrastructure/agent/storage'
 import { generateFilters } from '@/modules/doc/infrastructure/agent/engine/query-filter'
 import { logger } from '@/shared/logger'
 import type { Task } from '@/modules/task/infrastructure/log-task'
-import type { DocEntity, DocTaskModel } from '@pcontext/shared/types'
+import type { DocEntity } from './doc.entity'
+import type { TaskDocDTO } from './doc.dto'
 import { buildDocIdentifiersFromUrl } from '@/shared/utils/url'
 
 export async function listDocs(
   page: number,
-  limit: number,
+  pageSize: number,
   type: 'favorites' | 'trending' | undefined,
   userId?: number,
   filters?: { q?: string; source?: 'git' | 'website'; createdFrom?: number; createdTo?: number; updatedFrom?: number; updatedTo?: number },
@@ -18,11 +19,11 @@ export async function listDocs(
 
   if (type === 'favorites') {
     if (!userId) throw new Error('UserId is required for favorites')
-    return repo.listFavoritesByUser(userId, page, limit)
+    return repo.listFavoritesByUser(userId, page, pageSize)
   }
 
   const sort = type === 'trending' ? 'popularity' : undefined
-  return repo.list(page, limit, filters, sort)
+  return repo.list(page, pageSize, filters, sort)
 }
 
 export async function getDocDetail(slug: string) {
@@ -42,16 +43,20 @@ export async function prepareGitDoc(url: string, docName?: string) {
   const finalName = (typeof docName === 'string' && docName.trim()) || identifiers.docName
   const { docRepo } = getRepoDeps()
   const existing = await docRepo.findBySlug(identifiers.slug)
-  return { slug: identifiers.slug, docName: finalName, exists: !!existing }
+  return {  slug: identifiers.slug, docName: finalName, exists: !!existing }
 }
 
-export async function indexGitDoc(url: string, docName: string, slug: string, task: Task<DocTaskModel>) {
+export async function indexGitDoc( task: Task<TaskDocDTO>) {
   let record: DocEntity<Date> | null = null
+  if(!task.extraData || !task.extraData.id) {
+    throw new Error('task 必须包含 extraData')
+  }
+  const { slug, id:taskId, name:docName, url} = task.extraData || {} 
   try {
     const { docRepo } = getRepoDeps()
     await generateGitRepositoryData({ url, bizDocId: slug }, task)
     task.logInfo(`Indexed git repository ${slug} successfully`)
-    record = await docRepo.create({ slug, name: docName, source: 'git', url })
+    record = await docRepo.create({ slug, name: docName, source: 'git', url, taskId })
     task.logInfo(`Add document ${slug} with slug ${record.slug} successfully`)
   } catch (err: any) {
     task.log('error', err.message)

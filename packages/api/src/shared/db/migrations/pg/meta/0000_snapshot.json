@@ -1,70 +1,9 @@
 {
-  "id": "b2b86c12-9490-44cf-aad8-94e8a0b65069",
+  "id": "fd82cbc2-429c-473e-a9be-fef4642d70c9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.casbin_rule": {
-      "name": "casbin_rule",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "ptype": {
-          "name": "ptype",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v0": {
-          "name": "v0",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v1": {
-          "name": "v1",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v2": {
-          "name": "v2",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v3": {
-          "name": "v3",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v4": {
-          "name": "v4",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "v5": {
-          "name": "v5",
-          "type": "varchar(254)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.doc": {
       "name": "doc",
       "schema": "",
@@ -73,6 +12,12 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(256)",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -93,6 +38,12 @@
           "type": "varchar(1024)",
           "primaryKey": false,
           "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "access_count": {
           "name": "access_count",
@@ -117,9 +68,31 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "doc_task_id_task_id_fk": {
+          "name": "doc_task_id_task_id_fk",
+          "tableFrom": "doc",
+          "tableTo": "task",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "doc_slug_unique": {
+          "name": "doc_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -183,6 +156,210 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.task_logs": {
+      "name": "task_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_level": {
+          "name": "log_level",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "extra_data": {
+          "name": "extra_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trace_id": {
+          "name": "trace_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_task_id_time": {
+          "name": "idx_task_id_time",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.task": {
+      "name": "task",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'running'"
+        },
+        "message": {
+          "name": "message",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "extra_data": {
+          "name": "extra_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logs_length": {
+          "name": "logs_length",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "EXTRACT(EPOCH FROM NOW()) * 1000"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "EXTRACT(EPOCH FROM NOW()) * 1000"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.casbin_rule": {
+      "name": "casbin_rule",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ptype": {
+          "name": "ptype",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v0": {
+          "name": "v0",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v1": {
+          "name": "v1",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v2": {
+          "name": "v2",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v3": {
+          "name": "v3",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v4": {
+          "name": "v4",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "v5": {
+          "name": "v5",
+          "type": "varchar(254)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

@@ -1,7 +1,7 @@
 import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
 import type { SqliteDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import type { DocEntity } from '@pcontext/shared/types'
+import type { DocEntity } from '@/modules/doc/doc.entity'
 import type { CreateDocDTO } from '@/modules/doc/doc.dto'
 import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import { docSqlite, type DocSqlitePO, favoriteSqlite } from '@/modules/doc/infrastructure/doc.po'
@@ -13,6 +13,7 @@ function mapper(row: DocSqlitePO): DocEntity<Date> {
     name: row.name!,
     source: (row.source || 'git') as DocEntity<Date>['source'],
     url: row.url!,
+    taskId: row.taskId ?? undefined,
     accessCount: row.accessCount || 0,
     createdAt: new Date(row.createdAt as number),
     updatedAt: new Date(row.updatedAt as number),
@@ -97,6 +98,7 @@ export class SqliteDocRepository implements IDocRepository {
       name: input.name,
       source: input.source,
       url: input.url,
+      taskId: input.taskId,
     }).returning()
     return mapper(row)
   }

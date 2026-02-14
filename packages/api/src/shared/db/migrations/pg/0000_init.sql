@@ -1,5 +1,46 @@
 CREATE TYPE "public"."doc_source" AS ENUM('git', 'website');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'user');--> statement-breakpoint
+CREATE TABLE "doc" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"slug" varchar(256) NOT NULL,
+	"name" varchar(256) NOT NULL,
+	"source" "doc_source" NOT NULL,
+	"url" varchar(1024) NOT NULL,
+	"task_id" integer,
+	"access_count" integer DEFAULT 0 NOT NULL,
+	"created_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL,
+	"updated_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL,
+	CONSTRAINT "doc_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "favorite" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"doc_id" integer NOT NULL,
+	"created_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "task_logs" (
+	"id" bigserial PRIMARY KEY NOT NULL,
+	"task_id" uuid NOT NULL,
+	"log_level" varchar(10),
+	"content" text,
+	"created_at" timestamp with time zone DEFAULT now(),
+	"extra_data" jsonb,
+	"trace_id" varchar(64)
+);
+--> statement-breakpoint
+CREATE TABLE "task" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"type" varchar(64) NOT NULL,
+	"status" varchar(16) DEFAULT 'running' NOT NULL,
+	"message" varchar(1024),
+	"extra_data" jsonb,
+	"logs_length" integer DEFAULT 0 NOT NULL,
+	"created_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL,
+	"updated_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "casbin_rule" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"ptype" varchar(254),
@@ -9,23 +50,6 @@ CREATE TABLE "casbin_rule" (
 	"v3" varchar(254),
 	"v4" varchar(254),
 	"v5" varchar(254)
-);
---> statement-breakpoint
-CREATE TABLE "doc" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"name" varchar(256) NOT NULL,
-	"source" "doc_source" NOT NULL,
-	"url" varchar(1024) NOT NULL,
-	"access_count" integer DEFAULT 0 NOT NULL,
-	"created_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL,
-	"updated_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "favorite" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"user_id" integer NOT NULL,
-	"doc_id" integer NOT NULL,
-	"created_at" bigint DEFAULT EXTRACT(EPOCH FROM NOW()) * 1000 NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
@@ -44,5 +68,7 @@ CREATE TABLE "user" (
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
+ALTER TABLE "doc" ADD CONSTRAINT "doc_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "favorite" ADD CONSTRAINT "favorite_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "favorite" ADD CONSTRAINT "favorite_doc_id_doc_id_fk" FOREIGN KEY ("doc_id") REFERENCES "public"."doc"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "favorite" ADD CONSTRAINT "favorite_doc_id_doc_id_fk" FOREIGN KEY ("doc_id") REFERENCES "public"."doc"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_task_id_time" ON "task_logs" USING btree ("task_id","created_at");

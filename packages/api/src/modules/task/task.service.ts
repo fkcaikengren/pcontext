@@ -2,9 +2,9 @@ import {
   createTaskManager,
 } from '@/modules/task/infrastructure/log-task'
 
-import type { DocTaskModel } from '@pcontext/shared/types'
+import type { TaskDocDTO } from '@/modules/doc/doc.dto'
 
-export const docTaskManager = createTaskManager<DocTaskModel>()
+export const docTaskManager = createTaskManager<TaskDocDTO>()
 
 if (process.env.NODE_ENV === 'development') {
   const task = docTaskManager.createTask({

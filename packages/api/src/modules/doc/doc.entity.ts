@@ -1,12 +1,14 @@
 export type DocSource = 'git' | 'website'
 
-export type Doc = {
+export interface DocEntity<TDate> {
   id: number
   slug: string
   name: string
   source: DocSource
   url: string
+  taskId?: number
   accessCount: number
-  createdAt: Date
-  updatedAt: Date
+  createdAt: TDate
+  updatedAt: TDate
 }
+

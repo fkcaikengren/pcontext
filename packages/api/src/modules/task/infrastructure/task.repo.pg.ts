@@ -1,59 +1,85 @@
 import { desc, eq, sql } from 'drizzle-orm'
 import type { PostgresqlDB } from '@/shared/db/connection'
-import { taskPg } from '@/modules/task/infrastructure/task.po'
-import type { CreateTaskRecordInput, TaskRecord, TaskStatus } from '@/modules/task/task.entity'
+import { taskLogPg, taskPg, type TaskPgPO, type TaskLogPgPO } from '@/modules/task/infrastructure/task.po'
+import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
+import type { CreateTaskDTO, CreateTaskLogDTO } from '@/modules/task/task.dto'
 import type { ITaskRepository } from '@/modules/task/task.repo.interface'
 
-function toEntity(row: typeof taskPg.$inferSelect): TaskRecord {
+function mapper(row: TaskPgPO): TaskEntity;
+function mapper(row: TaskLogPgPO): TaskLogEntity;
+function mapper(row: TaskPgPO | TaskLogPgPO): TaskEntity | TaskLogEntity {
+  if ('type' in row) {
+    return {
+      id: row.id!,
+      type: row.type!,
+      status: row.status as TaskStatus,
+      message: row.message ?? null,
+      extraData: row.extraData ?? null,
+      logsLength: row.logsLength ?? 0,
+      createdAt: row.createdAt as number,
+      updatedAt: row.updatedAt as number,
+    }
+  }
+
   return {
     id: row.id!,
-    type: row.type!,
-    resourceId: row.resourceId!,
-    status: row.status as TaskStatus,
-    message: row.message ?? null,
-    createdAt: row.createdAt as number,
-    updatedAt: row.updatedAt as number,
+    taskId: row.taskId!,
+    logLevel: row.logLevel ?? null,
+    content: row.content ?? null,
+    createdAt: row.createdAt ? row.createdAt.getTime() : Date.now(),
+    extraData: row.extraData ?? null,
+    traceId: row.traceId ?? null,
   }
 }
 
 export class PgTaskRepository implements ITaskRepository {
   constructor(private db: PostgresqlDB) {}
 
-  async create(input: CreateTaskRecordInput): Promise<TaskRecord> {
+  async create(input: CreateTaskDTO): Promise<TaskEntity> {
     const [row] = await this.db.insert(taskPg).values({
       type: input.type,
-      resourceId: input.resourceId,
       status: input.status ?? 'running',
       message: input.message ?? null,
+      extraData: input.extraData ?? null,
     }).returning()
-    return toEntity(row)
+    return mapper(row)
   }
 
-  async findById(id: number): Promise<TaskRecord | null> {
+  async findById(id: number): Promise<TaskEntity | null> {
     const row = await this.db.query.task.findFirst({ where: eq(taskPg.id, id) })
-    return row ? toEntity(row) : null
+    return row ? mapper(row) : null
   }
 
-  async listByResourceId(resourceId: string, page: number, pageSize: number) {
-    const offset = (page - 1) * pageSize
-    const rows = await this.db.query.task.findMany({
-      where: eq(taskPg.resourceId, resourceId),
-      limit: pageSize,
-      offset,
-      orderBy: [desc(taskPg.createdAt)],
-    })
-    const totalRow = await this.db.select({ count: sql<number>`count(*)` }).from(taskPg).where(eq(taskPg.resourceId, resourceId))
-    const total = totalRow[0]?.count ?? 0
-    const totalPages = Math.max(1, Math.ceil(total / pageSize))
-    return { list: rows.map(toEntity), total, page, pageSize, totalPages }
-  }
-
-  async updateStatus(id: number, status: TaskStatus, message?: string | null): Promise<TaskRecord | null> {
+  async updateStatus(id: number, status: TaskStatus, message?: string | null): Promise<TaskEntity | null> {
     const [row] = await this.db.update(taskPg).set({
       status,
       message: message ?? null,
       updatedAt: Date.now(),
     }).where(eq(taskPg.id, id)).returning()
-    return row ? toEntity(row) : null
+    return row ? mapper(row) : null
+  }
+
+  async createLog(input: CreateTaskLogDTO): Promise<TaskLogEntity> {
+    const [row] = await this.db.insert(taskLogPg).values({
+      taskId: input.taskId,
+      logLevel: input.logLevel ?? null,
+      content: input.content ?? null,
+      createdAt: input.createdAt ? new Date(input.createdAt) : undefined,
+      extraData: input.extraData ?? null,
+      traceId: input.traceId ?? null,
+    }).returning()
+    return mapper(row)
+  }
+
+  async createLogs(inputs: CreateTaskLogDTO[]): Promise<void> {
+    if (inputs.length === 0) return
+    await this.db.insert(taskLogPg).values(inputs.map(input => ({
+      taskId: input.taskId,
+      logLevel: input.logLevel ?? null,
+      content: input.content ?? null,
+      createdAt: input.createdAt ? new Date(input.createdAt) : undefined,
+      extraData: input.extraData ?? null,
+      traceId: input.traceId ?? null,
+    }))).returning()
   }
 }

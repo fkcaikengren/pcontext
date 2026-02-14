@@ -1,16 +1,21 @@
 import { streamSSE } from 'hono/streaming'
 import { createRouter } from '@/shared/create-app'
 import { docTaskManager } from '@/modules/task/task.service'
-import type { TaskLogEvent } from '@pcontext/shared/types'
+import type { TaskLogEvent } from './task.entity'
+import type { TaskVO } from './task.vo'
 import { logger } from '@/shared/logger'
 
 const router = createRouter()
   .get('/', async (c) => {
     const tasks = docTaskManager.listTasks()
-    const items = tasks.map(item => ({
-      ...item,
-      manager: undefined,
-      log: undefined,
+    const items: TaskVO[] = tasks.map(item => ({
+      id: item.id,
+      status: item.status,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      extraData: item.extraData,
+      logs: item.logs,
+      logsLength: item.logsLength,
     }))
     return c.json({ tasks: items })
   })
@@ -24,8 +29,18 @@ const router = createRouter()
       return c.json({ message: '任务不存在' }, 404)
     }
 
+    const taskVO: TaskVO = {
+      id: task.id,
+      status: task.status,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      extraData: task.extraData,
+      logs: task.logs,
+      logsLength: task.logsLength,
+    }
+
     return c.json({
-      task,
+      task: taskVO,
     })
   })
   .get('/:id/progress', (c) => {

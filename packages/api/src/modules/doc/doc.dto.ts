@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { paginationQuerySchema } from '@/shared/dto'
 
 export const PositiveIntOptionalSchema = z.coerce.number().int().positive().optional()
 
@@ -7,6 +8,7 @@ export const CreateDocSchema = z.object({
   name: z.string().min(1).max(256),
   source: z.enum(['git', 'website']),
   url: z.string().url(),
+  taskId: z.number().int().positive().optional(),
 })
 
 export const DocAddBodySchema = z.object({
@@ -14,9 +16,7 @@ export const DocAddBodySchema = z.object({
   docName: z.string().min(1).max(256).optional(),
 })
 
-export const DocListQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(10),
+export const DocListQuerySchema = paginationQuerySchema.extend({
   name: z.string().optional(),
   source: z.enum(['git', 'website']).optional(),
   type: z.enum(['favorites', 'trending']).optional(),
@@ -26,6 +26,18 @@ export const DocListQuerySchema = z.object({
   updatedTo: z.coerce.number().int().optional(),
 })
 
+
+
+
 export type CreateDocDTO = z.infer<typeof CreateDocSchema>
 export type DocAddBodyDTO = z.infer<typeof DocAddBodySchema>
 export type DocListQueryDTO = z.infer<typeof DocListQuerySchema>
+
+
+export interface TaskDocDTO {
+  id: number
+  slug: string 
+  name: string
+  source: string
+  url: string
+}
