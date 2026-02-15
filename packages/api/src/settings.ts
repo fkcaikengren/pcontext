@@ -1,7 +1,6 @@
 import type { PContextConfig } from '@pcontext/shared'
-import { getDirname, loadPContextConfig } from '@pcontext/shared'
 import path from 'node:path'
-
+import { getDirname, loadPContextConfig } from '@pcontext/shared'
 
 interface GlobalAppSettings {
   config: PContextConfig
@@ -18,7 +17,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const AppSettings: GlobalAppSettings = {
-  config: config,
+  config,
   global: {},
 }
 

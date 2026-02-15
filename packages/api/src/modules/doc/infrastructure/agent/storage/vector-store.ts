@@ -5,7 +5,7 @@ import { logger } from '@/shared/logger'
 const { config } = AppSettings
 
 export class VectorStoreProvider {
-  private static instance: MilvusVectorStore | null = null;
+  private static instance: MilvusVectorStore | null = null
 
   /**
    * 获取全局唯一的 Milvus Vector Store 实例
@@ -13,7 +13,7 @@ export class VectorStoreProvider {
    */
   static getVectorStore(): MilvusVectorStore {
     if (this.instance) {
-      return this.instance;
+      return this.instance
     }
 
     const milvus = config.agent.milvus
@@ -23,15 +23,15 @@ export class VectorStoreProvider {
       process.exit(1)
     }
 
-    this.instance =  new MilvusVectorStore({
+    this.instance = new MilvusVectorStore({
       params: {
         configOrAddress: milvus.address,
         username: milvus.username,
         password: milvus.password,
-        ssl: false, //TODO: 增加配置
+        ssl: false, // TODO: 增加配置
       },
       collection: milvus.collection_name,
-    });
-    return this.instance;
+    })
+    return this.instance
   }
 }
