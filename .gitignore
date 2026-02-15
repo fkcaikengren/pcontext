@@ -171,3 +171,9 @@ dist
 
 # 配置文件
 pcontext.config.local.js
+
+# 本地数据目录
+data_milvus/*
+!data_milvus/.gitkeep
+data_sqlite/*
+!data_sqlite/.gitkeep

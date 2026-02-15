@@ -6,6 +6,7 @@
     "dev:api": "bun run --filter @pcontext/api dev",
     "dev:server": "bun run --filter @pcontext/server dev",
     "dev:web": "bun run --filter @pcontext/chat-web dev",
+    "db:generate": "bun run --filter @pcontext/api db:generate",
     "commit": "git-cz",
     "commit:lint": "commitlint --edit"
   },
