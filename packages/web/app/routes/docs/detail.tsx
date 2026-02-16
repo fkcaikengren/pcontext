@@ -14,8 +14,9 @@ import {
   Link2,
   Send
 } from 'lucide-react';
-import { data, useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { Chat } from '@/components/chat';
 
 // import {client } from '@pcontext/api'
 
@@ -39,6 +40,17 @@ interface DocDetailFromApi {
 export default function DocsDetail() {
 	const params = useParams<{ docSlug: string; topic:string; tokens:string }>();
 	const {docSlug:slug , topic, tokens} = params;
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'chat';
+  
+  const setActiveTab = (tab: string) => {
+    setSearchParams(prev => {
+      prev.set('tab', tab);
+      return prev;
+    }, { replace: true });
+  };
+
   if(!slug){
     return 
   }
@@ -47,8 +59,7 @@ export default function DocsDetail() {
 		enabled: !!slug,
 		queryFn: async () => parseRes(client.docs[':slug'].$get({ param: { slug } })),
 	});
-	const [message, setMessage] = useState('');
-	const [activeTab, setActiveTab] = useState('chat');
+	
 	const [searchQuery, setSearchQuery] = useState('');
 	const llmTextQuery = useQuery({
 		queryKey: ['docs', slug, 'llm.txt', searchQuery],
@@ -62,11 +73,6 @@ export default function DocsDetail() {
     },
 	});
 
-  const suggestedQuestions = [
-    "How do I install this library?",
-    "Show me a quick start example",
-    "What are the core concepts?"
-	];
 
 	const handleViewContext = async () => {
 		if (!slug) return;
@@ -125,42 +131,7 @@ export default function DocsDetail() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="mt-0">
-            <Card className="p-8 bg-white border-2 border-gray-200 rounded-2xl min-h-[600px] flex flex-col">
-              <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-                <Clock className="w-4 h-4" />
-                <span>History</span>
-              </div>
-
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <h2 className="text-xl font-semibold mb-8 text-gray-700">
-                  Start a conversation
-                </h2>
-                <div className="space-y-3">
-                  {suggestedQuestions.map((question, idx) => (
-                    <button
-                      key={idx}
-                      className="block px-6 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-700 transition-colors"
-                      onClick={() => setMessage(question)}
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-6 border-t">
-                <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask a question..."
-                  className="flex-1"
-                />
-                <Button className="bg-green-600 hover:bg-green-700 gap-2">
-                  Send
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </Card>
+            <Chat libraryName={slug} />
           </TabsContent>
 
           {/* Context Tab */}
