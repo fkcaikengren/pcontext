@@ -65,7 +65,7 @@ Accept: application/json, text/event-stream
     "name": "query-docs",
     "arguments": {
       "libraryId": "github_fkcaikengren_uni-hooks",
-      "query": "core features"
+      "query": "how to use createStore"
     }
   }
 }

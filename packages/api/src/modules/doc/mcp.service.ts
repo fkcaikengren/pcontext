@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { getDocDetail, queryDocSnippets } from '@/modules/doc/doc.service'
+import { queryDocSnippets } from '@/modules/doc/doc.service'
 import { getRepoDeps } from '@/shared/deps'
 import { createTool } from '@/shared/mcp/createTool'
 
@@ -115,20 +115,18 @@ IMPORTANT: Do not call this tool more than 3 times per question. If you cannot f
     query: z.string().describe('The question or task you need help with. Be specific and include relevant details. Good: \'How to setup authentication with JWT in Express.js\' or \'React useEffect cleanup function examples\'. Bad: \'auth\' or \'hooks\'. IMPORTANT: Do not include any sensitive or confidential information such as API keys, passwords, credentials, or personal data in your query.'),
   }),
   handler: async ({ libraryId, query }) => {
-    const doc = await getDocDetail(libraryId)
-    if (!doc) {
-      return { content: [{ type: 'text', text: `未找到文档：${libraryId}` }] }
-    }
-
     // Default tokens to 10000 as per previous implementation logic
     const tokens = 10000
     const { snippets } = await queryDocSnippets(libraryId, query, tokens)
 
-    const llmText = snippets.map(n => `### ${n.filePath}\n${n.content}`).join('\n--------\n')
+    if (snippets.length === 0) {
+      return { content: [{ type: 'text', text: `未找到相关文档片段：${libraryId}` }] }
+    }
+
+    const llmText = snippets.map(n => `### ${n.filePath}\n${n.content}`).join('\n----------\n')
 
     return {
       content: [{ type: 'text', text: llmText }],
-      structuredContent: { doc, llmText },
     }
   },
 })
