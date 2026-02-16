@@ -4,17 +4,16 @@ import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { DocInfoCard } from "@/components/doc-info-card"
-import { alovaInstance } from "@/lib/alova"
+import { client, parseRes } from "@/APIs"
 import { formatDateTime } from "@/utils/format"
-import type { TaskEntity, DocTaskModel , TaskLogEntry, TaskStatus} from '@pcontext/shared/types'
+import type { TaskVO } from '@pcontext/api/client'
 
-type Task = TaskEntity<DocTaskModel>
-
+type TaskLogEntry = TaskVO['logs'][number]
 
 export default function TaskDetailPage() {
   const params = useParams<{ taskId: string }>()
   const taskId = params.taskId
-  const [task, setTask] = useState<Task | null>(null)
+  const [task, setTask] = useState<TaskVO | null>(null)
   const [taskLoading, setTaskLoading] = useState(false)
   const [taskError, setTaskError] = useState<string | null>(null)
   const [lines, setLines] = useState<TaskLogEntry[]>([])
@@ -33,8 +32,8 @@ export default function TaskDetailPage() {
 
     const fetchTask = async () => {
       try {
-			const method = alovaInstance.Get<{ task: Task, logs?: TaskLogEntry[] }>(`/tasks/${taskId}`)
-        const {task} = await method.send()
+        const { task } = await parseRes(client.tasks[':id'].$get({ param: { id: taskId } }))
+
         if (cancelled) return
         setTask(task)
         if(task.status !== 'running'){
@@ -42,13 +41,8 @@ export default function TaskDetailPage() {
         }
       } catch (err) {
         if (cancelled) return
-        const anyError = err as any
-        if (anyError?.status === 404 || anyError?.response?.status === 404) {
-          setTaskError("任务不存在或已被删除")
-        } else {
-          const message = err instanceof Error ? err.message : "加载任务详情失败"
-          setTaskError(message)
-        }
+        const message = err instanceof Error ? err.message : "加载任务详情失败"
+        setTaskError(message)
       } finally {
         if (!cancelled) setTaskLoading(false)
       }
@@ -109,8 +103,8 @@ export default function TaskDetailPage() {
     containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [lines.length])
 
-  const taskName = task?.model?.name ?? (taskId ? `任务 #${taskId}` : "任务")
-  const taskUrl = task?.model?.url ?? ''
+  const taskName = (task?.extraData as any)?.name ?? (taskId ? `任务 #${taskId}` : "任务")
+  const taskUrl = (task?.extraData as any)?.url ?? ''
   const createdAtText = task?.createdAt ? formatDateTime(new Date(task.createdAt), "yyyy-MM-dd HH:mm:ss") : ""
 
   const isTaskNotFound = !task && !taskLoading && !!taskError

@@ -2,10 +2,8 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router"
-import { alovaInstance } from "@/lib/alova"
-import type { TaskEntity, DocTaskModel } from '@pcontext/shared/types'
-
-type Task =  TaskEntity<DocTaskModel>
+import { client, parseRes } from "@/APIs"
+import type { TaskVO } from '@pcontext/api/client'
 
 function formatDate(timestamp: number): string {
   if (!timestamp) return "-"
@@ -15,7 +13,7 @@ function formatDate(timestamp: number): string {
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<TaskVO[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -26,10 +24,9 @@ export default function TasksPage() {
       setLoading(true)
       setError(null)
       try {
-        const method = alovaInstance.Get<{ tasks: Task[] }>("/tasks")
-        const result = await method.send()
+        const { tasks } = await parseRes(client.tasks.$get())
         if (cancelled) return
-        setTasks(result.tasks || [])
+        setTasks(tasks || [])
       } catch (err) {
         if (cancelled) return
         const message = err instanceof Error ? err.message : "加载任务失败"
@@ -68,9 +65,9 @@ export default function TasksPage() {
                 tasks.map((task) => (
                   <div key={task.id} className="flex items-center justify-between py-3">
                     <div>
-                      <div className="text-sm font-medium">{task.model?.name}</div>
+                      <div className="text-sm font-medium">{(task.extraData as any)?.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        状态: {task.status} · 创建时间: {task.createdAt}
+                        状态: {task.status} · 创建时间: {formatDate(task.createdAt)}
                       </div>
                     </div>
                     <Button size="sm" variant="outline" asChild>
