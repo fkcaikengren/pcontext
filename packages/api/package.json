@@ -10,6 +10,7 @@
     "dev": "NODE_ENV=development bun run --hot src/server.ts --elide-lines=100",
     "build": "NODE_ENV=production bun build ./src/index.ts --target node",
     "test": "NODE_ENV=test bun run src/index.ts",
+    "mcp-inspector": "mcp-inspector",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
     "db:generate": "bun run scripts/drizzle-generate.ts"

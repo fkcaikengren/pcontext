@@ -4,7 +4,7 @@ import { getEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
 import { logger } from '@/shared/logger'
 
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
-const SAFE_PATHS = ['/api/users/login']
+const SAFE_PATHS = ['/api/users/login', '/api/chat', '/mcp']
 
 export function authorization(config?: {
   safeMethods?: string[]
@@ -14,9 +14,10 @@ export function authorization(config?: {
     safeMethods = SAFE_METHODS,
     safePaths = SAFE_PATHS,
   } = config || {}
-  return async (c: Context, next: Next)=> {
-    if (c.req.method === 'OPTIONS') return next()
-    const user = c.get('user') as { id: number; username: string; role: string | null } | undefined
+  return async (c: Context, next: Next) => {
+    if (c.req.method === 'OPTIONS')
+      return next()
+    const user = c.get('user') as { id: number, username: string, role: string | null } | undefined
     const hasRole = typeof user?.role === 'string' && user.role.length > 0
 
     if (!safeMethods.includes(c.req.method) && !safePaths.includes(c.req.path)) {

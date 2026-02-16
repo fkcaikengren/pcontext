@@ -47,6 +47,12 @@ VO 对应页面展示类型。VO 应该命名带`VO`后缀；
 
 2. 外部的route,service或者其他业务逻辑，通过getRepoDeps().xxxRepo 来获取repo。
 
+
+3. 更改表结构后，生成表修改记录sql，生成命令为：
+```bash
+nr run db:generate
+```
+
 ## API接口和HTTP响应规范
 
 当修改某个模块的`xxx.route.ts`时，json响应采用 ApiSuccess/ApiError 响应，并且使用ResXxx构造响应结果，举例如下。
@@ -74,3 +80,6 @@ c.json(Res200(result) as ApiSuccess, 200)
 // xxx.route.ts
 c.json(Res200(result) as ApiSuccess, 200)
 ```
+
+
+## MCP和LLM tool规范

@@ -46,3 +46,23 @@ GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/l
 
 ### 6. 查询文档片段 (Query)
 GET {{proto}}://{{host}}:{{port}}{{docs_prefix}}/github_fkcaikengren_uni-hooks/snippets?q=uni-hooks&tokens=1000
+
+### 7. 文档聊天 (Chat)
+POST {{proto}}://{{host}}:{{port}}{{api_prefix}}/chat
+Content-Type: application/json
+
+{
+  "libraryName": "github_fkcaikengren_uni-hooks",
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "parts": [
+        {
+          "type": "text",
+          "text": "uni-hooks 有哪些主要功能？"
+        }
+      ]
+    }
+  ]
+}

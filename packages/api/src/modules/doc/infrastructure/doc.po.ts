@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { bigint, integer as pgInteger, pgEnum, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
+import { bigint, pgEnum, integer as pgInteger, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
 import { integer as sqliteInteger, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
+import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 
 export const docSourceEnum = pgEnum('doc_source', ['git', 'website'])
 
@@ -53,4 +53,3 @@ export type DocSqlitePO = typeof docSqlite.$inferSelect
 export type InsertDocSqlitePO = typeof docSqlite.$inferInsert
 export type FavoriteSqlitePO = typeof favoriteSqlite.$inferSelect
 export type InsertFavoriteSqlitePO = typeof favoriteSqlite.$inferInsert
-

@@ -13,3 +13,6 @@
 在开发阶段：
 - 通过`bun run dev:api`运行服务运行在3000端口，提供api接口。
 - 通过`bun run dev:web` web通过vite运行在3001端口，提供SPA网页。
+
+## 上下文收集原则
+生成代码时，优先使用context7 mcp查询相关包的准确用法而不是 web search!

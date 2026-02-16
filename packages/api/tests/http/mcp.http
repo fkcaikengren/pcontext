@@ -1,0 +1,71 @@
+@proto = http
+@host = localhost
+@port = 3000
+@api_prefix = /api
+@mcp_prefix = /mcp
+
+### 1. Initialize (MCP握手)
+POST {{proto}}://{{host}}:{{port}}{{mcp_prefix}}?sessionId=test-session
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": {
+      "name": "rest-client",
+      "version": "1.0.0"
+    }
+  }
+}
+
+### 2. List Tools (列出可用工具)
+POST {{proto}}://{{host}}:{{port}}{{mcp_prefix}}?sessionId=test-session
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list"
+}
+
+### 3. Call Tool - resolve-library-id (查找库ID)
+POST {{proto}}://{{host}}:{{port}}{{mcp_prefix}}?sessionId=test-session
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "resolve-library-id",
+    "arguments": {
+      "query": "find uni-hooks library",
+      "libraryName": "uni-hooks"
+    }
+  }
+}
+
+### 4. Call Tool - query-docs (获取文档内容)
+POST {{proto}}://{{host}}:{{port}}{{mcp_prefix}}?sessionId=test-session
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "query-docs",
+    "arguments": {
+      "libraryId": "github_fkcaikengren_uni-hooks",
+      "query": "core features"
+    }
+  }
+}

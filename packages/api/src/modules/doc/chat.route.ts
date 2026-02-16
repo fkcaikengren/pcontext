@@ -1,5 +1,5 @@
-import { createRouter } from '@/shared/create-app'
 import { chatHandler } from '@/modules/doc/chat.service'
+import { createRouter } from '@/shared/create-app'
 
 const router = createRouter()
   .post('/', chatHandler)

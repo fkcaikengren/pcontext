@@ -7,6 +7,7 @@
     "dev:server": "bun run --filter @pcontext/server dev",
     "dev:web": "bun run --filter @pcontext/chat-web dev",
     "db:generate": "bun run --filter @pcontext/api db:generate",
+    "mcp-inspect": "bun run --filter @pcontext/api mcp-inspector",
     "commit": "git-cz",
     "commit:lint": "commitlint --edit"
   },
@@ -25,6 +26,7 @@
     "@llamaindex/readers": "~3.1.4",
     "@llamaindex/tools": "~0.1.2",
     "@llamaindex/workflow": "~1.1.8",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@react-router/node": "7.10.1",
     "@react-router/serve": "7.10.1",
     "@tanstack/react-query": "^5.90.21",
@@ -67,6 +69,7 @@
     "@antfu/eslint-config": "^5.1.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@modelcontextprotocol/inspector": "^0.20.0",
     "@react-router/dev": "7.10.1",
     "@types/bun": "latest",
     "@types/minimist": "^1.2.5",

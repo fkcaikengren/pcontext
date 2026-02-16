@@ -39,6 +39,7 @@ const SEED_POLICIES: [string, string, string][] = [
   ['guest', '/api/docs/*', 'GET'],
   ['guest', '/api/docs/*/check', 'POST'],
   ['guest', '/api/chat', 'POST'],
+  ['guest', '/api/mcp', '.*'],
 
   ['guest', '/api/users/login', 'POST'],
   ['guest', '/api/users/logout', 'POST'],
@@ -59,9 +60,11 @@ export async function initEnforcer(adapter?: import('casbin').Adapter) {
       const e = await newEnforcer(model, actualAdapter)
 
       const policies = await e.getPolicy()
-      if (!policies || policies.length === 0) {
+      const existing = new Set((policies ?? []).map(p => p.join('|')))
+      const missing = SEED_POLICIES.filter(p => !existing.has(p.join('|')))
+      if (missing.length > 0) {
         e.enableAutoSave(false)
-        await e.addPolicies(SEED_POLICIES)
+        await e.addPolicies(missing)
         await e.savePolicy()
         e.enableAutoSave(true)
       }

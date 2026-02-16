@@ -5,7 +5,9 @@ import { initEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
 import createApp from '@/shared/create-app'
 import { bootstrap } from '@/shared/db/bootstrap'
 import { initDb } from '@/shared/db/connection'
+import chat from './modules/doc/chat.route'
 import docs from './modules/doc/doc.route'
+import mcp from './modules/doc/mcp.route'
 import tasks from './modules/task/task.route'
 import users from './modules/user/user.route'
 import AppSettings from './settings'
@@ -23,10 +25,12 @@ const api = new Hono()
   .route('/health', health)
   .route('/users', users)
   .route('/docs', docs)
-  // .route('/chat', chat) //TODO: 移除chat?
+  .route('/chat', chat)
   .route('/tasks', tasks)
 
-export const app = createApp().route(config.api_prefix, api)
+export const app = createApp()
+  .route('/mcp', mcp)
+  .route(config.api_prefix, api)
 export type AppType = typeof api // 是 api 作为app type
 
 await initDb()

@@ -1,11 +1,11 @@
-import type { MetadataFilter, MetadataFilters } from "llamaindex";
+import type { MetadataFilter, MetadataFilters } from 'llamaindex'
 
 export function generateFilters(documentIds: string[]): MetadataFilters {
   const filter: MetadataFilter = {
-    key: "biz_doc_id",
+    key: 'biz_doc_id',
     value: documentIds,
-    operator: "in",
-  };
+    operator: 'in',
+  }
 
-  return { filters: [filter] };
+  return { filters: [filter] }
 }
