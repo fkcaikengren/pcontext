@@ -11,4 +11,3 @@ export interface DocEntity<TDate> {
   createdAt: TDate
   updatedAt: TDate
 }
-

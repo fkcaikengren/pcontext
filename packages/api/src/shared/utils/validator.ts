@@ -2,7 +2,7 @@ import { zValidator } from '@hono/zod-validator'
 
 type ZValidator = typeof zValidator
 
-export const jsonValidator = (schema: Parameters<ZValidator>[1]) => {
+export function jsonValidator(schema: Parameters<ZValidator>[1]) {
   return zValidator(
     'json',
     schema,
@@ -17,7 +17,7 @@ export const jsonValidator = (schema: Parameters<ZValidator>[1]) => {
   )
 }
 
-export const queryValidator = (schema: Parameters<ZValidator>[1]) => {
+export function queryValidator(schema: Parameters<ZValidator>[1]) {
   return zValidator(
     'query',
     schema,

@@ -97,12 +97,8 @@ async function retrieveDocNodes(slug: string, topic: string, tokens: number) {
   return results
 }
 
-export async function generateLlmText(slug: string, topic: string, tokens: number) {
-  const nodes = await retrieveDocNodes(slug, topic, tokens)
-  return nodes.map(n => `### ${n.filePath}\n${n.content}`).join('\n--------------------------------\n')
-}
-
 export async function queryDocSnippets(slug: string, topic: string, tokens: number) {
   const nodes = await retrieveDocNodes(slug, topic, tokens)
+  // console.log('========', nodes)
   return { snippets: nodes }
 }

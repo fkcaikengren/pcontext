@@ -16,6 +16,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@ahooksjs/use-url-state": "^3.5.1",
     "@ai-sdk/llamaindex": "^1.0.106",
     "@ai-sdk/react": "^3.0.88",
     "@hono/node-server": "^1.19.6",

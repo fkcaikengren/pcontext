@@ -1,12 +1,14 @@
+import type { DocSnippetsVO, DocVO } from './doc.vo'
+import type { PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess } from '@/types'
 import { z } from 'zod'
-import { DocAddBodySchema, DocListQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
-import { generateLlmText, getDocDetail, incrementDocAccess, indexGitDoc, listDocs, prepareGitDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
+import { DocAddBodySchema, DocListQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
+import { getDocDetail, incrementDocAccess, indexGitDoc, listDocs, prepareGitDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
 import { docTaskManager } from '@/modules/task/task.service'
 import { createRouter } from '@/shared/create-app'
+
 import { getRepoDeps } from '@/shared/deps'
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
-
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator, queryValidator } from '@/shared/utils/validator'
 
@@ -20,7 +22,7 @@ const router = createRouter()
 
       try {
         const result = await listDocs(page, pageSize, type, userId || undefined, { q: name, source, createdFrom, createdTo, updatedFrom, updatedTo })
-        return c.json(Res200(result) as ApiSuccess, 200)
+        return c.json(Res200(result) as ApiSuccess<PaginationVO<DocVO>>, 200)
       }
       catch (e: any) {
         return c.json(Res400(null, e?.message) as ApiError, 400)
@@ -65,7 +67,7 @@ const router = createRouter()
     const doc = await getDocDetail(slug)
     if (!doc)
       return c.json(Res404(null, '文档不存在') as ApiError, 404)
-    return c.json(Res200(doc) as ApiSuccess, 200)
+    return c.json(Res200(doc) as ApiSuccess<DocVO>, 200)
   })
   .post('/:slug/favorite', jsonValidator(z.object({ like: z.boolean() })), async (c) => {
     const userId = getCurrentUserId(c)
@@ -83,28 +85,29 @@ const router = createRouter()
   })
   .get(
     '/:slug/llm.txt',
-    queryValidator(z.object({
-      topic: z.string().optional().default(''),
-      tokens: PositiveIntOptionalSchema.default(10000),
-    })),
+    queryValidator(DocSnippetsQuerySchema),
     async (c) => {
       const { slug } = c.req.param()
       const { topic, tokens } = c.req.valid('query')
-      const text = await generateLlmText(slug, topic, tokens)
+      const { snippets } = await queryDocSnippets(slug, topic, tokens)
+      const text = snippets.map(snippet => `source: ${snippet.filePath}
+
+${snippet.content}
+
+---------------------------
+`).join('\n')
       return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     },
   )
   .get(
     '/:slug/query',
-    queryValidator(z.object({
-      q: z.string().optional().default(''),
-      tokens: PositiveIntOptionalSchema.default(10000),
-    })),
+    queryValidator(DocSnippetsQuerySchema),
     async (c) => {
       const { slug } = c.req.param()
-      const { q, tokens } = c.req.valid('query')
-      const result = await queryDocSnippets(slug, q, tokens)
-      return c.json(Res200(result) as ApiSuccess, 200)
+      const { topic, tokens } = c.req.valid('query')
+      const decTopic = decodeURIComponent(topic)
+      const result = await queryDocSnippets(slug, decTopic, tokens)
+      return c.json(Res200(result) as ApiSuccess<DocSnippetsVO>, 200)
     },
   )
 

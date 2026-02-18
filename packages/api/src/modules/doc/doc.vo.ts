@@ -1,9 +1,13 @@
-export type DocSnippetVO = {
+import type { DocEntity } from './doc.entity'
+
+export interface DocSnippetVO {
   filePath: string
   content: string
   score?: number
 }
 
-export type DocSnippetsVO = {
+export interface DocSnippetsVO {
   snippets: DocSnippetVO[]
 }
+
+export type DocVO = DocEntity<Date>

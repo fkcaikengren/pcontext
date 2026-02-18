@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,34 +12,23 @@ import {
   ArrowUpDown,
   Copy,
   Link2,
-  Send
+  Send,
+  ExternalLink
 } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { useUrlState } from '@/hooks/use-url-state';
 import { Chat } from '@/components/chat';
+import { copyToClipboard } from '@/lib/copy';
+import { toast } from 'sonner';
 
-// import {client } from '@pcontext/api'
 
 import { client, parseRes } from '@/APIs'
 
-interface DocDetailFromApi {
-	id: number
-	name: string
-	source: "git" | "website"
-	url: string
-	accessCount: number
-	createdAt: string | number
-	updatedAt: string | number
-}
-
-
-
-
-
 
 export default function DocsDetail() {
-	const params = useParams<{ docSlug: string; topic:string; tokens:string }>();
-	const {docSlug:slug , topic, tokens} = params;
+	const params = useParams<{ docSlug: string }>();
+	const {docSlug:slug} = params;
   
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'chat';
@@ -51,33 +40,93 @@ export default function DocsDetail() {
     }, { replace: true });
   };
 
+  const [urlState, setUrlState] = useUrlState({ topic: '', tokens: '10000' });
+  const { topic, tokens } = urlState;
+
   if(!slug){
     return 
   }
 	const docQuery = useQuery({
 		queryKey: ['docs', 'detail', slug],
 		enabled: !!slug,
-		queryFn: async () => parseRes(client.docs[':slug'].$get({ param: { slug } })),
+		queryFn: async () => {
+			const res = client.docs[':slug'].$get({ param: { slug } });
+			return parseRes(res);
+		},
 	});
 	
-	const [searchQuery, setSearchQuery] = useState('');
+	const [searchQuery, setSearchQuery] = useState(topic || '');
+	const [localTokens, setLocalTokens] = useState(tokens);
+
+	useEffect(() => {
+		setSearchQuery(topic || '');
+	}, [topic]);
+
+	useEffect(() => {
+		setLocalTokens(tokens);
+	}, [tokens]);
+
+	const handleTokensBlur = () => {
+		if (localTokens !== tokens) {
+			setUrlState({ tokens: localTokens });
+		}
+	};
+
+	const handleTokensKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') {
+			e.currentTarget.blur();
+		}
+	};
+
 	const llmTextQuery = useQuery({
-		queryKey: ['docs', slug, 'llm.txt', searchQuery],
-		enabled: false,
+		queryKey: ['docs', slug, 'query', topic, tokens],
+		enabled: !!(slug && topic),
 		queryFn: async () => {
-      const res = await client.docs[':slug']['llm.txt'].$get({
+      const res = client.docs[':slug'].query.$get({
         param: { slug },
-        query: { topic, tokens },
+        query: { topic: encodeURIComponent(topic || ''), tokens },
       });
-      return res.text()
+      return parseRes(res);
     },
 	});
 
 
-	const handleViewContext = async () => {
-		if (!slug) return;
-		await llmTextQuery.refetch();
-	};
+	const handleViewContext = () => {
+    setUrlState({ topic: searchQuery });
+    llmTextQuery.refetch();
+  };
+
+  const formattedContent = useMemo(() => {
+    if (!llmTextQuery.data?.snippets) return '暂无内容';
+    return llmTextQuery.data.snippets.map((snippet) => (
+        `source: ${snippet.filePath}\n\n${snippet.content}\n\n---------------------------\n`
+    )).join('');
+  }, [llmTextQuery.data?.snippets]);
+
+  const getLlmUrl = () => {
+    const url = new URL(window.location.origin);
+    url.pathname = `/web/docs/${slug}/llm.txt`;
+    if (topic) url.searchParams.set('topic', topic);
+    if (tokens) url.searchParams.set('tokens', tokens);
+    return url.toString();
+  };
+
+  const handleCopyLink = () => {
+    const url = getLlmUrl();
+    copyToClipboard(url);
+    toast.success('Link copied to clipboard');
+  };
+
+  const handleRawClick = () => {
+    const url = getLlmUrl();
+    window.open(url, '_blank');
+  };
+
+  const handleCopyContent = () => {
+    if (!formattedContent) return;
+    copyToClipboard(formattedContent);
+    toast.success('Content copied to clipboard');
+  };
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -95,7 +144,7 @@ export default function DocsDetail() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 mt-6">
             <TabsList className="bg-white border border-gray-200">
               <TabsTrigger value="context" className="gap-2">
                 <FileText className="w-4 h-4" />
@@ -113,15 +162,7 @@ export default function DocsDetail() {
             </TabsList>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Clock className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm">
-                <ArrowUpDown className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm">
-                <Copy className="w-4 h-4" />
-              </Button>
+              
               <Button variant="outline" size="sm" className="gap-2">
                 <ArrowUpDown className="w-3 h-3" />
                 Latest
@@ -131,61 +172,70 @@ export default function DocsDetail() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="mt-0">
-            <Chat libraryName={slug} />
+            <Chat libraryName={docQuery.data?.name || ''} />
           </TabsContent>
 
           {/* Context Tab */}
           <TabsContent value="context" className="mt-0">
-            <Card className="p-6 bg-white border-2 border-gray-200 rounded-2xl">
-              <div className="mb-6">
+            <div className="mt-6 p-6 bg-white border-2 border-gray-200 rounded-xl">
+              <div className="">
                 <div className="flex gap-3">
-							<Input
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								placeholder="输入你要查询的内容"
-								className="flex-1"
-							/>
-							<Button
-								variant="outline"
-								onClick={handleViewContext}
-								disabled={llmTextQuery.isFetching || !slug}
-							>
-								查看结果
-							</Button>
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="输入你要查询的内容"
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleViewContext}
+                  disabled={llmTextQuery.isFetching || !slug}
+                >
+                  查看结果
+                </Button>
                 </div>
               </div>
-
-              <div className="border rounded-lg p-6 bg-gray-50">
+            </div>
+            <div className="mt-6 p-6 bg-white border-2 border-gray-200 rounded-xl">
+              <div className=" rounded-lg  ">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-gray-600">
-                    Tokens: <span className="font-mono">10000</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    Tokens:
+                    <Input
+                      type="number"
+                      value={localTokens}
+                      onChange={(e) => setLocalTokens(e.target.value)}
+                      onBlur={handleTokensBlur}
+                      onKeyDown={handleTokensKeyDown}
+                      className="w-24 h-8"
+                      min={1}
+                    />
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <FileText className="w-4 h-4" />
-                      Raw
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleRawClick}>
+                      <ExternalLink className="w-4 h-4" />
+                      打开
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyContent}>
                       <Copy className="w-4 h-4" />
-                      Copy
+                      复制内容
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyLink}>
                       <Link2 className="w-4 h-4" />
-                      Link
+                      复制链接
                     </Button>
                   </div>
                 </div>
 
-					<div className="bg-white p-4 rounded border font-mono text-sm overflow-auto max-h-96">
-						<pre className="text-gray-800 whitespace-pre-wrap">
-							{llmTextQuery.isFetching && '加载中...'}
-							{!llmTextQuery.isFetching && llmTextQuery.isError && `错误：${llmTextQuery.error.message}`}
-							{!llmTextQuery.isFetching && !llmTextQuery.isError && llmTextQuery.data && llmTextQuery.data}
-							{!llmTextQuery.isFetching && !llmTextQuery.isError && !llmTextQuery.data && '暂无内容，请在上方输入查询内容并点击“查看结果”。'}
-						</pre>
-					</div>
+                <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96 ">
+                  <pre className="text-gray-800 whitespace-pre-wrap">
+                    {llmTextQuery.isFetching && '加载中...'}
+                    {!llmTextQuery.isFetching && llmTextQuery.isError && `错误：${llmTextQuery.error.message}`}
+                    {!llmTextQuery.isFetching && !llmTextQuery.isError && formattedContent}
+                  </pre>
+                </div>
               </div>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Benchmark Tab */}

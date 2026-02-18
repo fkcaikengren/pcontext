@@ -26,17 +26,18 @@ export const DocListQuerySchema = paginationQuerySchema.extend({
   updatedTo: z.coerce.number().int().optional(),
 })
 
-
-
+export const DocSnippetsQuerySchema = z.object({
+  topic: z.string().optional().default(''),
+  tokens: PositiveIntOptionalSchema.default(10000),
+})
 
 export type CreateDocDTO = z.infer<typeof CreateDocSchema>
 export type DocAddBodyDTO = z.infer<typeof DocAddBodySchema>
 export type DocListQueryDTO = z.infer<typeof DocListQuerySchema>
 
-
 export interface TaskDocDTO {
   id: number
-  slug: string 
+  slug: string
   name: string
   source: string
   url: string

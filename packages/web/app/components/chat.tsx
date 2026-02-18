@@ -75,7 +75,7 @@ export function Chat({ libraryName }: ChatProps) {
       >
         {viewMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <p>Start a conversation about {libraryName}</p>
+            <p>根据 {libraryName} 文档进行对话</p>
           </div>
         )}
         
