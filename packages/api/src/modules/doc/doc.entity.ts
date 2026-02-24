@@ -8,6 +8,8 @@ export interface DocEntity<TDate> {
   url: string
   taskId?: number
   accessCount: number
+  tokens: number
+  snippets: number
   createdAt: TDate
   updatedAt: TDate
 }

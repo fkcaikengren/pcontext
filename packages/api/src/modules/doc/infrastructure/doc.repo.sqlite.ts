@@ -16,6 +16,8 @@ function mapper(row: DocSqlitePO): DocEntity<Date> {
     url: row.url!,
     taskId: row.taskId ?? undefined,
     accessCount: row.accessCount || 0,
+    tokens: row.tokens || 0,
+    snippets: row.snippets || 0,
     createdAt: new Date(row.createdAt as number),
     updatedAt: new Date(row.updatedAt as number),
   }
@@ -106,6 +108,8 @@ export class SqliteDocRepository implements IDocRepository {
       source: input.source,
       url: input.url,
       taskId: input.taskId,
+      tokens: input.tokens,
+      snippets: input.snippets,
     }).returning()
     return mapper(row)
   }

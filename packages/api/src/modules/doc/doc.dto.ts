@@ -11,6 +11,8 @@ export const CreateDocSchema = z.object({
   source: DocSourceEnum,
   url: z.url({ message: 'Invalid URL' }),
   taskId: z.number().int().positive().optional(),
+  tokens: z.number().int().default(0),
+  snippets: z.number().int().default(0),
 })
 
 export const DocAddBodySchema = z.object({

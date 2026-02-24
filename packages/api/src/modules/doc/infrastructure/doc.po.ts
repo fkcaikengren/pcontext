@@ -14,6 +14,8 @@ export const docPg = pgTable('doc', {
   url: varchar('url', { length: 1024 }).notNull(),
   taskId: pgInteger('task_id').references(() => taskPg.id),
   accessCount: pgInteger('access_count').notNull().default(0),
+  tokens: pgInteger('tokens').notNull().default(0),
+  snippets: pgInteger('snippets').notNull().default(0),
   createdAt: bigint('created_at', { mode: 'number' }).notNull().default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   updatedAt: bigint('updated_at', { mode: 'number' }).notNull().default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
 })
@@ -38,6 +40,8 @@ export const docSqlite = sqliteTable('doc', {
   url: text('url').notNull(),
   taskId: sqliteInteger('task_id').references(() => taskSqlite.id),
   accessCount: sqliteInteger('access_count').notNull().default(0),
+  tokens: sqliteInteger('tokens').notNull().default(0),
+  snippets: sqliteInteger('snippets').notNull().default(0),
   createdAt: sqliteInteger('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
   updatedAt: sqliteInteger('updated_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
 })

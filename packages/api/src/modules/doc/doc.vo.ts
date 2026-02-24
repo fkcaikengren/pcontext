@@ -10,4 +10,4 @@ export interface DocSnippetsVO {
   snippets: DocSnippetVO[]
 }
 
-export type DocVO = DocEntity<Date>
+export type DocVO = DocEntity<number>

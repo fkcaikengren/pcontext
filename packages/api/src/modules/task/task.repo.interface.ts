@@ -1,5 +1,5 @@
-import type { TaskLogEntity, TaskEntity, TaskStatus } from './task.entity'
 import type { CreateTaskDTO, CreateTaskLogDTO } from './task.dto'
+import type { TaskEntity, TaskLogEntity, TaskStatus } from './task.entity'
 import type { PaginationVO } from '@/shared/vo'
 
 export interface ITaskRepository {

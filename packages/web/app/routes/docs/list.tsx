@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { client, parseRes } from "@/APIs"
-import type { DocEntity, DocSourceEnumDTO } from '@pcontext/api/client'
+import type { DocVO, DocSourceEnumDTO } from '@pcontext/api/client'
 import {
   flexRender,
   getCoreRowModel,
@@ -26,15 +26,7 @@ import {
 
 type DocSource = "all" | DocSourceEnumDTO
 
-type DocRecord = DocEntity<number | string>
 
-interface DocListResponse {
-  list: DocRecord[]
-  total: number
-  page: number
-  pageSize: number
-  totalPages: number
-}
 
 function normalizeDate(value: string | number): number {
   if (typeof value === "number") return value
@@ -50,23 +42,33 @@ function formatDate(timestamp: number | string): string {
   return date.toLocaleString()
 }
 
+function formatNumber(value: number): string {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K`
+  }
+  return value.toString()
+}
+
 export default function DocsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [name, setName] = useState("")
   const [source, setSource] = useState<"all" | DocSource>("all")
-  const [createdFrom, setCreatedFrom] = useState("")
-  const [createdTo, setCreatedTo] = useState("")
+  const [updatedFrom, setUpdatedFrom] = useState("")
+  const [updatedTo, setUpdatedTo] = useState("")
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "createdAt", desc: true },
+    { id: "updatedAt", desc: true },
   ])
 
   useEffect(() => {
     setPage(1)
-  }, [name, source, createdFrom, createdTo, pageSize])
+  }, [name, source, updatedFrom, updatedTo, pageSize])
 
   const query = useQuery({
-    queryKey: ['docs', 'list', { page, pageSize, name, source, createdFrom, createdTo }],
+    queryKey: ['docs', 'list', { page, pageSize, name, source, updatedFrom, updatedTo }],
     queryFn: async () => {
       const queryParams: any = {
         page: page.toString(),
@@ -75,13 +77,13 @@ export default function DocsPage() {
       const trimmedName = name.trim()
       if (trimmedName) queryParams.name = trimmedName
       if (source !== 'all') queryParams.source = source
-      if (createdFrom) {
-        const t = new Date(createdFrom).getTime()
-        if (!Number.isNaN(t)) queryParams.createdFrom = t.toString()
+      if (updatedFrom) {
+        const t = new Date(updatedFrom).getTime()
+        if (!Number.isNaN(t)) queryParams.updatedFrom = t.toString()
       }
-      if (createdTo) {
-        const t = new Date(createdTo).getTime()
-        if (!Number.isNaN(t)) queryParams.createdTo = t.toString()
+      if (updatedTo) {
+        const t = new Date(updatedTo).getTime()
+        if (!Number.isNaN(t)) queryParams.updatedTo = t.toString()
       }
 
       return parseRes(client.docs.$get({ query: queryParams }))
@@ -95,7 +97,7 @@ export default function DocsPage() {
 
   const rows = data?.list ?? []
 
-  const columns = useMemo<ColumnDef<DocRecord>[]>(
+  const columns = useMemo<ColumnDef<DocVO>[]>(
     () => [
       {
         accessorKey: "name",
@@ -133,12 +135,17 @@ export default function DocsPage() {
         },
       },
       {
-        accessorKey: "accessCount",
-        header: "访问次数",
+        accessorKey: "snippets",
+        header: "片段",
         cell: (info) => <span>{info.getValue<number>()}</span>,
       },
       {
-        accessorKey: "createdAt",
+        accessorKey: "tokens",
+        header: "Token",
+        cell: (info) => <span>{formatNumber(info.getValue<number>())}</span>,
+      },
+      {
+        accessorKey: "updatedAt",
         header: ({ column }) => (
           <button
             type="button"
@@ -147,30 +154,21 @@ export default function DocsPage() {
               column.toggleSorting(column.getIsSorted() === "asc")
             }
           >
-            创建时间
+            更新时间
             <ArrowUpDown className="h-3 w-3" />
           </button>
         ),
         cell: (info) => (
           <span className="text-xs text-muted-foreground">
-            {formatDate(info.row.original.createdAt)}
-          </span>
-        ),
-        sortingFn: (rowA, rowB) => {
-          const a = rowA.original.createdAt
-          const b = rowB.original.createdAt
-          if (a === b) return 0
-          return a < b ? -1 : 1
-        },
-      },
-      {
-        accessorKey: "updatedAt",
-        header: "更新时间",
-        cell: (info) => (
-          <span className="text-xs text-muted-foreground">
             {formatDate(info.row.original.updatedAt)}
           </span>
         ),
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.updatedAt
+          const b = rowB.original.updatedAt
+          if (a === b) return 0
+          return a < b ? -1 : 1
+        },
       },
       {
         id: "actions",
@@ -224,59 +222,31 @@ export default function DocsPage() {
               <div className="flex flex-wrap items-end gap-3">
                 <div className="flex flex-col gap-1">
                   <div className="text-xs text-muted-foreground">来源</div>
-                  <div className="inline-flex rounded-md border bg-muted/40 p-1 text-xs">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={source === "all" ? "default" : "ghost"}
-                      className="h-7 px-3 text-xs"
-                      onClick={() => setSource("all")}
-                    >
-                      全部
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={source === "github" ? "default" : "ghost"}
-                      className="h-7 px-3 text-xs"
-                      onClick={() => setSource("github")}
-                    >
-                      GitHub
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={source === "gitee" ? "default" : "ghost"}
-                      className="h-7 px-3 text-xs"
-                      onClick={() => setSource("gitee")}
-                    >
-                      Gitee
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={source === "website" ? "default" : "ghost"}
-                      className="h-7 px-3 text-xs"
-                      onClick={() => setSource("website")}
-                    >
-                      网站
-                    </Button>
-                  </div>
+                  <select
+                    value={source}
+                    onChange={(event) => setSource(event.target.value as "all" | DocSource)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="all">全部</option>
+                    <option value="github">GitHub</option>
+                    <option value="gitee">Gitee</option>
+                    <option value="website">网站</option>
+                  </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="text-xs text-muted-foreground">创建时间范围</div>
+                  <div className="text-xs text-muted-foreground">更新时间范围</div>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
-                      value={createdFrom}
-                      onChange={(event) => setCreatedFrom(event.target.value)}
+                      value={updatedFrom}
+                      onChange={(event) => setUpdatedFrom(event.target.value)}
                       className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                     />
                     <span className="text-xs text-muted-foreground">至</span>
                     <input
                       type="date"
-                      value={createdTo}
-                      onChange={(event) => setCreatedTo(event.target.value)}
+                      value={updatedTo}
+                      onChange={(event) => setUpdatedTo(event.target.value)}
                       className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                     />
                   </div>

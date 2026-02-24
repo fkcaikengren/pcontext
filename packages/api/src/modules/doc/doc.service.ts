@@ -1,6 +1,8 @@
 import type { DocSourceEnumDTO, TaskDocDTO } from './doc.dto'
 import type { DocEntity } from './doc.entity'
+import type { DocVO } from './doc.vo'
 import type { Task } from '@/modules/task/infrastructure/log-task'
+import type { PaginationVO } from '@/shared/vo'
 import { MetadataMode } from 'llamaindex'
 import { generateGitRepositoryData, generateWebsiteData } from '@/modules/doc/infrastructure/agent/engine/generate'
 import { generateFilters } from '@/modules/doc/infrastructure/agent/engine/query-filter'
@@ -9,28 +11,44 @@ import { getRepoDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
 import { buildDocIdentifiersFromUrl } from '@/shared/utils/url'
 
+function toDocVO(entity: DocEntity<Date>): DocVO {
+  return {
+    ...entity,
+    createdAt: entity.createdAt.getTime(),
+    updatedAt: entity.updatedAt.getTime(),
+  }
+}
+
 export async function listDocs(
   page: number,
   pageSize: number,
   type: 'favorites' | 'trending' | undefined,
   userId?: number,
   filters?: { q?: string, source?: DocSourceEnumDTO, createdFrom?: number, createdTo?: number, updatedFrom?: number, updatedTo?: number },
-) {
+): Promise<PaginationVO<DocVO>> {
   const { docRepo: repo } = getRepoDeps()
 
+  let result: PaginationVO<DocEntity<Date>>
   if (type === 'favorites') {
     if (!userId)
       throw new Error('UserId is required for favorites')
-    return repo.listFavoritesByUser(userId, page, pageSize)
+    result = await repo.listFavoritesByUser(userId, page, pageSize)
+  }
+  else {
+    const sort = type === 'trending' ? 'popularity' : undefined
+    result = await repo.list(page, pageSize, filters, sort)
   }
 
-  const sort = type === 'trending' ? 'popularity' : undefined
-  return repo.list(page, pageSize, filters, sort)
+  return {
+    ...result,
+    list: result.list.map(toDocVO),
+  }
 }
 
-export async function getDocDetail(slug: string) {
+export async function getDocDetail(slug: string): Promise<DocVO | null> {
   const { docRepo } = getRepoDeps()
-  return docRepo.findBySlug(slug)
+  const doc = await docRepo.findBySlug(slug)
+  return doc ? toDocVO(doc) : null
 }
 
 export async function toggleFavorite(userId: number, slug: string, like: boolean) {
@@ -55,9 +73,9 @@ export async function indexWebsiteDoc(task: Task<TaskDocDTO>) {
   }
   const { slug, id: taskId, name: docName, url } = task.extraData || {}
   const { docRepo } = getRepoDeps()
-  await generateWebsiteData({ url, bizDocId: slug }, task)
+  const { tokens, snippets } = await generateWebsiteData({ url, bizDocId: slug }, task)
   task.logInfo(`Indexed website ${slug} successfully`)
-  record = await docRepo.create({ slug, name: docName, source: 'website', url, taskId })
+  record = await docRepo.create({ slug, name: docName, source: 'website', url, taskId, tokens, snippets })
   task.logInfo(`Add document ${slug} with slug ${record.slug} successfully`)
   return record
 }
@@ -69,9 +87,9 @@ export async function indexGitDoc(task: Task<TaskDocDTO>, source: DocSourceEnumD
   }
   const { slug, id: taskId, name: docName, url } = task.extraData || {}
   const { docRepo } = getRepoDeps()
-  await generateGitRepositoryData({ url, bizDocId: slug }, task)
+  const { tokens, snippets } = await generateGitRepositoryData({ url, bizDocId: slug }, task)
   task.logInfo(`Indexed git repository ${slug} successfully`)
-  record = await docRepo.create({ slug, name: docName, source, url, taskId })
+  record = await docRepo.create({ slug, name: docName, source, url, taskId, tokens, snippets })
   task.logInfo(`Add document ${slug} with slug ${record.slug} successfully`)
   return record
 }

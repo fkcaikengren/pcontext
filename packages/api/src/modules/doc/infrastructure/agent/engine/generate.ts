@@ -85,8 +85,12 @@ export async function generateGitRepositoryData({
 
   task.logInfo({ repo, docCount: documents.length }, 'generateGitRepositoryData: vector index created')
 
+  // TODO：后面 改为专业的token计算
+  const tokens = documents.reduce((sum, doc) => sum + doc.getText().length, 0)
+  const snippets = documents.length
+
   // 插入的记录 {text, embedding}
-  return index
+  return { index, tokens, snippets }
 }
 
 export async function generateWebsiteData({
@@ -156,6 +160,10 @@ export async function generateWebsiteData({
 
   task.logInfo({ url, docCount: documents.length }, 'generateWebsiteData: vector index created')
 
+  // TODO：后面 改为专业的token计算
+  const tokens = documents.reduce((sum, doc) => sum + doc.getText().length, 0)
+  const snippets = documents.length
+
   // 插入的记录 {text, embedding}
-  return index
+  return { index, tokens, snippets }
 }

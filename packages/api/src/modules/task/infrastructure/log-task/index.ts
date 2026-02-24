@@ -1,21 +1,22 @@
-import { randomUUID } from 'node:crypto'
-import { logger } from '@/shared/logger'
-import { getRepoDeps } from '@/shared/deps'
+import type { Readable } from 'node:stream'
+import type { CreateTaskLogDTO } from '../../task.dto'
 import type {
-  TaskStatus,
-  TaskLogLevel,
   TaskLogEntry,
   TaskLogEvent,
+  TaskLogLevel,
   TaskLogMessage,
+  TaskStatus,
 } from '../../task.entity'
-import type { CreateTaskLogDTO } from '../../task.dto'
 import type { ITaskRepository } from '../../task.repo.interface'
+import { randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import { PassThrough, Readable } from 'node:stream'
+import { PassThrough } from 'node:stream'
+import { getRepoDeps } from '@/shared/deps'
+import { logger } from '@/shared/logger'
 
 export type TaskLogListener = (event: TaskLogEvent) => void | Promise<void>
 
-export type TaskManagerOptions = {
+export interface TaskManagerOptions {
   taskTTL?: number
   maxLogsPerTask?: number
   taskRepoGetter?: () => ITaskRepository | null
@@ -28,7 +29,8 @@ const DEFAULT_MAX_LOGS_PER_TASK = 100
 function getTaskRepoSafely(): ITaskRepository | null {
   try {
     return getRepoDeps().taskRepo
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -64,7 +66,8 @@ export class Task<TModel> extends EventEmitter {
   }
 
   log(level: TaskLogLevel, data: string | object, msg: string = '') {
-    if (this.status !== 'running') return
+    if (this.status !== 'running')
+      return
 
     const logMsg = typeof data === 'string' ? { message: data } : { message: msg, data }
     const entry: TaskLogEntry = {
@@ -114,7 +117,8 @@ export class Task<TModel> extends EventEmitter {
     if (this.status === 'completed') {
       output.write(COMPLETED_EVENT)
       return output
-    } else if (this.status === 'failed') {
+    }
+    else if (this.status === 'failed') {
       output.write(FAILED_EVENT)
       return output
     }
@@ -147,13 +151,15 @@ export class Task<TModel> extends EventEmitter {
   }
 
   private flushAllLogs() {
-    if (this.logs.length === 0) return
+    if (this.logs.length === 0)
+      return
     const batch = this.logs.splice(0, this.logs.length)
     this.persist(batch)
   }
 
   private persist(entries: TaskLogEntry[]) {
-    if (entries.length === 0) return
+    if (entries.length === 0)
+      return
     this.persistQueue = this.persistQueue
       .then(() => this.persistBatch(entries))
       .catch((err) => {
@@ -170,14 +176,16 @@ export class Task<TModel> extends EventEmitter {
 
     try {
       await repo.createLogs(entries.map(entry => this.toCreateLogDTO(entry)))
-    } catch (err) {
+    }
+    catch (err) {
       this.restoreLogs(entries)
       throw err
     }
   }
 
   private restoreLogs(entries: TaskLogEntry[]) {
-    if (entries.length === 0) return
+    if (entries.length === 0)
+      return
     this.logs = entries.concat(this.logs)
     const overflow = this.logs.length - this.manager.maxLogsPerTask
     if (overflow > 0) {
@@ -206,7 +214,7 @@ export class TaskManager<TModel = Record<string, unknown>> {
   constructor(options?: TaskManagerOptions) {
     this.taskTTL = options?.taskTTL ?? 30 * 60
     this.maxLogsPerTask = options?.maxLogsPerTask ?? DEFAULT_MAX_LOGS_PER_TASK
-    this.taskRepoGetter =  getTaskRepoSafely
+    this.taskRepoGetter = getTaskRepoSafely
   }
 
   createTask(extraData?: TModel): Task<TModel> {
@@ -231,8 +239,6 @@ export class TaskManager<TModel = Record<string, unknown>> {
     return this.taskRepoGetter()
   }
 }
-
-
 
 export type DefaultTaskModel = Record<string, unknown>
 

@@ -1,12 +1,13 @@
-import { desc, eq, sql } from 'drizzle-orm'
-import type { PostgresqlDB } from '@/shared/db/connection'
-import { taskLogPg, taskPg, type TaskPgPO, type TaskLogPgPO } from '@/modules/task/infrastructure/task.po'
-import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
+import type { TaskLogPgPO, TaskPgPO } from '@/modules/task/infrastructure/task.po'
 import type { CreateTaskDTO, CreateTaskLogDTO } from '@/modules/task/task.dto'
+import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
 import type { ITaskRepository } from '@/modules/task/task.repo.interface'
+import type { PostgresqlDB } from '@/shared/db/connection'
+import { desc, eq, sql } from 'drizzle-orm'
+import { taskLogPg, taskPg } from '@/modules/task/infrastructure/task.po'
 
-function mapper(row: TaskPgPO): TaskEntity;
-function mapper(row: TaskLogPgPO): TaskLogEntity;
+function mapper(row: TaskPgPO): TaskEntity
+function mapper(row: TaskLogPgPO): TaskLogEntity
 function mapper(row: TaskPgPO | TaskLogPgPO): TaskEntity | TaskLogEntity {
   if ('type' in row) {
     return {
@@ -72,7 +73,8 @@ export class PgTaskRepository implements ITaskRepository {
   }
 
   async createLogs(inputs: CreateTaskLogDTO[]): Promise<void> {
-    if (inputs.length === 0) return
+    if (inputs.length === 0)
+      return
     await this.db.insert(taskLogPg).values(inputs.map(input => ({
       taskId: input.taskId,
       logLevel: input.logLevel ?? null,

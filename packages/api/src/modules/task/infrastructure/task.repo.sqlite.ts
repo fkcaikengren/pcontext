@@ -1,15 +1,15 @@
-import { desc, eq, sql } from 'drizzle-orm'
-import type { SqliteDB } from '@/shared/db/connection'
-import { taskLogSqlite, taskSqlite } from '@/modules/task/infrastructure/task.po'
-import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
 import type { CreateTaskDTO, CreateTaskLogDTO } from '@/modules/task/task.dto'
+import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
 import type { ITaskRepository } from '@/modules/task/task.repo.interface'
+import type { SqliteDB } from '@/shared/db/connection'
+import { desc, eq, sql } from 'drizzle-orm'
+import { taskLogSqlite, taskSqlite } from '@/modules/task/infrastructure/task.po'
 
-type TaskSqlitePO = typeof taskSqlite.$inferSelect;
-type TaskLogSqlitePO = typeof taskLogSqlite.$inferSelect;
+type TaskSqlitePO = typeof taskSqlite.$inferSelect
+type TaskLogSqlitePO = typeof taskLogSqlite.$inferSelect
 
-function mapper(row: TaskSqlitePO): TaskEntity;
-function mapper(row: TaskLogSqlitePO): TaskLogEntity;
+function mapper(row: TaskSqlitePO): TaskEntity
+function mapper(row: TaskLogSqlitePO): TaskLogEntity
 function mapper(row: TaskSqlitePO | TaskLogSqlitePO): TaskEntity | TaskLogEntity {
   if ('type' in row) {
     return {
@@ -76,7 +76,8 @@ export class SqliteTaskRepository implements ITaskRepository {
   }
 
   async createLogs(inputs: CreateTaskLogDTO[]): Promise<void> {
-    if (inputs.length === 0) return
+    if (inputs.length === 0)
+      return
     await this.db.insert(taskLogSqlite).values(inputs.map(input => ({
       taskId: input.taskId,
       logLevel: input.logLevel ?? null,
