@@ -106,7 +106,7 @@ const PCONTEXT_CONFIG =  {
       index_type: 'HNSW',
     },
     firecrawl: {
-      api_key: 'fc-52fd572a8dd64308a5580ba38bc1e29c',
+      api_key: '',
     }
   }
 } as PContextConfig;

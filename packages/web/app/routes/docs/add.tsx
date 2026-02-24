@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { useNavigate } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { buildInternalUrl } from "@/utils/router"
-import { useSourceState } from "@/hooks/use-url-state"
+import { useUrlState } from "@/hooks/use-url-state"
 import type { DocSourceEnumDTO } from "@/APIs"
 
 type AddDocResponse = {
@@ -18,7 +18,7 @@ type AddDocResponse = {
 
 export default function AddDocsPage() {
   const [url, setUrl] = useState("")
-  const [source, setSource] = useSourceState('github')
+  const [{ source }, setUrlState] = useUrlState({ source: 'github' as DocSourceEnumDTO })
   const [existingDoc, setExistingDoc] = useState<string>("")
   const [error, setError] = useState<string>("")
   const navigate = useNavigate()
@@ -62,7 +62,7 @@ export default function AddDocsPage() {
             <Tabs 
               value={source} 
               onValueChange={(v) => {
-                setSource(v as DocSourceEnumDTO)
+                setUrlState({ source: v as DocSourceEnumDTO })
                 setExistingDoc('')
                 setError('')
               }} 
