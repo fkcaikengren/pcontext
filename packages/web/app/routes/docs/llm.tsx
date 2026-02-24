@@ -5,9 +5,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const searchParams = url.searchParams;
 
-  // Ensure VITE_BASE_URL is available
   const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
-  const apiUrl = `${baseUrl}/api/docs/${docSlug}/llm.txt?${searchParams.toString()}`;
+  const apiUrl = `${baseUrl}/api/docs/${docSlug}/query?${searchParams.toString()}`;
 
   try {
     const headers = new Headers();
@@ -19,24 +18,32 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const response = await fetch(apiUrl, {
       headers,
     });
-    
+
     if (!response.ok) {
-      // Pass through the error status from the backend
       return new Response(response.statusText, { status: response.status });
     }
-    
-    const content = await response.text();
 
-    return new Response(content, {
+    const data = await response.json();
+    const snippets = data.data?.snippets || [];
+    const text = snippets.map((snippet: any) => `source: ${snippet.filePath}
+
+${snippet.content}
+
+---------------------------
+`).join('\n');
+
+    return new Response(text, {
       status: 200,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        // Optional: prevent caching as requested
         "Cache-Control": "no-store",
       },
     });
   } catch (error) {
-    console.error("Error fetching llm.txt:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    console.error("Error fetching query:", error);
+    return new Response("Internal Server Error", { status: 200, headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      }, });
   }
 }

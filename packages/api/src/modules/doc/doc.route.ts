@@ -1,9 +1,9 @@
 import type { DocSnippetsVO, DocVO } from './doc.vo'
-import type { PaginationVO } from '@/client'
+import type { DocListQueryDTO, PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess } from '@/types'
 import { z } from 'zod'
 import { DocAddBodySchema, DocListQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
-import { getDocDetail, incrementDocAccess, indexGitDoc, listDocs, prepareGitDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
+import { getDocDetail, incrementDocAccess, indexGitDoc, indexWebsiteDoc, listDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
 import { docTaskManager } from '@/modules/task/task.service'
 import { createRouter } from '@/shared/create-app'
 
@@ -17,7 +17,7 @@ const router = createRouter()
     '/',
     queryValidator(DocListQuerySchema),
     async (c) => {
-      const { page, pageSize, name, source, type, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query')
+      const { page, pageSize, name, source, type, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query') as DocListQueryDTO
       const userId = getCurrentUserId(c)
 
       try {
@@ -29,14 +29,13 @@ const router = createRouter()
       }
     },
   )
-  .post('/add', jsonValidator(DocAddBodySchema), async (c) => {
-    const { url, docName } = c.req.valid('json')
+  .post('/', jsonValidator(DocAddBodySchema), async (c) => {
+    const { url, source } = c.req.valid('json')
 
-    const prepared = await prepareGitDoc(url, docName)
-    if (prepared.exists) {
-      return c.json(Res409({ slug: prepared.slug, docName: prepared.docName }, '文档已存在') as ApiError, 409)
+    const { slug, name, existing } = await prepareDoc(url, source)
+    if (existing) {
+      return c.json(Res409({ slug, name }, '文档已存在') as ApiError, 409)
     }
-
     const { taskRepo } = getRepoDeps()
     const taskRecord = await taskRepo.create({
       type: 'doc_index',
@@ -44,13 +43,15 @@ const router = createRouter()
 
     const task = docTaskManager.createTask({
       id: taskRecord.id,
-      slug: prepared.slug,
-      name: prepared.docName,
+      slug,
+      name,
       url,
-      source: 'git',
+      source,
     })
 
-    indexGitDoc(task)
+    const processTask = source === 'website' ? indexWebsiteDoc : indexGitDoc
+
+    processTask(task, source)
       .then(() => {
         task.endWithCompleted()
         taskRepo.updateStatus(taskRecord.id, 'completed')
@@ -60,7 +61,7 @@ const router = createRouter()
         taskRepo.updateStatus(taskRecord.id, 'failed', err.message)
       })
 
-    return c.json(Res201({ taskId: task.id, dbTaskId: taskRecord.id, slug: prepared.slug, docName: prepared.docName }, 'success') as ApiSuccess, 201)
+    return c.json(Res201({ taskId: task.id, slug, name }, 'success'), 201)
   })
   .get('/:slug', async (c) => {
     const { slug } = c.req.param()
@@ -83,22 +84,6 @@ const router = createRouter()
     await incrementDocAccess(slug)
     return c.json(Res200({ ok: true }) as ApiSuccess, 200)
   })
-  .get(
-    '/:slug/llm.txt',
-    queryValidator(DocSnippetsQuerySchema),
-    async (c) => {
-      const { slug } = c.req.param()
-      const { topic, tokens } = c.req.valid('query')
-      const { snippets } = await queryDocSnippets(slug, topic, tokens)
-      const text = snippets.map(snippet => `source: ${snippet.filePath}
-
-${snippet.content}
-
----------------------------
-`).join('\n')
-      return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
-    },
-  )
   .get(
     '/:slug/query',
     queryValidator(DocSnippetsQuerySchema),

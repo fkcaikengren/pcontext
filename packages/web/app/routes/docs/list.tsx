@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { client, parseRes } from "@/APIs"
-import type { DocEntity } from '@pcontext/api/client'
+import type { DocEntity, DocSourceEnumDTO } from '@pcontext/api/client'
 import {
   flexRender,
   getCoreRowModel,
@@ -24,7 +24,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table"
 
-type DocSource = "git" | "website"
+type DocSource = "all" | DocSourceEnumDTO
 
 type DocRecord = DocEntity<number | string>
 
@@ -108,8 +108,9 @@ export default function DocsPage() {
         accessorKey: "source",
         header: "来源",
         cell: (info) => {
-          const value = info.getValue<DocSource>()
-          if (value === "git") return "Git 仓库"
+          const value = info.getValue<DocSourceEnumDTO>()
+          if (value === "github") return "GitHub"
+          if (value === "gitee") return "Gitee"
           if (value === "website") return "网站"
           return value
         },
@@ -236,11 +237,20 @@ export default function DocsPage() {
                     <Button
                       type="button"
                       size="sm"
-                      variant={source === "git" ? "default" : "ghost"}
+                      variant={source === "github" ? "default" : "ghost"}
                       className="h-7 px-3 text-xs"
-                      onClick={() => setSource("git")}
+                      onClick={() => setSource("github")}
                     >
-                      Git 仓库
+                      GitHub
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={source === "gitee" ? "default" : "ghost"}
+                      className="h-7 px-3 text-xs"
+                      onClick={() => setSource("gitee")}
+                    >
+                      Gitee
                     </Button>
                     <Button
                       type="button"

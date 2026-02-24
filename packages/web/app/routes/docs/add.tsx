@@ -1,54 +1,51 @@
-import {  useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { alovaInstance } from "@/lib/alova"
+import { client, parseRes, HttpError } from "@/APIs"
 import { toast } from "sonner"
-import { useNavigate } from "react-router-dom"
-import { HttpError } from "@/lib/errors"
+import { useNavigate } from "react-router"
+import { useMutation } from "@tanstack/react-query"
+import { buildInternalUrl } from "@/utils/router"
+import { useSourceState } from "@/hooks/use-url-state"
+import type { DocSourceEnumDTO } from "@/APIs"
+
+type AddDocResponse = {
+  name: string
+  taskId: string
+}
 
 export default function AddDocsPage() {
-  const [gitUrl, setGitUrl] = useState("")
-  const [websiteUrl, setWebsiteUrl] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [gitError, setGitError] = useState("")
-  const [websiteError, setWebsiteError] = useState("")
+  const [url, setUrl] = useState("")
+  const [source, setSource] = useSourceState('github')
+  const [existingDoc, setExistingDoc] = useState<string>("")
+  const [error, setError] = useState<string>("")
   const navigate = useNavigate()
-  
-  async function handleSubmit(source: "git" | "website") {
-    const map: Record<string, string> = {
-      git: gitUrl,
-      website: websiteUrl,
-    }
-    const url = (map[source] || "").trim()
-    if (!url) return
 
-    if (source === "git") {
-      setGitError("")
-    } else {
-      setWebsiteError("")
-    }
-
-    setSubmitting(true)
-    try {
-      const method = alovaInstance.Post<{ taskId: string }>("/docs/add", { url })
-      const res = await method.send()
-      toast.success("添加成功，开始索引文档")
-      navigate(`/tasks/${res.taskId}`)
-    } catch (err: any) {
-      if (err instanceof HttpError && err.code === 409) {
-        if (source === "git") {
-          setGitError(`文档 ${err.data.slug} 已存在`)
-        } else {
-          setWebsiteError(`文档 ${err.data.slug} 已存在`)
-        }
+  const addDocMutation = useMutation({
+    mutationFn: async ({ url, source }: { url: string; source: DocSourceEnumDTO }) => {
+      const res = client.docs.$post({ json: { url, source } })
+      return parseRes(res)
+    },
+    onSuccess: (data: AddDocResponse) => {
+      toast.success(`${data.name} 添加成功，开始索引文档`)
+      navigate(`/tasks/${data.taskId}`)
+    },
+    onError: (error: HttpError) => {
+      if (error.code === 409 ) {
+        setExistingDoc(buildInternalUrl(`/docs/${error.data?.slug}`))
       } else {
-        toast.error("系统异常，请稍后重试")
+        setError(error.message || "系统异常，请稍后重试")
       }
-    } finally {
-      setSubmitting(false)
-    }
+    },
+  })
+
+  function handleSubmit() {
+    if (!url.trim()) return
+    setExistingDoc('')
+    setError('')
+    addDocMutation.mutate({ url, source })
   }
 
   return (
@@ -58,41 +55,67 @@ export default function AddDocsPage() {
           <CardHeader>
             <CardTitle>添加文档</CardTitle>
             <CardDescription>
-              支持从 Git 仓库或网站地址创建文档索引
+              支持从 GitHub、Gitee 仓库或网站地址创建文档索引
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="git" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="git">Git 仓库</TabsTrigger>
+            <Tabs 
+              value={source} 
+              onValueChange={(v) => {
+                setSource(v as DocSourceEnumDTO)
+                setExistingDoc('')
+                setError('')
+              }} 
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="github">GitHub</TabsTrigger>
+                <TabsTrigger value="gitee">Gitee</TabsTrigger>
                 <TabsTrigger value="website">Website</TabsTrigger>
               </TabsList>
-              <TabsContent value="git">
+              <TabsContent value="github">
                 <DocsAddTabContent
-                  placeholder="https://github.com/username/repo 或其他 Git 仓库地址"
-                  description="支持 Github/Gitlab/Gitee 等，使用仓库地址或 git 地址（需要能支持 git clone）"
-                  value={gitUrl}
+                  placeholder="https://github.com/username/repo"
+                  description="使用 GitHub 仓库地址或 git 地址（需要能支持 git clone）"
+                  value={url}
                   onChange={(value) => {
-                    setGitUrl(value)
-                    if (gitError) setGitError("")
+                    setUrl(value)
+                    setExistingDoc('')
                   }}
-                  onSubmit={() => handleSubmit("git")}
-                  submitting={submitting}
-                  error={gitError}
+                  onSubmit={handleSubmit}
+                  submitting={addDocMutation.isPending}
+                  existingDoc={existingDoc}
+                  error={error}
+                />
+              </TabsContent>
+              <TabsContent value="gitee">
+                <DocsAddTabContent
+                  placeholder="https://gitee.com/username/repo"
+                  description="使用 Gitee 仓库地址或 git 地址（需要能支持 git clone）"
+                  value={url}
+                  onChange={(value) => {
+                    setUrl(value)
+                    setExistingDoc('')
+                  }}
+                  onSubmit={handleSubmit}
+                  submitting={addDocMutation.isPending}
+                  existingDoc={existingDoc}
+                  error={error}
                 />
               </TabsContent>
               <TabsContent value="website">
                 <DocsAddTabContent
                   placeholder="Website URL"
-                  description="输入网站地址"
-                  value={websiteUrl}
+                  description="URL 必须可公开访问，并指向官方文档。支持Base URL，如 https://example.com/docs 仅从 /docs 开始索引，这有利于爬虫爬取指定文档部分，避免索引整个网站。"
+                  value={url}
                   onChange={(value) => {
-                    setWebsiteUrl(value)
-                    if (websiteError) setWebsiteError("")
+                    setUrl(value)
+                    setExistingDoc('')
                   }}
-                  onSubmit={() => handleSubmit("website")}
-                  submitting={submitting}
-                  error={websiteError}
+                  onSubmit={handleSubmit}
+                  submitting={addDocMutation.isPending}
+                  existingDoc={existingDoc}
+                  error={error}
                 />
               </TabsContent>
             </Tabs>
@@ -123,10 +146,11 @@ type DocsAddTabContentProps = {
   onChange: (value: string) => void
   onSubmit: () => void
   submitting: boolean
-  error?: string
+  existingDoc: string
+  error: string
 }
 
-function DocsAddTabContent({ placeholder, description, value, onChange, onSubmit, submitting, error }: DocsAddTabContentProps) {
+function DocsAddTabContent({ placeholder, description, value, onChange, onSubmit, submitting, existingDoc, error }: DocsAddTabContentProps) {
   return (
     <div className="grid gap-4 py-4">
       <Input
@@ -134,37 +158,29 @@ function DocsAddTabContent({ placeholder, description, value, onChange, onSubmit
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      
       <p className="text-sm text-muted-foreground">{description}</p>
       <div className="flex">
         <Button type="button" onClick={onSubmit} disabled={submitting || !value.trim()}>
           {submitting ? "提交中..." : "提交"}
         </Button>
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+      
+      {existingDoc && (
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          <span>文档</span>
+          <a href={existingDoc} className="underline hover:text-destructive/80">
+            {existingDoc}
+          </a>
+          <span>已存在！</span>
+        </div>
+      )}
     </div>
   )
-}
-
-function deriveLibraryName(url: string, source: "git" | "website") {
-  try {
-    const u = new URL(url)
-    if (source === "website") {
-      const host = u.hostname.replace(/\./g, "-")
-      const segments = u.pathname.split("/").filter(Boolean)
-      const first = segments[0] || ""
-      return first ? `${host}-${first}` : host
-    }
-    const segments = u.pathname.split("/").filter(Boolean)
-    if (segments.length >= 2) {
-      const owner = segments[0]
-      let repo = segments[1]
-      if (repo.endsWith(".git")) repo = repo.slice(0, -4)
-      return `${owner}/${repo}`
-    }
-    return u.hostname
-  } catch {
-    return url
-  }
 }

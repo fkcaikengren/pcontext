@@ -4,7 +4,7 @@ import { integer as sqliteInteger, sqliteTable, text } from 'drizzle-orm/sqlite-
 import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 
-export const docSourceEnum = pgEnum('doc_source', ['git', 'website'])
+export const docSourceEnum = pgEnum('doc_source', ['github', 'gitee', 'website'])
 
 export const docPg = pgTable('doc', {
   id: serial('id').primaryKey(),

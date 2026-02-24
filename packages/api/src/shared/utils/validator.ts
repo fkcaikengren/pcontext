@@ -9,7 +9,7 @@ export function jsonValidator(schema: Parameters<ZValidator>[1]) {
     (result, c) => {
       if (!result.success) {
         return c.json(
-          { code: 400, errMsg: 'Validation failed', data: result.error.issues },
+          { code: 400, message: 'Validation failed', data: result.error.issues },
           400,
         )
       }
@@ -24,7 +24,7 @@ export function queryValidator(schema: Parameters<ZValidator>[1]) {
     (result, c) => {
       if (!result.success) {
         return c.json(
-          { code: 400, errMsg: 'Validation failed', data: result.error.issues },
+          { code: 400, message: 'Validation failed', data: result.error.issues },
           400,
         )
       }

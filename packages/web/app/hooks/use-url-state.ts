@@ -39,3 +39,31 @@ export function useUrlState<T extends Record<string, string>>(initialState: T) {
 
   return [state, setState] as const;
 }
+
+/**
+ * A custom hook to manage source type in the URL query parameters.
+ * Supports 'github', 'gitee', and 'website' source types.
+ * 
+ * @param defaultSource - The default source type (defaults to 'github').
+ * @returns [source, setSource] - The current source and a function to update it.
+ */
+export function useSourceState(defaultSource: 'github' | 'gitee' | 'website' = 'github') {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const source = useMemo(() => {
+    const sourceParam = searchParams.get('source');
+    if (sourceParam === 'github' || sourceParam === 'gitee' || sourceParam === 'website') {
+      return sourceParam;
+    }
+    return defaultSource;
+  }, [searchParams, defaultSource]);
+
+  const setSource = useCallback((newSource: 'github' | 'gitee' | 'website') => {
+    setSearchParams(prev => {
+      prev.set('source', newSource);
+      return prev;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  return [source, setSource] as const;
+}

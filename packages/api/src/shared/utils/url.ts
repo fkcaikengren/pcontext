@@ -1,19 +1,22 @@
+import type { DocSourceEnumDTO } from '@/modules/doc/doc.dto'
 import gitUrlParse from 'git-url-parse'
 
-export type DocIdentifier = {
+export interface DocIdentifier {
   slug: string
   docName: string
 }
 
 function getDomainWithoutTld(hostname: string) {
   const parts = hostname.split('.').filter(Boolean)
-  if (parts.length >= 2) return parts[parts.length - 2]
+  if (parts.length >= 2)
+    return parts[parts.length - 2]
   return parts[0] || ''
 }
 
 function getHostPartsWithoutTld(hostname: string) {
   const parts = hostname.split('.').filter(Boolean)
-  if (parts.length <= 1) return parts
+  if (parts.length <= 1)
+    return parts
   return parts.slice(0, parts.length - 1)
 }
 
@@ -33,13 +36,20 @@ export function buildWebsiteDocIdentifier(rawUrl: string): DocIdentifier {
   const parsed = new URL(rawUrl)
   const hostParts = getHostPartsWithoutTld(parsed.hostname)
   const hostSlugPart = hostParts.join('_')
-  const pathSegments = parsed.pathname.split('/').filter(Boolean)
+  const pathSegments = parsed.pathname.split('/').filter(Boolean).slice(0, 2)
   const slug = [hostSlugPart, ...pathSegments].filter(Boolean).join('_')
   const secondLevel = hostParts.length >= 1 ? hostParts[hostParts.length - 1] : ''
   const docName = [secondLevel, ...pathSegments].filter(Boolean).join(' ')
   return { slug, docName }
 }
 
-export function buildDocIdentifiersFromUrl(url: string, source: 'git' | 'website'): DocIdentifier {
-  return source === 'git' ? buildGitDocIdentifier(url) : buildWebsiteDocIdentifier(url)
+export function buildDocIdentifiersFromUrl(url: string, source: DocSourceEnumDTO): DocIdentifier {
+  return source === 'website' ? buildWebsiteDocIdentifier(url) : buildGitDocIdentifier(url)
+}
+
+// 定义返回的数据结构
+export interface DenoisedPage {
+  url: string
+  title: string
+  markdown: string
 }

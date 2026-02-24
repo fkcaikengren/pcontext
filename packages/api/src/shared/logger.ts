@@ -4,7 +4,7 @@ import AppSettings from '@/settings'
 
 const { config } = AppSettings
 
-type TraceContext = {
+interface TraceContext {
   traceId: string
   taskId?: string
 }
@@ -28,9 +28,11 @@ export const logger = pino({
   redact: config.log.redact,
   mixin() {
     const store = traceStorage.getStore()
-    if (!store) return {}
+    if (!store)
+      return {}
     const base: Record<string, string> = {}
-    if (store.traceId) base.traceId = store.traceId
+    if (store.traceId)
+      base.traceId = store.traceId
     return base
   },
 }, transport)

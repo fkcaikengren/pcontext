@@ -14,5 +14,3 @@ export * from '@/modules/user/user.dto'
 export function createClient(...args: Parameters<typeof hc>) {
   return hc<AppType>(...args)
 }
-
-export const client = hc<AppType>('localhost:3000/api')

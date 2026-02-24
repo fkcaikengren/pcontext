@@ -1,10 +1,10 @@
-export type ApiSuccess<T = unknown> = {
+export interface ApiSuccess<T = unknown> {
   code: number
   data: T
   message: string
 }
 
-export type ApiError<T = unknown> = {
+export interface ApiError<T = unknown> {
   code: number
   data: T | null
   message: string

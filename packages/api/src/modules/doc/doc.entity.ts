@@ -1,10 +1,10 @@
-export type DocSource = 'git' | 'website'
+import type { DocSourceEnumDTO } from '@/modules/doc/doc.dto'
 
 export interface DocEntity<TDate> {
   id: number
   slug: string
   name: string
-  source: DocSource
+  source: DocSourceEnumDTO
   url: string
   taskId?: number
   accessCount: number

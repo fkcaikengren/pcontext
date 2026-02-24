@@ -1,10 +1,11 @@
-import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
+import type { DocPgPO } from './doc.po.ts'
+import type { CreateDocDTO, DocSourceEnumDTO } from '@/modules/doc/doc.dto'
+import type { DocEntity } from '@/modules/doc/doc.entity'
+import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import type { PostgresqlDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import type { DocEntity } from '@/modules/doc/doc.entity'
-import type { CreateDocDTO } from '@/modules/doc/doc.dto'
-import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
-import { docPg, type DocPgPO, favoritePg } from './doc.po.ts'
+import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
+import { docPg, favoritePg } from './doc.po.ts'
 
 function mapper(row: DocPgPO): DocEntity<Date> {
   return {
@@ -27,7 +28,7 @@ export class PgDocRepository implements IDocRepository {
   async list(
     page: number,
     pageSize: number,
-    filters?: { q?: string; source?: 'git' | 'website'; createdFrom?: number; createdTo?: number; updatedFrom?: number; updatedTo?: number },
+    filters?: { q?: string, source?: DocSourceEnumDTO, createdFrom?: number, createdTo?: number, updatedFrom?: number, updatedTo?: number },
     sort?: 'popularity' | 'createdAt' | 'updatedAt',
   ): Promise<PaginationVO<DocEntity<Date>>> {
     const offset = (page - 1) * pageSize
@@ -36,20 +37,26 @@ export class PgDocRepository implements IDocRepository {
       ? undefined
       : (fields) => {
           const conditions = []
-          if (filters.q) conditions.push(like(fields.name, `%${filters.q}%`))
-          if (filters.source) conditions.push(eq(fields.source, filters.source))
-          if (filters.createdFrom) conditions.push(gte(fields.createdAt, filters.createdFrom))
-          if (filters.createdTo) conditions.push(lte(fields.createdAt, filters.createdTo))
-          if (filters.updatedFrom) conditions.push(gte(fields.updatedAt, filters.updatedFrom))
-          if (filters.updatedTo) conditions.push(lte(fields.updatedAt, filters.updatedTo))
+          if (filters.q)
+            conditions.push(like(fields.name, `%${filters.q}%`))
+          if (filters.source)
+            conditions.push(eq(fields.source, filters.source))
+          if (filters.createdFrom)
+            conditions.push(gte(fields.createdAt, filters.createdFrom))
+          if (filters.createdTo)
+            conditions.push(lte(fields.createdAt, filters.createdTo))
+          if (filters.updatedFrom)
+            conditions.push(gte(fields.updatedAt, filters.updatedFrom))
+          if (filters.updatedTo)
+            conditions.push(lte(fields.updatedAt, filters.updatedTo))
           return conditions.length ? and(...conditions) : undefined
         }
 
     const orderBy = sort === 'popularity'
       ? (fields, { desc }) => [desc(fields.accessCount)]
       : sort === 'createdAt'
-          ? (fields, { desc }) => [desc(fields.createdAt)]
-          : (fields, { desc }) => [desc(fields.updatedAt)]
+        ? (fields, { desc }) => [desc(fields.createdAt)]
+        : (fields, { desc }) => [desc(fields.updatedAt)]
 
     const rows = await this.db.query.doc.findMany({ limit: pageSize, offset, where, orderBy })
     const totalRows = await this.db.query.doc.findMany({ where })
@@ -72,7 +79,7 @@ export class PgDocRepository implements IDocRepository {
     const ids = favoriteRows.map(f => f.docId)
 
     const rows = await this.db.query.doc.findMany({
-      where: ids.length ? (fields) => inArray(fields.id, ids) : undefined,
+      where: ids.length ? fields => inArray(fields.id, ids) : undefined,
     })
     const list = rows.map(mapper)
 
@@ -112,11 +119,13 @@ export class PgDocRepository implements IDocRepository {
   async toggleFavorite(userId: number, docIdValue: number, like: boolean): Promise<boolean> {
     const has = await this.db.query.favorite.findFirst({ where: and(eq(favoritePg.userId, userId), eq(favoritePg.docId, docIdValue)) })
     if (like) {
-      if (has) return true
+      if (has)
+        return true
       await this.db.insert(favoritePg).values({ userId, docId: docIdValue })
       return true
     }
-    if (!has) return false
+    if (!has)
+      return false
     await this.db.delete(favoritePg).where(and(eq(favoritePg.userId, userId), eq(favoritePg.docId, docIdValue)))
     return false
   }

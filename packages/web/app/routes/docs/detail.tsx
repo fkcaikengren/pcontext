@@ -29,7 +29,7 @@ import { client, parseRes } from '@/APIs'
 export default function DocsDetail() {
 	const params = useParams<{ docSlug: string }>();
 	const {docSlug:slug} = params;
-  
+
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'chat';
   

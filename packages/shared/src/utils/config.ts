@@ -45,6 +45,9 @@ const PContextConfigSchema = z.object({
       metric_type: z.string().min(1),
       index_type: z.string().min(1),
     }),
+    firecrawl: z.object({
+      api_key: z.string().min(1),
+    }),
   }),
 
 }).strict()
@@ -102,6 +105,9 @@ const PCONTEXT_CONFIG =  {
       metric_type: 'COSINE',
       index_type: 'HNSW',
     },
+    firecrawl: {
+      api_key: 'fc-52fd572a8dd64308a5580ba38bc1e29c',
+    }
   }
 } as PContextConfig;
 
