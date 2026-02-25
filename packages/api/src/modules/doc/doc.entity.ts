@@ -6,7 +6,7 @@ export interface DocEntity<TDate> {
   name: string
   source: DocSourceEnumDTO
   url: string
-  taskId?: number
+  taskId?: string
   accessCount: number
   tokens: number
   snippets: number

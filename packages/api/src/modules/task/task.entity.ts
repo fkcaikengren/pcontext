@@ -4,7 +4,7 @@ export type TaskStatus = 'running' | 'completed' | 'failed'
 
 export type TaskLogLevel = Level
 
-export type TaskLogMessage = {
+export interface TaskLogMessage {
   message: string
   data?: unknown
 }
@@ -14,7 +14,7 @@ export type TaskLogEntry = TaskLogMessage & {
   level: TaskLogLevel
 }
 
-export type TaskLogEntity = {
+export interface TaskLogEntity {
   id: number
   taskId: string
   logLevel: TaskLogLevel | null
@@ -24,34 +24,24 @@ export type TaskLogEntity = {
   traceId?: string | null
 }
 
-export type TaskLogEvent =
+export type TaskLogEvent
+  = | {
+    type: 'log'
+    entry: TaskLogEntry
+  }
   | {
-      type: 'log'
-      entry: TaskLogEntry
-    }
-  | {
-      type: 'end'
-      status: Exclude<TaskStatus, 'running'>
-    }
-
-export interface LogTaskEntity<TExtraData> {
-  id: string
-  status: TaskStatus
-  createdAt: number
-  updatedAt: number
-  extraData?: TExtraData
-  logs: TaskLogEntry[]
-  logsLength: number
-}
+    type: 'end'
+    status: Exclude<TaskStatus, 'running'>
+  }
 
 export type TaskType = string
 
-export type TaskEntity = {
-  id: number
+export interface TaskEntity<T extends Record<string, any> = any> {
+  id: string
   type: TaskType
   status: TaskStatus
   message: string | null
-  extraData?: unknown | null
+  extraData: T
   logsLength: number
   createdAt: number
   updatedAt: number

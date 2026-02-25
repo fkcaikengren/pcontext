@@ -1,10 +1,10 @@
 import type { DocSourceEnumDTO, TaskDocDTO } from './doc.dto'
 import type { DocEntity } from './doc.entity'
 import type { DocVO } from './doc.vo'
-import type { Task } from '@/modules/task/infrastructure/log-task'
+
 import type { PaginationVO } from '@/shared/vo'
 import { MetadataMode } from 'llamaindex'
-import { generateGitRepositoryData, generateWebsiteData } from '@/modules/doc/infrastructure/agent/engine/generate'
+
 import { generateFilters } from '@/modules/doc/infrastructure/agent/engine/query-filter'
 import { getIndex } from '@/modules/doc/infrastructure/agent/storage'
 import { getRepoDeps } from '@/shared/deps'
@@ -64,34 +64,6 @@ export async function prepareDoc(url: string, source: DocSourceEnumDTO) {
   const { docRepo } = getRepoDeps()
   const targetDoc = await docRepo.findBySlug(identifiers.slug)
   return { slug: identifiers.slug, name: identifiers.docName, existing: !!targetDoc }
-}
-
-export async function indexWebsiteDoc(task: Task<TaskDocDTO>) {
-  let record: DocEntity<Date> | null = null
-  if (!task.extraData || !task.extraData.id) {
-    throw new Error('task 必须包含 extraData')
-  }
-  const { slug, id: taskId, name: docName, url } = task.extraData || {}
-  const { docRepo } = getRepoDeps()
-  const { tokens, snippets } = await generateWebsiteData({ url, bizDocId: slug }, task)
-  task.logInfo(`Indexed website ${slug} successfully`)
-  record = await docRepo.create({ slug, name: docName, source: 'website', url, taskId, tokens, snippets })
-  task.logInfo(`Add document ${slug} with slug ${record.slug} successfully`)
-  return record
-}
-
-export async function indexGitDoc(task: Task<TaskDocDTO>, source: DocSourceEnumDTO) {
-  let record: DocEntity<Date> | null = null
-  if (!task.extraData || !task.extraData.id) {
-    throw new Error('task 必须包含 extraData')
-  }
-  const { slug, id: taskId, name: docName, url } = task.extraData || {}
-  const { docRepo } = getRepoDeps()
-  const { tokens, snippets } = await generateGitRepositoryData({ url, bizDocId: slug }, task)
-  task.logInfo(`Indexed git repository ${slug} successfully`)
-  record = await docRepo.create({ slug, name: docName, source, url, taskId, tokens, snippets })
-  task.logInfo(`Add document ${slug} with slug ${record.slug} successfully`)
-  return record
 }
 
 export async function incrementDocAccess(slug: string) {

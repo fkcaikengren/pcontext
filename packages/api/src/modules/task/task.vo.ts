@@ -1,4 +1,4 @@
-import type { TaskStatus, TaskLogEntry } from './task.entity'
+import type { TaskLogEntry, TaskStatus } from './task.entity'
 
 export interface TaskVO<TExtraData = unknown> {
   id: string

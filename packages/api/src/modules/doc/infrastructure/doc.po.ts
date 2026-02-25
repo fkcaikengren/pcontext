@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { bigint, pgEnum, integer as pgInteger, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
+import { bigint, pgEnum, integer as pgInteger, pgTable, serial, uuid, varchar } from 'drizzle-orm/pg-core'
 import { integer as sqliteInteger, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
@@ -12,7 +12,7 @@ export const docPg = pgTable('doc', {
   name: varchar('name', { length: 256 }).notNull(),
   source: docSourceEnum('source').notNull(),
   url: varchar('url', { length: 1024 }).notNull(),
-  taskId: pgInteger('task_id').references(() => taskPg.id),
+  taskId: uuid('task_id').references(() => taskPg.id),
   accessCount: pgInteger('access_count').notNull().default(0),
   tokens: pgInteger('tokens').notNull().default(0),
   snippets: pgInteger('snippets').notNull().default(0),
@@ -38,7 +38,7 @@ export const docSqlite = sqliteTable('doc', {
   name: text('name').notNull(),
   source: text('source').notNull(),
   url: text('url').notNull(),
-  taskId: sqliteInteger('task_id').references(() => taskSqlite.id),
+  taskId: text('task_id').references(() => taskSqlite.id),
   accessCount: sqliteInteger('access_count').notNull().default(0),
   tokens: sqliteInteger('tokens').notNull().default(0),
   snippets: sqliteInteger('snippets').notNull().default(0),

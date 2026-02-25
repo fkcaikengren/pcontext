@@ -1,12 +1,13 @@
-import { Pool } from 'pg'
-import { drizzle as drizzlePg, type NodePgDatabase } from 'drizzle-orm/node-postgres'
+import type { LibSQLDatabase } from 'drizzle-orm/libsql/driver-core'
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { createClient } from '@libsql/client'
 import { drizzle as drizzleSqlite } from 'drizzle-orm/libsql/node'
-import type { LibSQLDatabase } from 'drizzle-orm/libsql/driver-core'
-import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
+import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 import { docPg, docSqlite, favoritePg, favoriteSqlite } from '@/modules/doc/infrastructure/doc.po'
-import { casbinRulePg, casbinRuleSqlite } from '@/modules/user/infrastructure/casbin-rule.po'
 import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
+import { casbinRulePg, casbinRuleSqlite } from '@/modules/user/infrastructure/casbin-rule.po'
+import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 import AppSettings from '@/settings'
 
 const pgSchema = { user: userPg, doc: docPg, favorite: favoritePg, casbinRule: casbinRulePg, task: taskPg }
@@ -23,7 +24,8 @@ export type PostgresqlDB = NodePgDatabase<typeof pgSchema>
 export type SqliteDB = LibSQLDatabase<typeof sqliteSchema>
 
 export async function initDb() {
-  if (initialized) return
+  if (initialized)
+    return
   provider = config.database.provider
   const dbUrl = config.database.url
   if (provider === 'postgresql') {

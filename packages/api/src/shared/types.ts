@@ -1,6 +1,7 @@
 import type { Logger } from 'pino'
+import type { TaskService } from '@/modules/task/task.service'
 
-export type AppBindings = {
+export interface AppBindings {
   Variables: {
     requestId?: string
     logger?: Logger
@@ -10,5 +11,6 @@ export type AppBindings = {
       username: string
       role: 'admin' | 'user' | null
     }
+    taskService: TaskService
   }
 }

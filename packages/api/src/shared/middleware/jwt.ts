@@ -23,10 +23,12 @@ export function jwt(): MiddlewareHandler {
             c.set('user', { id, username, role })
           }
         }
-      } catch {
+      }
+      catch {
         c.set('user', null)
       }
-    } else {
+    }
+    else {
       c.set('user', null)
     }
 

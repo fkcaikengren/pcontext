@@ -1,5 +1,5 @@
 import type { TaskDocDTO } from '@/modules/doc/doc.dto'
-import type { Task } from '@/modules/task/infrastructure/log-task'
+import type { TaskContext } from '@/modules/task/infrastructure/mq/task-context'
 import process from 'node:process'
 import { Document, storageContextFromDefaults, VectorStoreIndex } from 'llamaindex'
 import AppSettings from '@/settings'
@@ -17,7 +17,7 @@ export interface GenerateOptions {
 export async function generateGitRepositoryData({
   url,
   bizDocId,
-}: GenerateOptions, task: Task<TaskDocDTO>) {
+}: GenerateOptions, task: TaskContext<TaskDocDTO>) {
   task.logInfo({ url, bizDocId }, 'generateGitRepositoryData: start')
 
   // 处理url为git格式
@@ -96,7 +96,7 @@ export async function generateGitRepositoryData({
 export async function generateWebsiteData({
   url,
   bizDocId,
-}: GenerateOptions, task: Task<TaskDocDTO>) {
+}: GenerateOptions, task: TaskContext<TaskDocDTO>) {
   task.logInfo({ url, bizDocId }, 'generateWebsiteData: start')
 
   const apiKey = config.agent.firecrawl?.api_key

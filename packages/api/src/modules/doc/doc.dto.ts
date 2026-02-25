@@ -10,7 +10,7 @@ export const CreateDocSchema = z.object({
   name: z.string().min(1).max(256),
   source: DocSourceEnum,
   url: z.url({ message: 'Invalid URL' }),
-  taskId: z.number().int().positive().optional(),
+  taskId: z.uuid().optional(),
   tokens: z.number().int().default(0),
   snippets: z.number().int().default(0),
 })
@@ -42,7 +42,7 @@ export type DocListQueryDTO = z.infer<typeof DocListQuerySchema>
 export type DocSourceEnumDTO = z.infer<typeof DocSourceEnum>
 
 export interface TaskDocDTO {
-  id: number
+  id: string
   slug: string
   name: string
   source: DocSourceEnumDTO

@@ -4,8 +4,11 @@ import type { PaginationVO } from '@/shared/vo'
 
 export interface ITaskRepository {
   create: (input: CreateTaskDTO) => Promise<TaskEntity>
-  findById: (id: number) => Promise<TaskEntity | null>
-  updateStatus: (id: number, status: TaskStatus, message?: string | null) => Promise<TaskEntity | null>
+  findById: (id: string) => Promise<TaskEntity | null>
+  updateStatus: (id: string, status: TaskStatus, message?: string | null) => Promise<TaskEntity | null>
   createLog: (input: CreateTaskLogDTO) => Promise<TaskLogEntity>
   createLogs: (inputs: CreateTaskLogDTO[]) => Promise<void>
+  findLogsByTaskId: (taskId: string) => Promise<TaskLogEntity[]> // TODO: 分页查询
+  findRecentLogsByTaskId: (taskId: string, limit: number) => Promise<TaskLogEntity[]>
+  findRecentTasks: (limit: number) => Promise<TaskEntity[]>
 }

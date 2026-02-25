@@ -1,9 +1,9 @@
 import { sql } from 'drizzle-orm'
-import { bigint, index as pgIndex, pgTable, serial, varchar, bigserial, uuid, text as pgText, timestamp, jsonb, integer as pgInteger } from 'drizzle-orm/pg-core'
-import { index as sqliteIndex, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { bigint, bigserial, jsonb, index as pgIndex, integer as pgInteger, pgTable, text as pgText, serial, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { integer, index as sqliteIndex, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const taskPg = pgTable('task', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v7()`),
   type: varchar('type', { length: 64 }).notNull(),
   status: varchar('status', { length: 16 }).notNull().default('running'),
   message: varchar('message', { length: 1024 }),
@@ -11,9 +11,9 @@ export const taskPg = pgTable('task', {
   logsLength: pgInteger('logs_length').notNull().default(0),
   createdAt: bigint('created_at', { mode: 'number' }).notNull().default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   updatedAt: bigint('updated_at', { mode: 'number' }).notNull().default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
-}, t => ({
-  // resourceIdIdx: pgIndex('task_resource_id_idx').on(t.resourceId),
-  // typeResourceIdIdx: pgIndex('task_type_resource_id_idx').on(t.type, t.resourceId),
+}, _t => ({
+  // resourceIdIdx: pgIndex('task_resource_id_idx').on(_t.resourceId),
+  // typeResourceIdIdx: pgIndex('task_type_resource_id_idx').on(_t.type, _t.resourceId),
 }))
 
 export type TaskPgPO = typeof taskPg.$inferSelect
@@ -35,7 +35,7 @@ export type TaskLogPgPO = typeof taskLogPg.$inferSelect
 export type InsertTaskLogPgPO = typeof taskLogPg.$inferInsert
 
 export const taskSqlite = sqliteTable('task', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: text('id').primaryKey(),
   type: text('type').notNull(),
   status: text('status').notNull().default('running'),
   message: text('message'),
@@ -43,9 +43,9 @@ export const taskSqlite = sqliteTable('task', {
   logsLength: integer('logs_length').notNull().default(0),
   createdAt: integer('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
   updatedAt: integer('updated_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
-}, t => ({
-  // resourceIdIdx: sqliteIndex('task_resource_id_idx').on(t.resourceId),
-  // typeResourceIdIdx: sqliteIndex('task_type_resource_id_idx').on(t.type, t.resourceId),
+}, _t => ({
+  // resourceIdIdx: sqliteIndex('task_resource_id_idx').on(_t.resourceId),
+  // typeResourceIdIdx: sqliteIndex('task_type_resource_id_idx').on(_t.type, _t.resourceId),
 }))
 
 export type TaskSqlitePO = typeof taskSqlite.$inferSelect

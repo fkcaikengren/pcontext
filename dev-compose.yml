@@ -73,13 +73,13 @@ services:
   redis:
     container_name: redis
     image: redis:7.4.7
-    command: redis-server --requirepass milvus_Pwd --appendonly yes --appendfsync always
+    command: redis-server --requirepass redis_Pwd --appendonly yes --appendfsync always
     ports:
       - "6379:6379"
     volumes:
       - ./data/redis:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "milvus_Pwd", "ping"]
+      test: ["CMD", "redis-cli", "-a", "redis_Pwd", "ping"]
       interval: 30s
       timeout: 20s
       retries: 3

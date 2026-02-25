@@ -49,6 +49,11 @@ const PContextConfigSchema = z.object({
       api_key: z.string().min(1),
     }),
   }),
+  redis: z.object({
+    host: z.string().default('localhost'),
+    port: z.coerce.number().int().min(1).max(65535).default(6379),
+    password: z.string().optional(),
+  }).default({ host: 'localhost', port: 6379 }),
 
 }).strict()
 
@@ -83,6 +88,11 @@ const PCONTEXT_CONFIG =  {
     provider: 'sqlite',
     url: `file:${DEFAULT_SQLITEDB_FILE_PATH}`,
     ssl:  false,//{ rejectUnauthorized: false }
+  },
+  redis: {
+    host: 'localhost',
+    port: 6379,
+    password: '',
   },
   // Llamaindex Agent 配置
   agent: {

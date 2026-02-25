@@ -39,6 +39,9 @@ VO 对应页面展示类型。VO 应该命名带`VO`后缀；
     
 
 ## 数据库和infrastructure规范
+
+
+### 数据库开发规范
 1. 当设计/修改`xxx`模块时，应该遵循下面的流程规范：
 - 先定义/修改表结构，`xxx.po.ts`，同步修改sqlite/Postgrel的表结构。
 - 定义/修改 `xxx.repo.interface.ts`，对于用到的数据结构，在`xxx.entity.ts`定义/修改Entity、在`xxx.dto.ts`定义/修改DTO。
@@ -52,6 +55,16 @@ VO 对应页面展示类型。VO 应该命名带`VO`后缀；
 ```bash
 nr run db:generate
 ```
+
+
+### redis缓存设计规范
+在 repo层，通常采用 Cache-Aside（旁路缓存） 模式。其执行流程如下：
+1. 查 Redis：生成 Key（如 task:123），去 Redis 查。
+2. 命中则返回：如果 Redis 有值，直接解析并返回给 Service。
+3. 缺失则查 DB：如果 Redis 没值，去数据库查。
+4. 回写 Redis：如果数据库有值，异步或同步写入 Redis（带上过期时间 TTL），然后返回。
+5. 彻底没值：如果数据库也没值，返回空（可以考虑缓存空值防止“缓存穿透”）。
+
 
 ## API接口和HTTP响应规范
 

@@ -3,11 +3,9 @@ import type { DocListQueryDTO, PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess } from '@/types'
 import { z } from 'zod'
 import { DocAddBodySchema, DocListQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
-import { getDocDetail, incrementDocAccess, indexGitDoc, indexWebsiteDoc, listDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
-import { docTaskManager } from '@/modules/task/task.service'
+import { getDocDetail, incrementDocAccess, listDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
 import { createRouter } from '@/shared/create-app'
 
-import { getRepoDeps } from '@/shared/deps'
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator, queryValidator } from '@/shared/utils/validator'
@@ -36,32 +34,14 @@ const router = createRouter()
     if (existing) {
       return c.json(Res409({ slug, name }, '文档已存在') as ApiError, 409)
     }
-    const { taskRepo } = getRepoDeps()
-    const taskRecord = await taskRepo.create({
-      type: 'doc_index',
-    })
-
-    const task = docTaskManager.createTask({
-      id: taskRecord.id,
+    const job = await c.var.taskService.submitTask('doc_index', {
       slug,
       name,
       url,
       source,
     })
 
-    const processTask = source === 'website' ? indexWebsiteDoc : indexGitDoc
-
-    processTask(task, source)
-      .then(() => {
-        task.endWithCompleted()
-        taskRepo.updateStatus(taskRecord.id, 'completed')
-      })
-      .catch((err) => {
-        task.endWithFailed()
-        taskRepo.updateStatus(taskRecord.id, 'failed', err.message)
-      })
-
-    return c.json(Res201({ taskId: task.id, slug, name }, 'success'), 201)
+    return c.json(Res201({ taskId: job.id, slug, name }, 'success'), 201)
   })
   .get('/:slug', async (c) => {
     const { slug } = c.req.param()

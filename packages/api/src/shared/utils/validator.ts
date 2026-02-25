@@ -31,3 +31,18 @@ export function queryValidator(schema: Parameters<ZValidator>[1]) {
     },
   )
 }
+
+export function paramValidator(schema: Parameters<ZValidator>[1]) {
+  return zValidator(
+    'param',
+    schema,
+    (result, c) => {
+      if (!result.success) {
+        return c.json(
+          { code: 400, message: 'Validation failed', data: result.error.issues },
+          400,
+        )
+      }
+    },
+  )
+}

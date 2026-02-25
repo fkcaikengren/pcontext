@@ -15,6 +15,13 @@
       "when": 1771926297528,
       "tag": "0001_snippets & tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772008695907,
+      "tag": "0002_change_task_id_to_uuid_v7",
+      "breakpoints": true
     }
   ]
 }
