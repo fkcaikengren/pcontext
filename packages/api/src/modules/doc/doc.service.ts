@@ -19,30 +19,37 @@ function toDocVO(entity: DocEntity<Date>): DocVO {
   }
 }
 
-export async function listDocs(
+export async function listFavoriteDocs(
+  userId: number,
   page: number,
   pageSize: number,
-  type: 'favorites' | 'trending' | undefined,
-  userId?: number,
-  filters?: { q?: string, source?: DocSourceEnumDTO, createdFrom?: number, createdTo?: number, updatedFrom?: number, updatedTo?: number },
 ): Promise<PaginationVO<DocVO>> {
   const { docRepo: repo } = getRepoDeps()
-
-  let result: PaginationVO<DocEntity<Date>>
-  if (type === 'favorites') {
-    if (!userId)
-      throw new Error('UserId is required for favorites')
-    result = await repo.listFavoritesByUser(userId, page, pageSize)
-  }
-  else {
-    const sort = type === 'trending' ? 'popularity' : undefined
-    result = await repo.list(page, pageSize, filters, sort)
-  }
-
+  const result = await repo.listFavoritesByUser(userId, page, pageSize)
   return {
     ...result,
     list: result.list.map(toDocVO),
   }
+}
+
+export async function listDocs(
+  page: number,
+  pageSize: number,
+  filters?: { q?: string, source?: DocSourceEnumDTO, createdFrom?: number, createdTo?: number, updatedFrom?: number, updatedTo?: number },
+  sort?: 'popularity' | undefined,
+): Promise<PaginationVO<DocVO>> {
+  const { docRepo: repo } = getRepoDeps()
+  const result = await repo.list(page, pageSize, filters, sort)
+  return {
+    ...result,
+    list: result.list.map(toDocVO),
+  }
+}
+
+export async function listLatestDocs(limit: number): Promise<DocVO[]> {
+  const { docRepo: repo } = getRepoDeps()
+  const docs = await repo.listLatest(limit)
+  return docs.map(toDocVO)
 }
 
 export async function getDocDetail(slug: string): Promise<DocVO | null> {

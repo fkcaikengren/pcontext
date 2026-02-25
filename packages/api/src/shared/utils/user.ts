@@ -1,9 +1,8 @@
 import type { Context } from 'hono'
 
 export function getCurrentUserId(c: Context) {
-  const user = c.get('user') as { id: number | null } | undefined
-  const id = user?.id
-  return typeof id === 'number' && Number.isFinite(id) ? id : null
+  const user = c.get('user')
+  return user?.id as number
 }
 
 export function isAdmin(c: Context) {

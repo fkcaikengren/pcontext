@@ -1,10 +1,11 @@
-import { eq } from 'drizzle-orm'
-import type { PaginationVO } from '@/shared/vo'
-import type { AuthUserRecord, IUserRepository } from '@/modules/user/user.repo.interface'
+import type { UserPgPO } from './user.po'
 import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/user.dto'
-import type { PostgresqlDB } from '@/shared/db/connection'
 import type { UserEntity } from '@/modules/user/user.entity'
-import { userPg, type UserPgPO } from './user.po.ts'
+import type { AuthUserRecord, IUserRepository } from '@/modules/user/user.repo.interface'
+import type { PostgresqlDB } from '@/shared/db/connection'
+import type { PaginationVO } from '@/shared/vo'
+import { and, count, eq, like } from 'drizzle-orm'
+import { userPg } from './user.po'
 
 function mapper(row: UserPgPO): UserEntity {
   return {
@@ -49,17 +50,23 @@ export class PgUserRepository implements IUserRepository {
 
   async list(page: number, pageSize: number, filters?: { name?: string }): Promise<PaginationVO<UserEntity>> {
     const offset = (page - 1) * pageSize
-    const rows = await this.db.query.user.findMany({
-      limit: pageSize,
-      offset,
-      where: filters?.name ? (fields, { like }) => like(fields.name, `%${filters.name}%`) : undefined,
-      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-    })
-    const totalRows = await this.db.query.user.findMany({
-      where: filters?.name ? (fields, { like }) => like(fields.name, `%${filters.name}%`) : undefined,
-    })
+
+    const where = (fields: any) => {
+      return filters?.name ? like(fields.name, `%${filters.name}%`) : undefined
+    }
+
+    const [rows, [totalResult]] = await Promise.all([
+      this.db.query.user.findMany({
+        limit: pageSize,
+        offset,
+        where,
+        orderBy: (fields, { desc }) => [desc(fields.createdAt)],
+      }),
+      this.db.select({ value: count() }).from(userPg).where(where(userPg)),
+    ])
+
     const list = rows.map(mapper)
-    const total = totalRows.length
+    const total = Number(totalResult?.value ?? 0)
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     return { list, total, page, pageSize, totalPages }
   }

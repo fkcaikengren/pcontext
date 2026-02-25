@@ -1,13 +1,13 @@
-import type { DocPgPO } from './doc.po.ts'
+import type { DocPgPO } from './doc.po'
 import type { CreateDocDTO, DocSourceEnumDTO } from '@/modules/doc/doc.dto'
 import type { DocEntity } from '@/modules/doc/doc.entity'
 import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import type { PostgresqlDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, like, lte } from 'drizzle-orm'
 import { logger } from '@/shared/logger'
 import { redis } from '@/shared/redis'
-import { docPg, favoritePg } from './doc.po.ts'
+import { docPg, favoritePg } from './doc.po'
 
 const DOC_CACHE_TTL_SECONDS = 60 * 60
 
@@ -43,59 +43,77 @@ export class PgDocRepository implements IDocRepository {
   ): Promise<PaginationVO<DocEntity<Date>>> {
     const offset = (page - 1) * pageSize
 
-    const where = !filters
-      ? undefined
-      : (fields) => {
-          const conditions = []
-          if (filters.q)
-            conditions.push(like(fields.name, `%${filters.q}%`))
-          if (filters.source)
-            conditions.push(eq(fields.source, filters.source))
-          if (filters.createdFrom)
-            conditions.push(gte(fields.createdAt, filters.createdFrom))
-          if (filters.createdTo)
-            conditions.push(lte(fields.createdAt, filters.createdTo))
-          if (filters.updatedFrom)
-            conditions.push(gte(fields.updatedAt, filters.updatedFrom))
-          if (filters.updatedTo)
-            conditions.push(lte(fields.updatedAt, filters.updatedTo))
-          return conditions.length ? and(...conditions) : undefined
-        }
+    const where = (fields: any) => {
+      const conditions = []
+      if (filters?.q)
+        conditions.push(like(fields.name, `%${filters.q}%`))
+      if (filters?.source)
+        conditions.push(eq(fields.source, filters.source))
+      if (filters?.createdFrom)
+        conditions.push(gte(fields.createdAt, filters.createdFrom))
+      if (filters?.createdTo)
+        conditions.push(lte(fields.createdAt, filters.createdTo))
+      if (filters?.updatedFrom)
+        conditions.push(gte(fields.updatedAt, filters.updatedFrom))
+      if (filters?.updatedTo)
+        conditions.push(lte(fields.updatedAt, filters.updatedTo))
+      return conditions.length ? and(...conditions) : undefined
+    }
 
-    const orderBy = sort === 'popularity'
-      ? (fields, { desc }) => [desc(fields.accessCount)]
-      : sort === 'createdAt'
-        ? (fields, { desc }) => [desc(fields.createdAt)]
-        : (fields, { desc }) => [desc(fields.updatedAt)]
+    const orderBy = (fields: any, { desc }: any) => {
+      if (sort === 'popularity')
+        return [desc(fields.accessCount)]
+      if (sort === 'createdAt')
+        return [desc(fields.createdAt)]
+      return [desc(fields.updatedAt)]
+    }
 
-    const rows = await this.db.query.doc.findMany({ limit: pageSize, offset, where, orderBy })
-    const totalRows = await this.db.query.doc.findMany({ where })
+    const [rows, [totalResult]] = await Promise.all([
+      this.db.query.doc.findMany({ limit: pageSize, offset, where, orderBy }),
+      this.db.select({ value: count() }).from(docPg).where(where(docPg)),
+    ])
 
     const list = rows.map(mapper)
-    const total = totalRows.length
+    const total = Number(totalResult?.value ?? 0)
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     return { list, total, page, pageSize, totalPages }
+  }
+
+  async listLatest(limit: number): Promise<DocEntity<Date>[]> {
+    const rows = await this.db.query.doc.findMany({
+      limit,
+      orderBy: (fields, { desc }) => [desc(fields.updatedAt)],
+    })
+    return rows.map(mapper)
   }
 
   async listFavoritesByUser(userId: number, page: number, pageSize: number): Promise<PaginationVO<DocEntity<Date>>> {
     const offset = (page - 1) * pageSize
 
-    const favoriteRows = await this.db.query.favorite.findMany({
-      limit: pageSize,
-      offset,
-      where: eq(favoritePg.userId, userId),
-      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-    })
-    const ids = favoriteRows.map(f => f.docId)
+    const [totalResult] = await this.db
+      .select({ value: count() })
+      .from(favoritePg)
+      .where(eq(favoritePg.userId, userId))
 
-    const rows = await this.db.query.doc.findMany({
-      where: ids.length ? fields => inArray(fields.id, ids) : undefined,
-    })
-    const list = rows.map(mapper)
-
-    const totalRows = await this.db.query.favorite.findMany({ where: eq(favoritePg.userId, userId) })
-    const total = totalRows.length
+    const total = Number(totalResult?.value ?? 0)
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
+
+    if (total === 0) {
+      return { list: [], total, page, pageSize, totalPages }
+    }
+
+    const rows = await this.db
+      .select({
+        doc: docPg,
+      })
+      .from(favoritePg)
+      .innerJoin(docPg, eq(favoritePg.docId, docPg.id))
+      .where(eq(favoritePg.userId, userId))
+      .orderBy(desc(favoritePg.createdAt))
+      .limit(pageSize)
+      .offset(offset)
+
+    const list = rows.map(r => mapper(r.doc))
     return { list, total, page, pageSize, totalPages }
   }
 

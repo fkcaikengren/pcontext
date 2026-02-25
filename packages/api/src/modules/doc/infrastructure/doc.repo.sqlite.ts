@@ -4,7 +4,7 @@ import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import type { DocSqlitePO } from '@/modules/doc/infrastructure/doc.po'
 import type { SqliteDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import { and, eq, gte, inArray, like, lte } from 'drizzle-orm'
+import { and, count, desc, eq, gte, like, lte } from 'drizzle-orm'
 import { docSqlite, favoriteSqlite } from '@/modules/doc/infrastructure/doc.po'
 import { logger } from '@/shared/logger'
 import { redis } from '@/shared/redis'
@@ -45,7 +45,7 @@ export class SqliteDocRepository implements IDocRepository {
 
     const where = !filters
       ? undefined
-      : (fields) => {
+      : (fields: any) => {
           const conditions = []
           if (filters.q)
             conditions.push(like(fields.name, `%${filters.q}%`))
@@ -63,39 +63,60 @@ export class SqliteDocRepository implements IDocRepository {
         }
 
     const orderBy = sort === 'popularity'
-      ? (fields, { desc }) => [desc(fields.accessCount)]
+      ? (fields: any, { desc }: any) => [desc(fields.accessCount)]
       : sort === 'createdAt'
-        ? (fields, { desc }) => [desc(fields.createdAt)]
-        : (fields, { desc }) => [desc(fields.updatedAt)]
+        ? (fields: any, { desc }: any) => [desc(fields.createdAt)]
+        : (fields: any, { desc }: any) => [desc(fields.updatedAt)]
 
-    const rows = await this.db.query.doc.findMany({ limit: pageSize, offset, where, orderBy })
-    const totalRows = await this.db.query.doc.findMany({ where })
+    const [rows, [totalResult]] = await Promise.all([
+      this.db.query.doc.findMany({ limit: pageSize, offset, where, orderBy }),
+      this.db
+        .select({ value: count() })
+        .from(docSqlite)
+        .where(where ? where(docSqlite) : undefined),
+    ])
 
     const list = rows.map(mapper)
-    const total = totalRows.length
+    const total = totalResult?.value ?? 0
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     return { list, total, page, pageSize, totalPages }
+  }
+
+  async listLatest(limit: number): Promise<DocEntity<Date>[]> {
+    const rows = await this.db.query.doc.findMany({
+      limit,
+      orderBy: (fields, { desc }) => [desc(fields.updatedAt)],
+    })
+    return rows.map(mapper)
   }
 
   async listFavoritesByUser(userId: number, page: number, pageSize: number): Promise<PaginationVO<DocEntity<Date>>> {
     const offset = (page - 1) * pageSize
 
-    const favoriteRows = await this.db.query.favorite.findMany({
-      limit: pageSize,
-      offset,
-      where: eq(favoriteSqlite.userId, userId),
-      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-    })
-    const ids = favoriteRows.map(f => f.docId).filter((id): id is number => typeof id === 'number')
+    const [totalResult] = await this.db
+      .select({ value: count() })
+      .from(favoriteSqlite)
+      .where(eq(favoriteSqlite.userId, userId))
 
-    const rows = await this.db.query.doc.findMany({
-      where: ids.length ? fields => inArray(fields.id, ids) : undefined,
-    })
-    const list = rows.map(mapper)
-
-    const totalRows = await this.db.query.favorite.findMany({ where: eq(favoriteSqlite.userId, userId) })
-    const total = totalRows.length
+    const total = totalResult?.value ?? 0
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
+
+    if (total === 0) {
+      return { list: [], total: 0, page, pageSize, totalPages }
+    }
+
+    const rows = await this.db
+      .select({
+        doc: docSqlite,
+      })
+      .from(favoriteSqlite)
+      .innerJoin(docSqlite, eq(favoriteSqlite.docId, docSqlite.id))
+      .where(eq(favoriteSqlite.userId, userId))
+      .orderBy(desc(favoriteSqlite.createdAt))
+      .limit(pageSize)
+      .offset(offset)
+
+    const list = rows.map(r => mapper(r.doc))
     return { list, total, page, pageSize, totalPages }
   }
 

@@ -23,7 +23,6 @@ export const DocAddBodySchema = z.object({
 export const DocListQuerySchema = paginationQuerySchema.extend({
   name: z.string().optional(),
   source: DocSourceEnum.optional(),
-  type: z.enum(['favorites', 'trending']).optional(),
   createdFrom: z.coerce.number().int().optional(),
   createdTo: z.coerce.number().int().optional(),
   updatedFrom: z.coerce.number().int().optional(),

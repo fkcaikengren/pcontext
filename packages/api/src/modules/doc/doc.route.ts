@@ -3,7 +3,7 @@ import type { DocListQueryDTO, PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess } from '@/types'
 import { z } from 'zod'
 import { DocAddBodySchema, DocListQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
-import { getDocDetail, incrementDocAccess, listDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
+import { getDocDetail, incrementDocAccess, listDocs, listFavoriteDocs, listLatestDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
 import { createRouter } from '@/shared/create-app'
 
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
@@ -15,16 +15,9 @@ const router = createRouter()
     '/',
     queryValidator(DocListQuerySchema),
     async (c) => {
-      const { page, pageSize, name, source, type, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query') as DocListQueryDTO
-      const userId = getCurrentUserId(c)
-
-      try {
-        const result = await listDocs(page, pageSize, type, userId || undefined, { q: name, source, createdFrom, createdTo, updatedFrom, updatedTo })
-        return c.json(Res200(result) as ApiSuccess<PaginationVO<DocVO>>, 200)
-      }
-      catch (e: any) {
-        return c.json(Res400(null, e?.message) as ApiError, 400)
-      }
+      const { page, pageSize, name, source, createdFrom, createdTo, updatedFrom, updatedTo } = c.req.valid('query') as DocListQueryDTO
+      const result = await listDocs(page, pageSize, { q: name, source, createdFrom, createdTo, updatedFrom, updatedTo })
+      return c.json(Res200(result) as ApiSuccess<PaginationVO<DocVO>>, 200)
     },
   )
   .post('/', jsonValidator(DocAddBodySchema), async (c) => {
@@ -43,6 +36,25 @@ const router = createRouter()
 
     return c.json(Res201({ taskId: job.id, slug, name }, 'success'), 201)
   })
+  .get(
+    '/latest',
+    queryValidator(z.object({ limit: PositiveIntOptionalSchema.default(10) })),
+    async (c) => {
+      const { limit } = c.req.valid('query')
+      const result = await listLatestDocs(limit)
+      return c.json(Res200(result) as ApiSuccess<DocVO[]>, 200)
+    },
+  )
+  .get(
+    '/favorites',
+    queryValidator(DocListQuerySchema),
+    async (c) => {
+      const { page, pageSize } = c.req.valid('query')
+      const userId = getCurrentUserId(c)
+      const result = await listFavoriteDocs(userId as number, page, pageSize)
+      return c.json(Res200(result) as ApiSuccess<PaginationVO<DocVO>>, 200)
+    },
+  )
   .get('/:slug', async (c) => {
     const { slug } = c.req.param()
     const doc = await getDocDetail(slug)
@@ -52,8 +64,7 @@ const router = createRouter()
   })
   .post('/:slug/favorite', jsonValidator(z.object({ like: z.boolean() })), async (c) => {
     const userId = getCurrentUserId(c)
-    if (!userId)
-      return c.json(Res401(null, '未登录') as ApiError, 401)
+
     const { slug } = c.req.param()
     const { like } = c.req.valid('json')
     const ok = await toggleFavorite(userId as number, slug, like)
