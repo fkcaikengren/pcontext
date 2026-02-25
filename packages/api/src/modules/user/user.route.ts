@@ -1,11 +1,12 @@
-import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
+import type { UserLoginDTO } from '@/modules/user/user.dto'
 import { randomUUID } from 'node:crypto'
-import { userLoginSchema, type UserLoginDTO } from '@/modules/user/user.dto'
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
+import { userLoginSchema } from '@/modules/user/user.dto'
+import { getUserById, login } from '@/modules/user/user.service'
+import AppSettings from '@/settings'
 import { createRouter } from '@/shared/create-app'
 import { getCurrentUserId } from '@/shared/utils/user'
-import { getUserById, login } from '@/modules/user/user.service'
 import { jsonValidator } from '@/shared/utils/validator'
-import AppSettings from '@/settings'
 
 const { config } = AppSettings
 
@@ -17,12 +18,13 @@ const router = createRouter()
 
       const csrfToken = randomUUID()
 
+      // token 有效期 1天
       setCookie(c, 'access_token', token, {
         httpOnly: true,
         secure: !config.is_dev,
         sameSite: 'Strict',
         path: '/',
-        maxAge: 3600,
+        maxAge: 86400,
       })
 
       setCookie(c, 'csrf_token', csrfToken, {
@@ -30,11 +32,12 @@ const router = createRouter()
         secure: !config.is_dev,
         sameSite: 'Strict',
         path: '/',
-        maxAge: 3600,
+        maxAge: 86400,
       })
 
       return c.json(user)
-    } catch (e: any) {
+    }
+    catch (e: any) {
       return c.json({ message: e.message }, 401)
     }
   })
@@ -95,10 +98,12 @@ const router = createRouter()
   })
   .get('/profile', async (c) => {
     const userId = getCurrentUserId(c)
-    if (!userId) return c.json({ message: '用户未登录' }, 401)
+    if (!userId)
+      return c.json({ message: '用户未登录' }, 401)
 
     const user = await getUserById(userId)
-    if (!user) return c.json({ message: '用户不存在' }, 404)
+    if (!user)
+      return c.json({ message: '用户不存在' }, 404)
 
     return c.json(user)
   })

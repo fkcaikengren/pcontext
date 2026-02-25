@@ -45,11 +45,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border border-slate-200 shadow-xl">
         <CardHeader className="space-y-2 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
-            登录 PContext 管理后台
+            PContext 管理后台
           </CardTitle>
-          <p className="text-sm text-slate-500">
-            使用预置账号快速体验：<span className="font-mono">admin / admin123</span>
-          </p>
         </CardHeader>
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -93,9 +90,9 @@ export default function LoginPage() {
             </Button>
 
             <p className="mt-4 text-center text-xs text-slate-500">
-              返回主页？
+              
               <Link to="/" className="ml-1 text-primary hover:underline">
-                浏览文档
+                👉🏻回主页
               </Link>
             </p>
           </form>
