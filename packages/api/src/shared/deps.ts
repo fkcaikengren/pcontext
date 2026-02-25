@@ -3,6 +3,7 @@ import type { ITaskRepository } from '@/modules/task/task.repo.interface'
 import type { IUserRepository } from '@/modules/user/user.repo.interface'
 import { PgDocRepository } from '@/modules/doc/infrastructure/doc.repo.pg'
 import { SqliteDocRepository } from '@/modules/doc/infrastructure/doc.repo.sqlite'
+import { RankService } from '@/modules/rank/rank.service'
 import { PgTaskRepository } from '@/modules/task/infrastructure/task.repo.pg'
 import { SqliteTaskRepository } from '@/modules/task/infrastructure/task.repo.sqlite'
 import { TaskService } from '@/modules/task/task.service'
@@ -23,6 +24,7 @@ export interface RepoDeps {
 
 export interface ServiceDeps {
   taskService: TaskService
+  rankService: RankService
 }
 
 let repoDeps: RepoDeps | null = null
@@ -90,6 +92,7 @@ export function getServiceDeps() {
 
   serviceDeps = {
     taskService: new TaskService(),
+    rankService: new RankService(),
   }
 
   return serviceDeps

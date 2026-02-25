@@ -7,6 +7,8 @@ export interface IDocRepository {
   listFavoritesByUser: (userId: number, page: number, pageSize: number) => Promise<PaginationVO<DocEntity<Date>>>
   findById: (id: number) => Promise<DocEntity<Date> | null>
   findBySlug: (slug: string) => Promise<DocEntity<Date> | null>
+  findBySlugWithCache: (slug: string) => Promise<DocEntity<Date> | null>
+  invalidateCache: (slug: string) => Promise<void>
   create: (input: CreateDocDTO) => Promise<DocEntity<Date>>
   incrementAccess: (docId: number) => Promise<void>
   toggleFavorite: (userId: number, docId: number, like: boolean) => Promise<boolean>

@@ -4,6 +4,7 @@ import type { ChatMessage } from 'llamaindex'
 import { toUIMessageStream } from '@ai-sdk/llamaindex'
 import { createUIMessageStreamResponse } from 'ai'
 import { createChatEngine } from '@/modules/doc/infrastructure/agent/engine/chat'
+import { getServiceDeps } from '@/shared/deps'
 
 export const chatHandler: Handler = async (c) => {
   try {
@@ -18,6 +19,11 @@ export const chatHandler: Handler = async (c) => {
         },
         400,
       )
+    }
+
+    if (libraryName) {
+      const { rankService } = getServiceDeps()
+      rankService.incrementDocScore(libraryName, 2)
     }
 
     const ids: string[] = libraryName ? [libraryName] : []

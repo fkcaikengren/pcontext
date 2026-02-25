@@ -4,16 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle2, 
+import {
+  CheckCircle2,
   Search,
   TrendingUp,
   Clock,
   Star,
   Github,
-  Globe
+  Globe,
+  Loader2
 } from 'lucide-react';
 import { Link } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { client, parseRes } from '@/APIs';
+import type { RankedDocVO } from '@pcontext/api/client';
 
 
 
@@ -22,6 +26,14 @@ export default function Home() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('popular');
+
+  const { data: popularDocsData, isPending: isLoading } = useQuery({
+    queryKey: ['ranking', 'docs', { limit: 10 }],
+    queryFn: () => parseRes(client.ranking.docs.$get({ query: { limit: 10 } })),
+    enabled: activeFilter === 'popular',
+  });
+
+  const popularDocs = popularDocsData?.docs ?? [];
 
   const libraries = [
     { name: 'Next.js', source: '/vercel/next.js', icon: <Github className="w-4 h-4" />, tokens: '550K', snippets: '4.1K', update: '6 days' },
@@ -103,48 +115,102 @@ export default function Home() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {libraries.map((lib) => (
-            <Link key={lib.name} to={`/docs/${encodeURIComponent(lib.name)}`}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      {lib.icon}
+          {isLoading ? (
+            <div className="col-span-full flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            </div>
+          ) : activeFilter === 'popular' ? (
+            popularDocs.map((doc) => (
+              <Link key={doc.id} to={`/docs/${encodeURIComponent(doc.slug)}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          {doc.source === 'github' ? <Github className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{doc.name}</h3>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <span className="font-mono bg-gray-100 px-1 rounded">{doc.slug}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" className="text-gray-400 hover:text-yellow-400">
+                        <Star className="w-5 h-5" />
+                      </Button>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{lib.name}</h3>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <span className="font-mono bg-gray-100 px-1 rounded">{lib.source}</span>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold">{doc.tokens.toLocaleString()}</span>
+                        <span className="text-gray-400">Tokens</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold">{doc.snippets.toLocaleString()}</span>
+                        <span className="text-gray-400">Snippets</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-orange-500" />
+                        <span className="font-semibold">{doc.score}</span>
+                        <span className="text-gray-400">Score</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-4">
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        <span>Updated {new Date(doc.updatedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-gray-400 hover:text-yellow-400">
-                    <Star className="w-5 h-5" />
-                  </Button>
-                </div>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold">{lib.tokens}</span>
-                    <span className="text-gray-400">Tokens</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold">{lib.snippets}</span>
-                    <span className="text-gray-400">Snippets</span>
-                  </div>
-                </div>
+                </Card>
+              </Link>
+            ))
+          ) : (
+            libraries.map((lib) => (
+              <Link key={lib.name} to={`/docs/${encodeURIComponent(lib.name)}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          {lib.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{lib.name}</h3>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <span className="font-mono bg-gray-100 px-1 rounded">{lib.source}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" className="text-gray-400 hover:text-yellow-400">
+                        <Star className="w-5 h-5" />
+                      </Button>
+                    </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-4">
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-green-500" />
-                    <span>Updated {lib.update}</span>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold">{lib.tokens}</span>
+                        <span className="text-gray-400">Tokens</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold">{lib.snippets}</span>
+                        <span className="text-gray-400">Snippets</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-4">
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        <span>Updated {lib.update}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </Card>
-            </Link>
-          ))}
+                </Card>
+              </Link>
+            ))
+          )}
         </div>
       </main>
     </div>

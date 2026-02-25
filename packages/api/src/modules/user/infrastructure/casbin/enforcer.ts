@@ -39,6 +39,7 @@ const SEED_POLICIES: [string, string, string][] = [
   ['guest', '/api/docs/*', 'GET'],
   ['guest', '/api/docs/*/check', 'POST'],
   ['guest', '/api/chat', 'POST'],
+  ['guest', '/api/ranking/docs', 'GET'],
   ['guest', '/api/mcp', '.*'],
 
   ['guest', '/api/users/login', 'POST'],

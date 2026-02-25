@@ -7,8 +7,8 @@ description: pcontext项目的 packages/api 子项目的项目结构规范、代
 ## when to apply
 当修改一个API接口，修改数据库字段，定义或修改数据结构、增加新的pcontext后端逻辑.
 
-## 项目结构
-DDD-lite 开发规范
+## 项目结构和整体风格规范
+1. DDD-lite 开发规范
 /modules
 |-doc
 	|-doc.vo.ts (vo类型，用于返回给前端的类型)
@@ -22,6 +22,9 @@ DDD-lite 开发规范
 		|-doc.repo.sqlite.ts
 		|-doc.repo.pg.ts 
 		
+2. 项目规范
+
+- 尽量避免在repo service层进行trycatch，除非是明确需要暴露给前端的指定错误 or 需要catch以不影响正常功能的错误，因为route外面有全局的错误处理中间件。
 		
 
 ## 数据结构规范 - PO, Entity, DTO, VO

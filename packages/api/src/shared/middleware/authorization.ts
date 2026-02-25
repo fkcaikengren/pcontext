@@ -4,7 +4,7 @@ import { getEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
 import { logger } from '@/shared/logger'
 
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
-const SAFE_PATHS = ['/api/users/login', '/api/chat', '/mcp']
+const SAFE_PATHS = ['/api/users/login', '/api/chat', '/api/ranking/docs', '/mcp']
 
 export function authorization(config?: {
   safeMethods?: string[]
@@ -19,7 +19,7 @@ export function authorization(config?: {
       return next()
     const user = c.get('user') as { id: number, username: string, role: string | null } | undefined
     const hasRole = typeof user?.role === 'string' && user.role.length > 0
-
+    // TODO: 进一步考虑guest 身份 和 资源权限
     if (!safeMethods.includes(c.req.method) && !safePaths.includes(c.req.path)) {
       const csrfCookie = getCookie(c, 'csrf_token')
       const csrfHeader = c.req.header('X-CSRF-Token')

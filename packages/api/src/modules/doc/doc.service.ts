@@ -7,7 +7,7 @@ import { MetadataMode } from 'llamaindex'
 
 import { generateFilters } from '@/modules/doc/infrastructure/agent/engine/query-filter'
 import { getIndex } from '@/modules/doc/infrastructure/agent/storage'
-import { getRepoDeps } from '@/shared/deps'
+import { getRepoDeps, getServiceDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
 import { buildDocIdentifiersFromUrl } from '@/shared/utils/url'
 
@@ -47,8 +47,13 @@ export async function listDocs(
 
 export async function getDocDetail(slug: string): Promise<DocVO | null> {
   const { docRepo } = getRepoDeps()
-  const doc = await docRepo.findBySlug(slug)
-  return doc ? toDocVO(doc) : null
+  const { rankService } = getServiceDeps()
+  const doc = await docRepo.findBySlugWithCache(slug)
+  if (doc) {
+    rankService.incrementDocScore(slug, 1)
+    return toDocVO(doc)
+  }
+  return null
 }
 
 export async function toggleFavorite(userId: number, slug: string, like: boolean) {
@@ -96,6 +101,8 @@ async function retrieveDocNodes(slug: string, topic: string, tokens: number) {
 }
 
 export async function queryDocSnippets(slug: string, topic: string, tokens: number) {
+  const { rankService } = getServiceDeps()
+  rankService.incrementDocScore(slug, 2)
   const nodes = await retrieveDocNodes(slug, topic, tokens)
   // console.log('========', nodes)
   return { snippets: nodes }

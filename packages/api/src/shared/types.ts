@@ -1,4 +1,5 @@
 import type { Logger } from 'pino'
+import type { RankService } from '@/modules/rank/rank.service'
 import type { TaskService } from '@/modules/task/task.service'
 
 export interface AppBindings {
@@ -12,5 +13,6 @@ export interface AppBindings {
       role: 'admin' | 'user' | null
     }
     taskService: TaskService
+    rankService: RankService
   }
 }

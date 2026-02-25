@@ -3,7 +3,10 @@ name: packages/web 子项目开发规范
 description: pcontext项目的 packages/web 子项目的项目结构规范、代码规范和运行等操作规范。修改该子项目需要遵循这些规范。
 ---
 
-# packages/web 子项目开发规范
+## when to apply
+当修改一个web页面UI、页面交换逻辑时。修改UI优先使用tailwindcss, 调用接口时，优先使用 `@tanstack/react-query` 库。
+
+
 
 ## chat-web项目结构
 `packages/web/app`目录下是chat-web项目的源代码，主要包括以下几个部分：
@@ -57,6 +60,11 @@ bunx --bun shadcn@latest add [组件]
 - 表单和表格相关功能优先使用 `@tanstack/react-form`和`@tanstack/react-table`
 - `zod`验证表单数据；
 - 使用vercel提供的`ai` v5库处理聊天功能；
+
+
+### 项目常用工具列表
+**项目react hooks**
+- useUrlState - url和state状态同步hook
 
 
 ### Tailwind CSS总体规范

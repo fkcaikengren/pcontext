@@ -8,6 +8,7 @@ import { initDb } from '@/shared/db/connection'
 import chat from './modules/doc/chat.route'
 import docs from './modules/doc/doc.route'
 import mcp from './modules/doc/mcp.route'
+import ranking from './modules/rank/rank.route'
 import tasks from './modules/task/task.route'
 import users from './modules/user/user.route'
 import AppSettings from './settings'
@@ -26,6 +27,7 @@ const api = new Hono()
   .route('/users', users)
   .route('/docs', docs)
   .route('/chat', chat)
+  .route('/ranking', ranking)
   .route('/tasks', tasks)
 
 export const app = createApp()
