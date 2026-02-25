@@ -129,8 +129,8 @@ export default function DocsDetail() {
   };
 
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<main className="max-w-5xl mx-auto px-6 py-8">
+		<div className="flex flex-1 flex-col items-center p-4 pt-10">
+      <div className="w-full max-w-5xl">
 				<DocInfoCard
 					title={docQuery.data?.name || "文档详情"}
 					url={docQuery.data?.url}
@@ -245,7 +245,7 @@ export default function DocsDetail() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
+      </div>
     </div>
   );
 }

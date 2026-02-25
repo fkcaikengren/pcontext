@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 
 export default function UsersPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-1 flex-col items-center p-4 pt-10">
       <div className="w-full max-w-5xl">
         <Card>
           <CardHeader>

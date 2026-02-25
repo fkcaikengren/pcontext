@@ -44,8 +44,8 @@ export default function TasksPage() {
   }, [])
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="w-full max-w-4xl">
+    <div className="flex flex-1 flex-col items-center p-4 pt-10">
+      <div className="w-full max-w-5xl">
         <Card>
           <CardHeader>
             <CardTitle>任务列表</CardTitle>

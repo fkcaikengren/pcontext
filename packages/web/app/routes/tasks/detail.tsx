@@ -110,8 +110,8 @@ export default function TaskDetailPage() {
   const isTaskNotFound = !task && !taskLoading && !!taskError
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-10">
-      <div className="w-full max-w-4xl space-y-4">
+    <div className="flex flex-1 flex-col items-center p-4 pt-10">
+      <div className="w-full max-w-5xl space-y-4">
         {isTaskNotFound && (
           <Alert variant="destructive">
             <AlertCircle />

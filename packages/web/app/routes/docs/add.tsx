@@ -50,7 +50,7 @@ export default function AddDocsPage() {
 
   return (
     <div className="flex flex-1 flex-col items-center p-4 pt-10">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-5xl">
         <Card>
           <CardHeader>
             <CardTitle>添加文档</CardTitle>

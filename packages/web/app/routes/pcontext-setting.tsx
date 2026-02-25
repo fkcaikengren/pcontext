@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button"
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="flex flex-1 flex-col items-center p-4 pt-10">
+      <div className="w-full max-w-5xl">
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Settings</CardTitle>

@@ -202,7 +202,7 @@ export default function DocsPage() {
   const canNext = page < totalPages
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-10">
+    <div className="flex flex-1 flex-col items-center p-4 pt-10">
       <div className="w-full max-w-5xl">
         <Card>
           <CardHeader>
