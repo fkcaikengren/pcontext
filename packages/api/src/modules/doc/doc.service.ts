@@ -28,7 +28,10 @@ export async function listFavoriteDocs(
   const result = await repo.listFavoritesByUser(userId, page, pageSize)
   return {
     ...result,
-    list: result.list.map(toDocVO),
+    list: result.list.map(doc => ({
+      ...toDocVO(doc),
+      starred: true,
+    })),
   }
 }
 
@@ -46,10 +49,40 @@ export async function listDocs(
   }
 }
 
-export async function listLatestDocs(limit: number): Promise<DocVO[]> {
+export async function listLatestDocs(limit: number, userId?: number): Promise<DocVO[]> {
   const { docRepo: repo } = getRepoDeps()
   const docs = await repo.listLatest(limit)
-  return docs.map(toDocVO)
+
+  if (!userId) {
+    return docs.map(toDocVO)
+  }
+
+  const docIds = docs.map(d => d.id)
+  const favoritePromises = docIds.map(docId => repo.isFavorite(userId, docId))
+  const favoriteResults = await Promise.all(favoritePromises)
+
+  return docs.map((doc, index) => ({
+    ...toDocVO(doc),
+    starred: favoriteResults[index],
+  }))
+}
+
+export async function searchDocs(q: string, limit: number, userId?: number): Promise<DocVO[]> {
+  const { docRepo: repo } = getRepoDeps()
+  const docs = await repo.search(q, limit)
+
+  if (!userId) {
+    return docs.map(toDocVO)
+  }
+
+  const docIds = docs.map(d => d.id)
+  const favoritePromises = docIds.map(docId => repo.isFavorite(userId, docId))
+  const favoriteResults = await Promise.all(favoritePromises)
+
+  return docs.map((doc, index) => ({
+    ...toDocVO(doc),
+    starred: favoriteResults[index],
+  }))
 }
 
 export async function getDocDetail(slug: string): Promise<DocVO | null> {
@@ -78,12 +111,13 @@ export async function prepareDoc(url: string, source: DocSourceEnumDTO) {
   return { slug: identifiers.slug, name: identifiers.docName, existing: !!targetDoc }
 }
 
-export async function incrementDocAccess(slug: string) {
-  const { docRepo: repo } = getRepoDeps()
-  const record = await repo.findBySlug(slug)
-  if (record)
-    await repo.incrementAccess(record.id)
-}
+// TODO: 优化 通过redis 写入
+// export async function incrementDocAccess(slug: string) {
+//   const { docRepo: repo } = getRepoDeps()
+//   const record = await repo.findBySlug(slug)
+//   if (record)
+//     await repo.incrementAccess(record.id)
+// }
 
 async function retrieveDocNodes(slug: string, topic: string, tokens: number) {
   const index = await getIndex()

@@ -21,17 +21,18 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuthStore } from "@/stores/auth"
 import { Link, useLocation, useNavigate } from "react-router"
-import { 
-  BookOpen, 
-  Settings, 
-  LogOut, 
+import {
+  BookOpen,
+  Settings,
+  LogOut,
   ChevronsUpDown,
   Home,
   FileText,
   PanelLeft,
   ListTodo,
   Users,
-  ShieldCheck
+  ShieldCheck,
+  User
 } from "lucide-react"
 
 export function AppSidebar({
@@ -182,13 +183,21 @@ export function AppSidebar({
                     }}>
                       去登录
                     </DropdownMenuItem>
-                    
+
                   </>
                 ) : (
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 size-4" />
+                  <>
+                    <DropdownMenuItem onClick={()=>{
+                      navigate("/profile")
+                    }}>
+                      <User className="mr-2 size-4" />
+                      我的账号
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 size-4" />
                       退出登录
                     </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

@@ -4,6 +4,7 @@ import type { ApiError, ApiSuccess } from '@/types'
 import { createRouter } from '@/shared/create-app'
 import { getRepoDeps, getServiceDeps } from '@/shared/deps'
 import { Res200, Res400 } from '@/shared/utils/response-template'
+import { getCurrentUserId } from '@/shared/utils/user'
 import { queryValidator } from '@/shared/utils/validator'
 import { RankDocsQuerySchema } from './rank.dto'
 
@@ -20,6 +21,7 @@ const router = createRouter()
     const { limit } = c.req.valid('query')
     const { rankService } = getServiceDeps()
     const { docRepo } = getRepoDeps()
+    const userId = getCurrentUserId(c)
 
     // TODO: 优化，批量查询文档
     const ranked = await rankService.getRankedDocs(limit)
@@ -30,7 +32,20 @@ const router = createRouter()
       return { ...toDocVO(doc), score } satisfies RankedDocVO
     }))
 
-    return c.json(Res200({ docs: docs.filter((v): v is RankedDocVO => Boolean(v)) }) as ApiSuccess<{ docs: RankedDocVO[] }>, 200)
+    const validDocs = docs.filter((v): v is RankedDocVO => Boolean(v))
+
+    if (userId) {
+      const docIds = validDocs.map(d => d.id)
+      const favoritePromises = docIds.map(docId => docRepo.isFavorite(userId, docId))
+      const favoriteResults = await Promise.all(favoritePromises)
+
+      return c.json(Res200({ docs: validDocs.map((doc, index) => ({
+        ...doc,
+        starred: favoriteResults[index],
+      })) }) as ApiSuccess<{ docs: RankedDocVO[] }>, 200)
+    }
+
+    return c.json(Res200({ docs: validDocs }) as ApiSuccess<{ docs: RankedDocVO[] }>, 200)
   })
 
 export default router

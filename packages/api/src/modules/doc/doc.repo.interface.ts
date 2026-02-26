@@ -6,6 +6,7 @@ export interface IDocRepository {
   list: (page: number, pageSize: number, filters?: { q?: string, source?: DocSourceEnumDTO, createdFrom?: number, createdTo?: number, updatedFrom?: number, updatedTo?: number }, sort?: 'popularity' | 'createdAt' | 'updatedAt') => Promise<PaginationVO<DocEntity<Date>>>
   listLatest: (limit: number) => Promise<DocEntity<Date>[]>
   listFavoritesByUser: (userId: number, page: number, pageSize: number) => Promise<PaginationVO<DocEntity<Date>>>
+  search: (q: string, limit: number) => Promise<DocEntity<Date>[]>
   findById: (id: number) => Promise<DocEntity<Date> | null>
   findBySlug: (slug: string) => Promise<DocEntity<Date> | null>
   findBySlugWithCache: (slug: string) => Promise<DocEntity<Date> | null>

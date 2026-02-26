@@ -2,8 +2,8 @@ import type { DocSnippetsVO, DocVO } from './doc.vo'
 import type { DocListQueryDTO, PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess } from '@/types'
 import { z } from 'zod'
-import { DocAddBodySchema, DocListQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
-import { getDocDetail, incrementDocAccess, listDocs, listFavoriteDocs, listLatestDocs, prepareDoc, queryDocSnippets, toggleFavorite } from '@/modules/doc/doc.service'
+import { DocAddBodySchema, DocListQuerySchema, DocSearchQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
+import { getDocDetail, listDocs, listFavoriteDocs, listLatestDocs, prepareDoc, queryDocSnippets, searchDocs, toggleFavorite } from '@/modules/doc/doc.service'
 import { createRouter } from '@/shared/create-app'
 
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
@@ -41,7 +41,8 @@ const router = createRouter()
     queryValidator(z.object({ limit: PositiveIntOptionalSchema.default(10) })),
     async (c) => {
       const { limit } = c.req.valid('query')
-      const result = await listLatestDocs(limit)
+      const userId = getCurrentUserId(c)
+      const result = await listLatestDocs(limit, userId as number | undefined)
       return c.json(Res200(result) as ApiSuccess<DocVO[]>, 200)
     },
   )
@@ -53,6 +54,16 @@ const router = createRouter()
       const userId = getCurrentUserId(c)
       const result = await listFavoriteDocs(userId as number, page, pageSize)
       return c.json(Res200(result) as ApiSuccess<PaginationVO<DocVO>>, 200)
+    },
+  )
+  .get(
+    '/search',
+    queryValidator(DocSearchQuerySchema),
+    async (c) => {
+      const { q, limit } = c.req.valid('query')
+      const userId = getCurrentUserId(c)
+      const result = await searchDocs(q, limit, userId as number | undefined)
+      return c.json(Res200(result) as ApiSuccess<DocVO[]>, 200)
     },
   )
   .get('/:slug', async (c) => {
@@ -68,12 +79,7 @@ const router = createRouter()
     const { slug } = c.req.param()
     const { like } = c.req.valid('json')
     const ok = await toggleFavorite(userId as number, slug, like)
-    return c.json(Res200({ favorite: ok }) as ApiSuccess, 200)
-  })
-  .post('/:slug/check', async (c) => {
-    const { slug } = c.req.param()
-    await incrementDocAccess(slug)
-    return c.json(Res200({ ok: true }) as ApiSuccess, 200)
+    return c.json(Res200({ starred: ok }) as ApiSuccess, 200)
   })
   .get(
     '/:slug/query',

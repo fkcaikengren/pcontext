@@ -34,9 +34,15 @@ export const DocSnippetsQuerySchema = z.object({
   tokens: PositiveIntOptionalSchema.default(10000),
 })
 
+export const DocSearchQuerySchema = z.object({
+  q: z.string().min(1, '搜索关键词不能为空'),
+  limit: z.coerce.number().int().positive().max(10).optional().default(10),
+})
+
 export type CreateDocDTO = z.infer<typeof CreateDocSchema>
 export type DocAddBodyDTO = z.infer<typeof DocAddBodySchema>
 export type DocListQueryDTO = z.infer<typeof DocListQuerySchema>
+export type DocSearchQueryDTO = z.infer<typeof DocSearchQuerySchema>
 
 export type DocSourceEnumDTO = z.infer<typeof DocSourceEnum>
 

@@ -47,8 +47,12 @@ export class SqliteDocRepository implements IDocRepository {
       ? undefined
       : (fields: any) => {
           const conditions = []
-          if (filters.q)
-            conditions.push(like(fields.name, `%${filters.q}%`))
+          if (filters.q) {
+            const keywords = filters.q.trim().split(/\s+/).filter(Boolean)
+            if (keywords.length > 0) {
+              conditions.push(and(...keywords.map(keyword => like(fields.name, `%${keyword}%`))))
+            }
+          }
           if (filters.source)
             conditions.push(eq(fields.source, filters.source))
           if (filters.createdFrom)
@@ -84,6 +88,20 @@ export class SqliteDocRepository implements IDocRepository {
 
   async listLatest(limit: number): Promise<DocEntity<Date>[]> {
     const rows = await this.db.query.doc.findMany({
+      limit,
+      orderBy: (fields, { desc }) => [desc(fields.updatedAt)],
+    })
+    return rows.map(mapper)
+  }
+
+  async search(q: string, limit: number): Promise<DocEntity<Date>[]> {
+    const keywords = q.trim().split(/\s+/).filter(Boolean)
+    const where = keywords.length > 0
+      ? and(...keywords.map(keyword => like(docSqlite.name, `%${keyword}%`)))
+      : undefined
+
+    const rows = await this.db.query.doc.findMany({
+      where,
       limit,
       orderBy: (fields, { desc }) => [desc(fields.updatedAt)],
     })

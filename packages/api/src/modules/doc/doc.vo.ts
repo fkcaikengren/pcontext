@@ -10,4 +10,6 @@ export interface DocSnippetsVO {
   snippets: DocSnippetVO[]
 }
 
-export type DocVO = DocEntity<number>
+export type DocVO = DocEntity<number> & {
+  starred?: boolean
+}
