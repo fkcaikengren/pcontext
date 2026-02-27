@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -226,15 +226,17 @@ export default function Home() {
               </Button>
             </div>
 
-            <a
-              href={doc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-sm text-black hover:underline whitespace-nowrap truncate mb-4"
-              onClick={(e) => e.stopPropagation()}
+            <span
+              className="block text-sm text-black whitespace-nowrap truncate mb-4 cursor-pointer hover:underline"
+              title={doc.url}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(doc.url, '_blank', 'noopener,noreferrer');
+              }}
             >
               {formatDisplayUrl(doc.url, doc.source)}
-            </a>
+            </span>
 
             <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
               <div className="flex items-center gap-1">
@@ -308,7 +310,9 @@ export default function Home() {
                   <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                 </div>
               ) : searchDocs.length > 0 ? (
-                searchDocs.map(renderDocCard)
+                searchDocs.map((doc) => (
+                  <Fragment key={doc.slug}>{renderDocCard(doc)}</Fragment>
+                ))
               ) : (
                 <div className="col-span-full text-center py-12 text-gray-500">
                   未找到相关文档
@@ -343,7 +347,7 @@ export default function Home() {
                       <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                     </div>
                   ) : popularDocs.length > 0 ? (
-                    popularDocs.map(renderDocCard)
+                    popularDocs.map((doc) => <Fragment key={doc.slug}>{renderDocCard(doc)}</Fragment>)
                   ) : (
                     <div className="col-span-full text-center py-12 text-gray-500">
                       暂无热门文档
@@ -359,7 +363,7 @@ export default function Home() {
                       <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                     </div>
                   ) : latestDocs.length > 0 ? (
-                    latestDocs.map(renderDocCard)
+                    latestDocs.map((doc) => <Fragment key={doc.slug}>{renderDocCard(doc)}</Fragment>)
                   ) : (
                     <div className="col-span-full text-center py-12 text-gray-500">
                       暂无最新文档
@@ -389,7 +393,7 @@ export default function Home() {
                           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                         </div>
                       ) : favoritesDocs.length > 0 ? (
-                        favoritesDocs.map(renderDocCard)
+                        favoritesDocs.map((doc) => <Fragment key={doc.slug}>{renderDocCard(doc)}</Fragment>)
                       ) : (
                         <div className="col-span-full text-center py-12 text-gray-500">
                           暂无收藏文档

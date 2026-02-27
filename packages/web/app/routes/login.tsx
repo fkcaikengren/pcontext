@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { useAuthStore } from '@/stores/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const login = useAuthStore((state) => state.login);
 
   const [username, setUsername] = useState('admin');
@@ -17,11 +16,8 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/profile');
-    }
-  }, [isAuthenticated, navigate]);
+  // 删除 useEffect，自动导航逻辑已在 handleSubmit 中处理
+  // useEffect 不再需要，因为 handleSubmit 中已经处理了登录后的导航
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

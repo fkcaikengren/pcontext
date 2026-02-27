@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -7,17 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/auth';
 
+// 注意：权限检查由 layout 组件的 loader 统一处理
+// 这里只需要获取并显示用户信息即可
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
+  console.log('ProfilePage user:', user);
 
   if (!user) {
     return null;

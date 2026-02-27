@@ -57,7 +57,7 @@ export const chatHandler: Handler = async (c) => {
         }
       }
     }
-
+    // TODO: 重构
     return createUIMessageStreamResponse({
       stream: toUIMessageStream(fixStream()),
     })

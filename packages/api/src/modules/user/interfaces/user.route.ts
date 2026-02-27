@@ -7,6 +7,9 @@ import AppSettings from '@/settings'
 import { createRouter } from '@/shared/create-app'
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator } from '@/shared/utils/validator'
+import { Res200 } from '@/shared/utils/response-template'
+import { UserVO } from './user.vo'
+import { ApiSuccess } from '@/types'
 
 const { config } = AppSettings
 
@@ -33,8 +36,7 @@ const router = createRouter()
       path: '/',
       maxAge: 86400,
     })
-
-    return c.json(user)
+    return c.json(Res200(user) as ApiSuccess<UserVO> , 200)
   })
   .post('/logout', async (c) => {
     const csrfToken = getCookie(c, 'csrf_token')
@@ -42,27 +44,18 @@ const router = createRouter()
     deleteCookie(c, 'access_token', { path: '/' })
     deleteCookie(c, 'csrf_token', { path: '/' })
 
-    return c.json({ message: 'logout success', csrfToken })
+    return c.json(Res200({ message: '退出登录成功' }) as ApiSuccess<{ message: string }>, 200)
   })
   .get('/me', async (c) => {
     const userId = getCurrentUserId(c)
-    const routes: any = {
-      '/': true,
-      '/login': true,
-      '/profile': true,
-
-      '/docs': true,
-      '/docs/*': true,
-      '/add-docs': true,
-
-      '/tasks': true,
-      '/tasks/*': true,
-
-      '/users': true,
-      '/permissions': true,
-
+    
+    let me = {
+      id: null as number | null,
+      name: null as string | null,
+      role: 'guest',
+      permissions: {
+      }
     }
-    let me: any = null
     if (userId) {
       const user = await getUserById(userId)
       if (user) {
@@ -70,25 +63,13 @@ const router = createRouter()
           id: user.id,
           name: user.name,
           role: user.role,
-          permissions: { routes },
+          permissions: {  },
         }
       }
     }
 
-    me = me || {
-      id: null,
-      name: null,
-      role: 'guest',
-      permissions: {
-        routes: {
-          ...routes,
-          '/users': false,
-          '/permissions': false,
-        },
-      },
-    }
 
-    return c.json(me)
+    return c.json(Res200(me) as ApiSuccess<typeof me>, 200)
   })
   .get('/profile', async (c) => {
     const userId = getCurrentUserId(c)

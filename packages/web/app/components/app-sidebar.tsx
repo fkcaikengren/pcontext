@@ -34,6 +34,17 @@ import {
   ShieldCheck,
   User
 } from "lucide-react"
+import { getAccessibleRoutes } from "@/permissions"
+
+// 图标映射
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Home,
+  BookOpen,
+  FileText,
+  ListTodo,
+  Users,
+  ShieldCheck,
+}
 
 export function AppSidebar({
   ...props
@@ -43,61 +54,22 @@ export function AppSidebar({
   const navigate = useNavigate()
   const { toggleSidebar } = useSidebar()
 
-  const menuItems = [
-    {
-      title: "首页",
-      url: "/",
-      icon: Home,
-    },
-    {
-      title: "文档列表",
-      url: "/docs",
-      icon: BookOpen,
-    },
-    {
-      title: "添加文档",
-      url: "/add-docs",
-      icon: FileText,
-    },
-    {
-      title: "任务列表",
-      url: "/tasks",
-      icon: ListTodo,
-    },
-    {
-      title: "用户管理",
-      url: "/users",
-      icon: Users,
-    },
-    {
-      title: "权限管理",
-      url: "/permissions",
-      icon: ShieldCheck,
-    },
-  ]
+  // 根据权限获取可访问的路由
+  const accessibleRoutes = getAccessibleRoutes(user?.role, !!user)
+
+  // 构建菜单项
+  const menuItems = accessibleRoutes
+    .filter((meta) => meta.title && meta.icon) // 只显示有标题和图标的路由
+    .map((meta) => ({
+      title: meta.title!,
+      url: meta.path,
+      icon: iconMap[meta.icon!],
+    }))
 
   const handleLogout = () => {
     logout()
     navigate("/")
   }
-
-  const routes = user?.permissions?.routes
-
-  const hasRouteAccess = (path: string) => {
-    if (!routes) return true
-    if (routes[path]) return true
-
-    for (const [pattern, allowed] of Object.entries(routes)) {
-      if (!allowed) continue
-      if (!pattern.endsWith("*")) continue
-      const prefix = pattern.slice(0, -1)
-      if (path.startsWith(prefix)) return true
-    }
-
-    return false
-  }
-
-  const filteredItems = menuItems.filter((item) => hasRouteAccess(item.url))
 
   return (
     <Sidebar 
@@ -124,7 +96,7 @@ export function AppSidebar({
           {/* <SidebarGroupLabel>Menu</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
-              {filteredItems.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 

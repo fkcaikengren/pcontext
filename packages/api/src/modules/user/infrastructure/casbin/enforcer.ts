@@ -26,7 +26,7 @@ const SEED_POLICIES: [string, string, string][] = [
 
   ['user', '/api/health', 'GET'],
   ['user', '/api/users', 'GET'],
-  ['user', '/api/docs/add', 'POST'],
+  ['user', '/api/docs', 'POST'],
   ['user', '/api/docs/*/favorite', 'POST'],
 
   ['user', '/api/users/login', 'POST'],
@@ -36,7 +36,7 @@ const SEED_POLICIES: [string, string, string][] = [
 
   ['guest', '/api/health', 'GET'],
   ['guest', '/api/docs', 'GET'],
-  ['guest', '/api/docs/*', 'GET'],
+  ['guest', '/api/docs/query', 'GET'],
   ['guest', '/api/docs/*/check', 'POST'],
   ['guest', '/api/chat', 'POST'],
   ['guest', '/api/ranking/docs', 'GET'],
@@ -47,6 +47,13 @@ const SEED_POLICIES: [string, string, string][] = [
   ['guest', '/api/users/me', 'GET'],
   ['guest', '/api/tasks/*/progress', 'GET'],
 ]
+
+// TODO: 增加表配置前端权限
+// role, permissionCode
+// const SEED_FRONT_PERMISSIONS = []
+
+
+
 
 export function initEnforcer(): Promise<import('casbin').Enforcer>
 export function initEnforcer(adapter: import('casbin').Adapter): Promise<import('casbin').Enforcer>

@@ -10,7 +10,7 @@ export * from '@/modules/rank/rank.vo'
 export * from '@/modules/task/task.dto'
 export * from '@/modules/task/task.vo'
 export * from '@/modules/user/interfaces/user.dto'
-// export * from '@/modules/user/user.vo'
+export * from '@/modules/user/interfaces/user.vo'
 
 export function createClient(...args: Parameters<typeof hc>) {
   return hc<AppType>(...args)
