@@ -1,10 +1,6 @@
-
-
-
 import { sql } from 'drizzle-orm'
 import { bigint, pgEnum, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-
 
 export const userRoleEnum = pgEnum('user_role', ['admin', 'user'])
 
@@ -23,8 +19,6 @@ export const userPg = pgTable('user', {
 
 export type UserPgPO = typeof userPg.$inferSelect
 export type InsertUserPgPO = typeof userPg.$inferInsert
-
-
 
 export const userSqlite = sqliteTable('user', {
   id: integer('id').primaryKey({ autoIncrement: true }),

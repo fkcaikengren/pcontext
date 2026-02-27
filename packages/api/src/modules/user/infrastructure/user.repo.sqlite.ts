@@ -1,23 +1,14 @@
-import { eq } from 'drizzle-orm'
+import type { AuthUserRecord, IUserRepository } from '@/modules/user/domain/user.repo.interface'
+import type { UserSqlitePO } from '@/modules/user/infrastructure/user.po'
+import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/interfaces/user.dto'
 import type { SqliteDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
-import type { AuthUserRecord, IUserRepository } from '@/modules/user/user.repo.interface'
-import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/user.dto'
-import type { UserEntity } from '@/modules/user/user.entity'
-import { userSqlite, type UserSqlitePO } from '@/modules/user/infrastructure/user.po'
+import { eq } from 'drizzle-orm'
+import { UserEntity } from '@/modules/user/domain/user.entity'
+import { userSqlite } from '@/modules/user/infrastructure/user.po'
 
 function mapper(row: UserSqlitePO): UserEntity {
-  return {
-    id: row.id!,
-    username: row.username!,
-    name: row.name!,
-    phone: row.phone!,
-    email: row.email!,
-    role: (row.role || 'user') as UserEntity['role'],
-    status: (row.status || 'active') as UserEntity['status'],
-    createdAt: new Date(row.createdAt as number),
-    updatedAt: new Date(row.updatedAt as number),
-  }
+  return new UserEntity(row)
 }
 
 export class SqliteUserRepository implements IUserRepository {
@@ -100,19 +91,5 @@ export class SqliteUserRepository implements IUserRepository {
       updatedAt: Date.now(),
     }).where(eq(userSqlite.id, id)).returning()
     return row ? mapper(row) : null
-  }
-
-  async findAuthByUsername(usernameValue: string): Promise<AuthUserRecord | null> {
-    const row = await this.db.query.user.findFirst({ where: eq(userSqlite.username, usernameValue) })
-    if (!row) {
-      return null
-    }
-    return {
-      id: row.id!,
-      username: row.username!,
-      password: row.password!,
-      role: (row.role || 'user') as UserEntity['role'],
-      status: (row.status || 'active') as UserEntity['status'],
-    }
   }
 }

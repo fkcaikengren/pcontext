@@ -1,6 +1,6 @@
+import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '../interfaces/user.dto'
+import type { UserEntity } from './user.entity'
 import type { PaginationVO } from '@/shared/vo'
-import type { UserEntity } from './user.entity.ts'
-import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from './user.dto'
 
 export interface AuthUserRecord {
   id: number
@@ -19,5 +19,4 @@ export interface IUserRepository {
   create: (input: CreateUserDTO) => Promise<UserEntity>
   updateById: (id: number, input: UpdateUserDTO) => Promise<UserEntity | null>
   updateSelf: (id: number, input: UpdateSelfDTO) => Promise<UserEntity | null>
-  findAuthByUsername: (username: string) => Promise<AuthUserRecord | null>
 }

@@ -1,8 +1,8 @@
-import type { UserLoginDTO } from '@/modules/user/user.dto'
+import type { UserLoginDTO } from '@/modules/user/interfaces/user.dto'
 import { randomUUID } from 'node:crypto'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
-import { userLoginSchema } from '@/modules/user/user.dto'
-import { getUserById, login } from '@/modules/user/user.service'
+import { getUserById, login } from '@/modules/user/application/user.service'
+import { userLoginSchema } from '@/modules/user/interfaces/user.dto'
 import AppSettings from '@/settings'
 import { createRouter } from '@/shared/create-app'
 import { getCurrentUserId } from '@/shared/utils/user'
@@ -13,33 +13,28 @@ const { config } = AppSettings
 const router = createRouter()
   .post('/login', jsonValidator(userLoginSchema), async (c) => {
     const { username, password } = c.req.valid('json') as UserLoginDTO
-    try {
-      const { user, token } = await login({ username, password })
+    const { user, token } = await login({ username, password })
 
-      const csrfToken = randomUUID()
+    const csrfToken = randomUUID()
 
-      // token 有效期 1天
-      setCookie(c, 'access_token', token, {
-        httpOnly: true,
-        secure: !config.is_dev,
-        sameSite: 'Strict',
-        path: '/',
-        maxAge: 86400,
-      })
+    // token 有效期 1天
+    setCookie(c, 'access_token', token, {
+      httpOnly: true,
+      secure: !config.is_dev,
+      sameSite: 'Strict',
+      path: '/',
+      maxAge: 86400,
+    })
 
-      setCookie(c, 'csrf_token', csrfToken, {
-        httpOnly: false,
-        secure: !config.is_dev,
-        sameSite: 'Strict',
-        path: '/',
-        maxAge: 86400,
-      })
+    setCookie(c, 'csrf_token', csrfToken, {
+      httpOnly: false,
+      secure: !config.is_dev,
+      sameSite: 'Strict',
+      path: '/',
+      maxAge: 86400,
+    })
 
-      return c.json(user)
-    }
-    catch (e: any) {
-      return c.json({ message: e.message }, 401)
-    }
+    return c.json(user)
   })
   .post('/logout', async (c) => {
     const csrfToken = getCookie(c, 'csrf_token')
@@ -66,7 +61,6 @@ const router = createRouter()
       '/users': true,
       '/permissions': true,
 
-      '/pcontext-setting': true,
     }
     let me: any = null
     if (userId) {

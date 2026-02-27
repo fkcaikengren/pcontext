@@ -12,7 +12,6 @@ export default [
 		route("tasks/:taskId", "routes/tasks/detail.tsx"),
 		route("users", "routes/users.tsx"),
 		route("permissions", "routes/permissions.tsx"),
-		route("pcontext-setting", "routes/pcontext-setting.tsx"),
 		route("profile", "routes/profile.tsx"),
 	]),
 ] satisfies RouteConfig;

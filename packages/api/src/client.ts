@@ -9,7 +9,7 @@ export * from '@/modules/doc/doc.vo'
 export * from '@/modules/rank/rank.vo'
 export * from '@/modules/task/task.dto'
 export * from '@/modules/task/task.vo'
-export * from '@/modules/user/user.dto'
+export * from '@/modules/user/interfaces/user.dto'
 // export * from '@/modules/user/user.vo'
 
 export function createClient(...args: Parameters<typeof hc>) {

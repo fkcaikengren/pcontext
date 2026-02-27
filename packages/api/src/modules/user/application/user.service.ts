@@ -1,16 +1,19 @@
+import type { UserRole } from '@/modules/user/domain/user.entity'
+import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/interfaces/user.dto'
+import type { LoginResultVO, UserVO } from '@/modules/user/interfaces/user.vo'
+import type { PaginationVO } from '@/shared/vo'
 import argon2 from 'argon2'
 import { sign } from 'hono/jwt'
-import AppSettings from '@/settings'
+import { UserEntity } from '@/modules/user/domain/user.entity'
 import { getEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
-import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/user.dto'
-import type { UserEntity, UserRole } from '@/modules/user/user.entity'
-import type { PaginationVO } from '@/shared/vo'
-import { logger } from '@/shared/logger'
+import { userSchema } from '@/modules/user/interfaces/user.vo'
+import AppSettings from '@/settings'
 import { getRepoDeps } from '@/shared/deps'
+import { logger } from '@/shared/logger'
 
-export async function login(input: Pick<CreateUserDTO, 'username' | 'password'>): Promise<{ user: UserEntity; token: string }> {
+export async function login(input: Pick<CreateUserDTO, 'username' | 'password'>): Promise<LoginResultVO> {
   const { userRepo } = getRepoDeps()
-  const authUser = await userRepo.findAuthByUsername(input.username)
+  const authUser = await userRepo.findByUsername(input.username)
   if (!authUser) {
     throw new Error('用户不存在')
   }
@@ -20,34 +23,45 @@ export async function login(input: Pick<CreateUserDTO, 'username' | 'password'>)
     throw new Error('密码错误')
   }
 
-  if (authUser.status !== 'active') {
-    throw new Error('用户已被禁用')
-  }
+  const user = new UserEntity({
+    id: authUser.id,
+    username: authUser.username,
+    password: authUser.password,
+    name: '',
+    phone: '',
+    email: '',
+    role: authUser.role,
+    status: authUser.status,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  })
+  user.ensureActive()
 
-  const token = await sign({ sub: String(authUser.id), username: authUser.username, role: authUser.role }, AppSettings.config.jwt_secret)
-  const user = await getUserById(authUser.id)
-  if (!user) {
-    throw new Error('用户不存在')
-  }
+  const token = await sign({ sub: String(user.id), username: user.username, role: user.role }, AppSettings.config.jwt_secret)
   logger.info({ userId: user.id, username: user.username }, 'user login')
-  return { user, token }
+  return { user: userSchema.parse(user), token }
 }
 
-export async function getUserById(id: number): Promise<UserEntity | null> {
+export async function getUserById(id: number): Promise<UserVO | null> {
   const { userRepo } = getRepoDeps()
-  return userRepo.findById(id)
+  const user = await userRepo.findById(id)
+  return user ? userSchema.parse(user) : null
 }
 
 export async function listUsers(
   page: number,
   pageSize: number,
   filters?: { name?: string },
-): Promise<PaginationVO<UserEntity>> {
+): Promise<PaginationVO<UserVO>> {
   const { userRepo } = getRepoDeps()
-  return userRepo.list(page, pageSize, filters)
+  const result = await userRepo.list(page, pageSize, filters)
+  return {
+    ...result,
+    list: result.list.map(item => userSchema.parse(item)),
+  }
 }
 
-export async function createUser(input: CreateUserDTO): Promise<UserEntity> {
+export async function createUser(input: CreateUserDTO): Promise<UserVO> {
   const { userRepo } = getRepoDeps()
 
   const hasUser = await userRepo.findByUsername(input.username)
@@ -73,19 +87,20 @@ export async function createUser(input: CreateUserDTO): Promise<UserEntity> {
   await enforcer.addRoleForUser(created.username, primaryRole)
 
   logger.info({ userId: created.id, username: created.username }, 'user created')
-  return created
+  return userSchema.parse(created)
 }
 
-export async function updateUserById(id: number, input: UpdateUserDTO): Promise<UserEntity | null> {
+export async function updateUserById(id: number, input: UpdateUserDTO): Promise<UserVO | null> {
   const { userRepo } = getRepoDeps()
   const patch: UpdateUserDTO = { ...input }
   if (patch.password !== undefined) {
     patch.password = await argon2.hash(patch.password)
   }
-  return userRepo.updateById(id, patch)
+  const updated = await userRepo.updateById(id, patch)
+  return updated ? userSchema.parse(updated) : null
 }
 
-export async function updateUserWithValidation(id: number, input: UpdateUserDTO): Promise<UserEntity | null> {
+export async function updateUserWithValidation(id: number, input: UpdateUserDTO): Promise<UserVO | null> {
   const { userRepo } = getRepoDeps()
   const existing = await userRepo.findById(id)
   if (!existing) {
@@ -129,16 +144,17 @@ export async function updateUserWithValidation(id: number, input: UpdateUserDTO)
   return updated
 }
 
-export async function updateSelf(id: number, input: UpdateSelfDTO): Promise<UserEntity | null> {
+export async function updateSelf(id: number, input: UpdateSelfDTO): Promise<UserVO | null> {
   const { userRepo } = getRepoDeps()
   const patch: UpdateSelfDTO = { ...input }
   if (patch.password !== undefined) {
     patch.password = await argon2.hash(patch.password)
   }
-  return userRepo.updateSelf(id, patch)
+  const updated = await userRepo.updateSelf(id, patch)
+  return updated ? userSchema.parse(updated) : null
 }
 
-export async function softDeleteUser(id: number): Promise<UserEntity | null> {
+export async function softDeleteUser(id: number): Promise<UserVO | null> {
   const existing = await getUserById(id)
   if (!existing) {
     return null
@@ -169,7 +185,7 @@ export async function getUserRoles(id: number): Promise<UserRole[] | null> {
   return casbinRoles
 }
 
-export async function updateUserRoles(id: number, roles: UserRole[]): Promise<{ user: UserEntity | null, roles: UserRole[] }> {
+export async function updateUserRoles(id: number, roles: UserRole[]): Promise<{ user: UserVO | null, roles: UserRole[] }> {
   const primaryRole = roles[0]
   const user = await getUserById(id)
   if (!user) {

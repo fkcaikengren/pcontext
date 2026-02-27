@@ -74,11 +74,6 @@ export function AppSidebar({
       url: "/permissions",
       icon: ShieldCheck,
     },
-    {
-      title: "应用设置",
-      url: "/pcontext-setting",
-      icon: Settings,
-    },
   ]
 
   const handleLogout = () => {

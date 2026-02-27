@@ -1,5 +1,5 @@
-import { createRouter } from '@/shared/create-app'
 import { getEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
+import { createRouter } from '@/shared/create-app'
 
 const ROLE_META: Record<string, { name: string, description: string }> = {
   admin: {

@@ -1,24 +1,14 @@
 import type { UserPgPO } from './user.po'
-import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/user.dto'
-import type { UserEntity } from '@/modules/user/user.entity'
-import type { AuthUserRecord, IUserRepository } from '@/modules/user/user.repo.interface'
+import type { AuthUserRecord, IUserRepository } from '@/modules/user/domain/user.repo.interface'
+import type { CreateUserDTO, UpdateSelfDTO, UpdateUserDTO } from '@/modules/user/interfaces/user.dto'
 import type { PostgresqlDB } from '@/shared/db/connection'
 import type { PaginationVO } from '@/shared/vo'
 import { and, count, eq, like } from 'drizzle-orm'
+import { UserEntity } from '@/modules/user/domain/user.entity'
 import { userPg } from './user.po'
 
 function mapper(row: UserPgPO): UserEntity {
-  return {
-    id: row.id,
-    username: row.username,
-    name: row.name,
-    phone: row.phone,
-    email: row.email,
-    role: row.role as UserEntity['role'],
-    status: row.status as UserEntity['status'],
-    createdAt: new Date(row.createdAt),
-    updatedAt: new Date(row.updatedAt),
-  }
+  return new UserEntity(row)
 }
 
 export class PgUserRepository implements IUserRepository {
@@ -107,19 +97,5 @@ export class PgUserRepository implements IUserRepository {
       updatedAt: Date.now(),
     }).where(eq(userPg.id, id)).returning()
     return row ? mapper(row) : null
-  }
-
-  async findAuthByUsername(usernameValue: string): Promise<AuthUserRecord | null> {
-    const row = await this.db.query.user.findFirst({ where: eq(userPg.username, usernameValue) })
-    if (!row) {
-      return null
-    }
-    return {
-      id: row.id,
-      username: row.username,
-      password: row.password,
-      role: row.role as UserEntity['role'],
-      status: row.status as UserEntity['status'],
-    }
   }
 }

@@ -10,7 +10,7 @@ import docs from './modules/doc/doc.route'
 import mcp from './modules/doc/mcp.route'
 import ranking from './modules/rank/rank.route'
 import tasks from './modules/task/task.route'
-import users from './modules/user/user.route'
+import users from './modules/user/interfaces/user.route'
 import AppSettings from './settings'
 
 const { config } = AppSettings
