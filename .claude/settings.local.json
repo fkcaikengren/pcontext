@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun add vite-plugin-svg-icons)",
+      "Bash(ls /Users/tangshiwen/Documents/vscode/web/startup/pcontext/node_modules/.bun/vite-plugin-svg-icons*/)",
+      "Bash(bun remove vite-plugin-svg-icons)",
+      "Bash(bun add -d vite-plugin-svgr @svgr/plugin-jsx @svgr/plugin-typescript)",
+      "Bash(bun add -d vite-plugin-svgr)"
+    ]
+  }
+}
