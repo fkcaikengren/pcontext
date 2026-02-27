@@ -127,7 +127,7 @@ export default function DocsPage() {
               href={value}
               target="_blank"
               rel="noreferrer"
-              className="line-clamp-1 text-xs text-blue-600 hover:underline"
+              className="line-clamp-1 text-gray-500 underline"
             >
               {value}
             </a>

@@ -9,11 +9,13 @@ import {
   TrendingUp,
   Clock,
   Star,
-  Github,
   Globe,
   Loader2,
-  LogIn
+  LogIn,
+  Folder
 } from 'lucide-react';
+import GiteeIcon from '@/components/icons/gitee.svg?react';
+import GithubIcon from '@/components/icons/github.svg?react';
 import { Link } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { client, parseRes } from '@/APIs';
@@ -31,8 +33,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatRelativeTime } from '@/utils/format';
+import type { DocSourceEnumDTO } from '@pcontext/api/client';
 
 type TabValue = 'popular' | 'latest' | 'favorites';
+
+function DocSourceIcon({ source }: { source: DocSourceEnumDTO }) {
+  const iconClassName = "w-4 h-4";
+  switch (source) {
+    case 'github':
+      return <GithubIcon className={iconClassName} />;
+    case 'gitee':
+      return (
+        <GiteeIcon className={iconClassName} />
+      );
+    case 'website':
+      return <Globe className={iconClassName} />;
+    default:
+      return <Folder className={iconClassName} />;
+  }
+}
 
 function formatNumber(value: number): string {
   if (value >= 1000000) {
@@ -159,24 +179,34 @@ export default function Home() {
 
   const isLoading = urlState.tab === 'popular' ? isLoadingPopular : urlState.tab === 'latest' ? isLoadingLatest : isLoadingFavorites;
 
+  // 处理 URL 显示：website 显示域名，github/gitee 显示路径
+  const formatDisplayUrl = (url: string, source: DocSourceEnumDTO): string => {
+    try {
+      const urlObj = new URL(url);
+      if (source === 'website') {
+        // website 类型：仅显示域名
+        return urlObj.hostname;
+      }
+      // github/gitee 类型：显示路径
+      return urlObj.pathname;
+    } catch {
+      return url;
+    }
+  };
+
   const renderDocCard = (doc: RankedDocVO | DocVO) => {
     const isFavorite = doc.starred === true;
 
     return (
-      <Link key={doc.id} to={`/docs/${encodeURIComponent(doc.slug)}`}>
+      <Link to={`/docs/${doc.slug}`} className="block h-full">
         <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200 h-full">
           <div className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                  {doc.source === 'github' ? <Github className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+                  <DocSourceIcon source={doc.source} />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg line-clamp-1">{doc.name}</h3>
-                  <div className="text-xs text-gray-500 flex items-center gap-1">
-                    <span className="font-mono bg-gray-100 px-1 rounded line-clamp-1">{doc.slug}</span>
-                  </div>
-                </div>
+                <h3 className="font-semibold text-lg line-clamp-1 text-primary">{doc.name}</h3>
               </div>
               <Button
                 variant="ghost"
@@ -196,6 +226,16 @@ export default function Home() {
               </Button>
             </div>
 
+            <a
+              href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-sm text-black hover:underline whitespace-nowrap truncate mb-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {formatDisplayUrl(doc.url, doc.source)}
+            </a>
+
             <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
               <div className="flex items-center gap-1">
                 <span className="font-semibold">{formatNumber(doc.tokens)}</span>
@@ -210,7 +250,7 @@ export default function Home() {
             <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-4">
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3 text-green-500" />
-                <span>Updated {new Date(doc.updatedAt).toLocaleDateString()}</span>
+                <span>更新于 {formatRelativeTime(doc.updatedAt)}</span>
               </div>
             </div>
           </div>
@@ -220,7 +260,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* GitHub 链接 */}
+      <a
+        href="https://github.com/fkcaikengren/pcontext"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-6 right-6 flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        aria-label="GitHub 仓库"
+      >
+        <GithubIcon className="w-6 h-6 text-gray-600 hover:text-gray-900" />
+        <span className="text-gray-600 hover:text-gray-900 underline underline-offset-2">安装</span>
+      </a>
+
       <main className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 text-primary">
@@ -230,7 +282,7 @@ export default function Home() {
             for Vibe Coding 
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Copy latest docs & code — paste into Cursor, Claude, or other LLMs
+            一键复制最新文档和代码，粘贴到 Cursor、Claude 等 AI 编程助手
           </p>
           
           <div className="flex items-center justify-center gap-4 max-w-3xl mx-auto">
@@ -239,7 +291,7 @@ export default function Home() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search a library (e.g. Next, React)"
+                placeholder="搜索文档库 (e.g. Next, React)"
                 className="pl-10 py-6 text-base"
               />
             </div>
@@ -270,15 +322,15 @@ export default function Home() {
           <div className="mb-6">
             <Tabs value={urlState.tab} onValueChange={(value) => setUrlState({ tab: value as TabValue })}>
               <TabsList className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
-                <TabsTrigger value="popular" className="gap-2">
+                <TabsTrigger value="popular" className="gap-2 data-[state=active]:text-primary">
                   <TrendingUp className="w-4 h-4" />
                   热门
                 </TabsTrigger>
-                <TabsTrigger value="latest" className="gap-2">
+                <TabsTrigger value="latest" className="gap-2 data-[state=active]:text-primary">
                   <Clock className="w-4 h-4" />
                   最新
                 </TabsTrigger>
-                <TabsTrigger value="favorites" className="gap-2">
+                <TabsTrigger value="favorites" className="gap-2 data-[state=active]:text-primary">
                   <Star className="w-4 h-4" />
                   收藏
                 </TabsTrigger>
