@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, Search, Filter, FileText, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -103,7 +103,7 @@ export default function DocsPage() {
         accessorKey: "name",
         header: "名称",
         cell: (info) => (
-          <div className="text-sm font-medium">{info.getValue() as string}</div>
+          <div className="text-sm font-medium text-foreground">{info.getValue() as string}</div>
         ),
       },
       {
@@ -111,10 +111,10 @@ export default function DocsPage() {
         header: "来源",
         cell: (info) => {
           const value = info.getValue<DocSourceEnumDTO>()
-          if (value === "github") return "GitHub"
-          if (value === "gitee") return "Gitee"
-          if (value === "website") return "网站"
-          return value
+          if (value === "github") return <span className="text-sm">GitHub</span>
+          if (value === "gitee") return <span className="text-sm">Gitee</span>
+          if (value === "website") return <span className="text-sm">网站</span>
+          return <span className="text-sm">{value}</span>
         },
       },
       {
@@ -127,7 +127,7 @@ export default function DocsPage() {
               href={value}
               target="_blank"
               rel="noreferrer"
-              className="line-clamp-1 text-gray-500 underline"
+              className="line-clamp-1 text-sm text-muted-foreground underline underline-offset-2 decoration-border hover:text-foreground transition-colors"
             >
               {value}
             </a>
@@ -137,19 +137,19 @@ export default function DocsPage() {
       {
         accessorKey: "snippets",
         header: "片段",
-        cell: (info) => <span>{info.getValue<number>()}</span>,
+        cell: (info) => <span className="text-sm text-foreground">{info.getValue<number>()}</span>,
       },
       {
         accessorKey: "tokens",
         header: "Token",
-        cell: (info) => <span>{formatNumber(info.getValue<number>())}</span>,
+        cell: (info) => <span className="text-sm text-foreground">{formatNumber(info.getValue<number>())}</span>,
       },
       {
         accessorKey: "updatedAt",
         header: ({ column }) => (
           <button
             type="button"
-            className="flex items-center gap-1 text-xs font-medium"
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             onClick={() =>
               column.toggleSorting(column.getIsSorted() === "asc")
             }
@@ -175,8 +175,11 @@ export default function DocsPage() {
         header: "操作",
         cell: ({ row }) => (
           <div className="flex justify-end">
-            <Button size="sm" variant="outline" asChild>
-              <Link to={`/docs/${row.original.slug}`}>查看</Link>
+            <Button size="sm" variant="outline" asChild className="transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]">
+              <Link to={`/docs/${row.original.slug}`}>
+                <ExternalLink className="w-3 h-3 mr-1" />
+                查看
+              </Link>
             </Button>
           </div>
         ),
@@ -202,30 +205,41 @@ export default function DocsPage() {
   const canNext = page < totalPages
 
   return (
-    <div className="flex flex-1 flex-col items-center p-4 pt-10">
+    <div className="flex flex-1 flex-col items-center p-6 pt-16 md:p-8 md:pt-20">
       <div className="w-full max-w-5xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>文档列表</CardTitle>
+
+        <Card className="border border-border/60 shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-muted-foreground" />
+              <CardTitle className="text-lg font-medium">文档列表</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            {/* Filters */}
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="flex flex-1 flex-col gap-2 md:max-w-sm">
-                <div className="text-xs text-muted-foreground">按名称搜索</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Search className="w-3 h-3" />
+                  按名称搜索
+                </div>
                 <Input
                   placeholder="输入文档名称"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="h-8"
+                  className="h-10 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                 />
               </div>
-              <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-wrap items-end gap-4">
                 <div className="flex flex-col gap-1">
-                  <div className="text-xs text-muted-foreground">来源</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Filter className="w-3 h-3" />
+                    来源
+                  </div>
                   <select
                     value={source}
                     onChange={(event) => setSource(event.target.value as "all" | DocSource)}
-                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                    className="h-10 rounded-md border border-border/60 bg-background px-3 text-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                   >
                     <option value="all">全部</option>
                     <option value="github">GitHub</option>
@@ -240,14 +254,14 @@ export default function DocsPage() {
                       type="date"
                       value={updatedFrom}
                       onChange={(event) => setUpdatedFrom(event.target.value)}
-                      className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                      className="h-10 rounded-md border border-border/60 bg-background px-3 text-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                     />
                     <span className="text-xs text-muted-foreground">至</span>
                     <input
                       type="date"
                       value={updatedTo}
                       onChange={(event) => setUpdatedTo(event.target.value)}
-                      className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                      className="h-10 rounded-md border border-border/60 bg-background px-3 text-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                     />
                   </div>
                 </div>
@@ -255,18 +269,19 @@ export default function DocsPage() {
             </div>
 
             {error && (
-              <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-600">
+              <div className="mb-4 rounded-md bg-destructive/5 px-4 py-3 text-sm text-destructive">
                 {error}
               </div>
             )}
 
-            <div className="rounded-md border">
+            {/* Table */}
+            <div className="rounded-lg border border-border/60 overflow-hidden">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
+                    <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-b border-border/60">
                       {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} className="whitespace-nowrap">
+                        <TableHead key={header.id} className="whitespace-nowrap text-sm font-medium text-muted-foreground">
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -283,16 +298,16 @@ export default function DocsPage() {
                     <TableRow>
                       <TableCell
                         colSpan={columns.length}
-                        className="h-24 text-center text-sm"
+                        className="h-24 text-center text-sm text-muted-foreground"
                       >
                         加载中...
                       </TableCell>
                     </TableRow>
                   ) : table.getRowModel().rows.length ? (
                     table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id}>
+                      <TableRow key={row.id} className="hover:bg-muted/30 border-b border-border/30 transition-colors">
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="align-middle">
+                          <TableCell key={cell.id} className="align-middle py-3">
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -315,18 +330,19 @@ export default function DocsPage() {
               </Table>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+            {/* Pagination */}
+            <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
               <div>
                 共 {data?.total ?? 0} 条记录，第 {data?.page ?? page} / {totalPages} 页
               </div>
               <div className="flex items-center gap-2">
-                <span>每页</span>
+                <span className="text-xs">每页</span>
                 <select
                   value={pageSize}
                   onChange={(event) =>
                     setPageSize(Number.parseInt(event.target.value, 10) || 10)
                   }
-                  className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  className="h-8 rounded-md border border-border/60 bg-background px-2 text-xs transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>
@@ -338,7 +354,7 @@ export default function DocsPage() {
                   variant="outline"
                   disabled={!canPrev || loading || query.isFetching}
                   onClick={() => canPrev && setPage((prev) => prev - 1)}
-                  className="h-8 px-3"
+                  className="h-8 px-3 transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]"
                 >
                   上一页
                 </Button>
@@ -348,7 +364,7 @@ export default function DocsPage() {
                   variant="outline"
                   disabled={!canNext || loading || query.isFetching}
                   onClick={() => canNext && setPage((prev) => prev + 1)}
-                  className="h-8 px-3"
+                  className="h-8 px-3 transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]"
                 >
                   下一页
                 </Button>

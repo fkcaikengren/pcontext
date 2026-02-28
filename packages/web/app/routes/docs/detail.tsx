@@ -129,8 +129,8 @@ export default function DocsDetail() {
   };
 
 	return (
-		<div className="flex flex-1 flex-col items-center p-4 pt-10">
-      <div className="w-full max-w-5xl">
+		<div className="flex flex-1 flex-col items-center p-6 pt-16 md:p-8 md:pt-20">
+      <div className="w-full max-w-4xl">
 				<DocInfoCard
 					title={docQuery.data?.name || "文档详情"}
 					url={docQuery.data?.url}
@@ -144,20 +144,28 @@ export default function DocsDetail() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between mb-6 mt-6">
-            <TabsList className="bg-white border border-gray-200">
-              <TabsTrigger value="context" className="gap-2">
+          <div className="flex items-center justify-between mb-8 mt-8">
+            <TabsList className="bg-muted/50 p-1 rounded-lg border border-border/50">
+              <TabsTrigger
+                value="context"
+                className="gap-2 rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+              >
                 <FileText className="w-4 h-4" />
                 Context
               </TabsTrigger>
-              <TabsTrigger value="chat" className="gap-2">
+              <TabsTrigger
+                value="chat"
+                className="gap-2 rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+              >
                 <Send className="w-4 h-4" />
                 Chat
               </TabsTrigger>
-              <TabsTrigger value="benchmark" className="gap-2">
+              <TabsTrigger
+                value="benchmark"
+                className="gap-2 rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+              >
                 <TrendingUp className="w-4 h-4" />
                 Benchmark
-                {/* <Badge variant="secondary" className="ml-1">74.4</Badge> */}
               </TabsTrigger>
             </TabsList>
             
@@ -177,71 +185,84 @@ export default function DocsDetail() {
 
           {/* Context Tab */}
           <TabsContent value="context" className="mt-0">
-            <div className="mt-6 p-6 bg-white border-2 border-gray-200 rounded-xl">
-              <div className="">
-                <div className="flex gap-3">
+            <div className="mt-6 p-6 bg-card border border-border/60 shadow-sm rounded-xl">
+              <div className="flex gap-3">
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="输入你要查询的内容"
-                  className="flex-1"
+                  className="flex-1 h-11 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
                 />
                 <Button
                   variant="outline"
                   onClick={handleViewContext}
                   disabled={llmTextQuery.isFetching || !slug}
+                  className="transition-all duration-200 ease-in-out active:scale-[0.98]"
                 >
                   查看结果
                 </Button>
-                </div>
               </div>
             </div>
-            <div className="mt-6 p-6 bg-white border-2 border-gray-200 rounded-xl">
-              <div className=" rounded-lg  ">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    Tokens:
-                    <Input
-                      type="number"
-                      value={localTokens}
-                      onChange={(e) => setLocalTokens(e.target.value)}
-                      onBlur={handleTokensBlur}
-                      onKeyDown={handleTokensKeyDown}
-                      className="w-24 h-8"
-                      min={1}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleRawClick}>
-                      <ExternalLink className="w-4 h-4" />
-                      打开
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyContent}>
-                      <Copy className="w-4 h-4" />
-                      复制内容
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyLink}>
-                      <Link2 className="w-4 h-4" />
-                      复制链接
-                    </Button>
-                  </div>
-                </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96 ">
-                  <pre className="text-gray-800 whitespace-pre-wrap">
-                    {llmTextQuery.isFetching && '加载中...'}
-                    {!llmTextQuery.isFetching && llmTextQuery.isError && `错误：${llmTextQuery.error.message}`}
-                    {!llmTextQuery.isFetching && !llmTextQuery.isError && formattedContent}
-                  </pre>
+            <div className="mt-6 p-6 bg-card border border-border/60 shadow-sm rounded-xl">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  Tokens:
+                  <Input
+                    type="number"
+                    value={localTokens}
+                    onChange={(e) => setLocalTokens(e.target.value)}
+                    onBlur={handleTokensBlur}
+                    onKeyDown={handleTokensKeyDown}
+                    className="w-24 h-8 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
+                    min={1}
+                  />
                 </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]"
+                    onClick={handleRawClick}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    打开
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]"
+                    onClick={handleCopyContent}
+                  >
+                    <Copy className="w-4 h-4" />
+                    复制内容
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]"
+                    onClick={handleCopyLink}
+                  >
+                    <Link2 className="w-4 h-4" />
+                    复制链接
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-muted/50 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96 border border-border/50 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border/60">
+                <pre className="text-foreground whitespace-pre-wrap leading-relaxed">
+                  {llmTextQuery.isFetching && '加载中...'}
+                  {!llmTextQuery.isFetching && llmTextQuery.isError && `错误：${llmTextQuery.error.message}`}
+                  {!llmTextQuery.isFetching && !llmTextQuery.isError && formattedContent}
+                </pre>
               </div>
             </div>
           </TabsContent>
 
           {/* Benchmark Tab */}
           <TabsContent value="benchmark" className="mt-0">
-            <Card className="p-6 bg-white border-2 border-gray-200 rounded-2xl">
-              <p className="text-gray-500 text-center py-12">计划中...</p>
+            <Card className="p-8 bg-card border border-border/60 shadow-sm rounded-xl">
+              <p className="text-muted-foreground text-center py-12">计划中...</p>
             </Card>
           </TabsContent>
         </Tabs>

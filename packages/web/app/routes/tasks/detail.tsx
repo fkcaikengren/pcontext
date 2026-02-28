@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { DocInfoCard } from "@/components/doc-info-card"
+import { TaskStatusBadge } from "@/components/task-status-badge"
 import { client, parseRes } from "@/APIs"
 import { formatDateTime } from "@/utils/format"
 import type { TaskVO } from '@pcontext/api/client'
@@ -33,7 +34,7 @@ export default function TaskDetailPage() {
     const fetchTask = async () => {
       try {
         const { task } = await parseRes(client.tasks[':id'].$get({ param: { id: taskId } }))
-
+        if(!task) return
         if (cancelled) return
         setTask(task)
         if(task.status !== 'running'){
@@ -110,11 +111,11 @@ export default function TaskDetailPage() {
   const isTaskNotFound = !task && !taskLoading && !!taskError
 
   return (
-    <div className="flex flex-1 flex-col items-center p-4 pt-10">
-      <div className="w-full max-w-5xl space-y-4">
+    <div className="flex flex-1 flex-col items-center p-6 pt-16 md:p-8 md:pt-20">
+      <div className="w-full max-w-5xl space-y-6">
         {isTaskNotFound && (
-          <Alert variant="destructive">
-            <AlertCircle />
+          <Alert variant="destructive" className="border-destructive/60">
+            <AlertCircle className="h-4 w-4" />
             <AlertTitle>任务不存在</AlertTitle>
           </Alert>
         )}
@@ -127,36 +128,41 @@ export default function TaskDetailPage() {
               labels={createdAtText ? [`创建时间: ${createdAtText}`] : undefined}
             />
             {taskError && (
-              <div className="mt-1 text-xs text-red-500">{taskError}</div>
+              <div className="text-sm text-destructive bg-destructive/5 px-4 py-3 rounded-md">
+                {taskError}
+              </div>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  任务日志
-                </CardTitle>
+            <Card className="border border-border/60 shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-medium">任务日志</CardTitle>
+                  {task?.status && (
+                    <TaskStatusBadge status={task.status} />
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-4">
                   {task?.status === "completed" && (
-                      <div className="mb-3">
-                        <Alert className="border-emerald-500/60 bg-emerald-500/10 text-emerald-700">
+                      <div>
+                        <Alert className="border-emerald-300/60 bg-emerald-50/50 text-emerald-700">
                           <CheckCircle2 className="h-4 w-4" />
-                          <div>
-                            <AlertTitle>任务已完成</AlertTitle>
-                            <AlertDescription>
-                              日志已完整输出，你可以安全关闭此页面。
-                            </AlertDescription>
-                          </div>
+                          <AlertTitle>任务已完成</AlertTitle>
+                          <AlertDescription>
+                            日志已完整输出，你可以安全关闭此页面。
+                          </AlertDescription>
                         </Alert>
                       </div>
                     )}
                   {error && (
-                    <div className="text-red-400">{error}</div>
+                    <div className="text-sm text-destructive bg-destructive/5 px-4 py-3 rounded-md">
+                      {error}
+                    </div>
                   )}
                 <div
                   ref={containerRef}
-                  className="mt-2 h-96 w-full overflow-y-auto rounded-md bg-black p-3 font-mono text-xs text-green-300"
+                  className="h-96 w-full overflow-y-auto rounded-lg border border-border/60 bg-zinc-950 p-4 font-mono text-xs"
                 >
                   {lines.map((entry, index) => {
                     const parts: string[] = []
@@ -180,10 +186,10 @@ export default function TaskDetailPage() {
                       ? "text-red-400"
                       : entry.level === "warn"
                         ? "text-yellow-400"
-                        : "text-green-300"
+                        : "text-green-400"
                     return (
-                      <div key={index}>
-                        <span className="text-slate-400">{first}</span>
+                      <div key={index} className="leading-relaxed">
+                        <span className="text-zinc-500">{first}</span>
                         {rest.length > 0 && rest.map((part, partIndex) => (
                           <span key={partIndex} className={contentClassName}>
                             {" | "}

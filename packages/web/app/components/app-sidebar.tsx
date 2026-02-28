@@ -80,7 +80,7 @@ export function AppSidebar({
           <SidebarMenuItem className="flex items-center justify-between">
             <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:hidden">
               <Link to="/">
-                <img src="/assets/logo.png" alt="PContext Logo" className="inline-block w-32" />
+                <img src="/assets/logo.svg" alt="PContext Logo" className="inline-block w-32" />
               </Link>
             </SidebarMenuButton>
             

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -49,29 +49,40 @@ export default function AddDocsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center p-4 pt-10">
-      <div className="w-full max-w-5xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>添加文档</CardTitle>
-            <CardDescription>
-              支持从 GitHub、Gitee 仓库或网站地址创建文档索引
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs 
-              value={source} 
+    <div className="flex flex-1 flex-col items-center p-6 pt-16 md:p-8 md:pt-20">
+      <div className="w-full max-w-2xl">
+       
+
+        <Card className="border border-border/60 shadow-sm">
+          <CardContent className="pt-6">
+            <Tabs
+              value={source}
               onValueChange={(v) => {
                 setUrlState({ source: v as DocSourceEnumDTO })
                 setExistingDoc('')
                 setError('')
-              }} 
+              }}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="github">GitHub</TabsTrigger>
-                <TabsTrigger value="gitee">Gitee</TabsTrigger>
-                <TabsTrigger value="website">Website</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg border border-border/50">
+                <TabsTrigger
+                  value="github"
+                  className="rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+                >
+                  GitHub
+                </TabsTrigger>
+                <TabsTrigger
+                  value="gitee"
+                  className="rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+                >
+                  Gitee
+                </TabsTrigger>
+                <TabsTrigger
+                  value="website"
+                  className="rounded-md text-sm font-medium text-muted-foreground transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+                >
+                  Website
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="github">
                 <DocsAddTabContent
@@ -122,13 +133,13 @@ export default function AddDocsPage() {
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>提示</CardTitle>
-            <CardDescription>添加文档前请先确认以下内容</CardDescription>
+        <Card className="mt-8 border border-border/60 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">提示</CardTitle>
+            <CardDescription className="mt-1.5">添加文档前请先确认以下内容</CardDescription>
           </CardHeader>
           <CardContent>
-            <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+            <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
               <li>只会读取 md/mdx 等文档</li>
               <li>系统会自动处理并索引文档内容</li>
             </ol>
@@ -152,30 +163,38 @@ type DocsAddTabContentProps = {
 
 function DocsAddTabContent({ placeholder, description, value, onChange, onSubmit, submitting, existingDoc, error }: DocsAddTabContentProps) {
   return (
-    <div className="grid gap-4 py-4">
-      <Input
-        placeholder={placeholder}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      
-      <p className="text-sm text-muted-foreground">{description}</p>
+    <div className="grid gap-5 py-5">
+      <div className="space-y-2">
+        <Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-11 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1"
+        />
+        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+      </div>
+
       <div className="flex">
-        <Button type="button" onClick={onSubmit} disabled={submitting || !value.trim()}>
+        <Button
+          type="button"
+          onClick={onSubmit}
+          disabled={submitting || !value.trim()}
+          className="transition-all duration-200 ease-in-out active:scale-[0.98]"
+        >
           {submitting ? "提交中..." : "提交"}
         </Button>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-destructive">
+        <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 px-3 py-2 rounded-md">
           {error}
         </div>
       )}
-      
+
       {existingDoc && (
-        <div className="flex items-center gap-2 text-sm text-destructive">
+        <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 px-3 py-2 rounded-md">
           <span>文档</span>
-          <a href={existingDoc} className="underline hover:text-destructive/80">
+          <a href={existingDoc} className="underline hover:text-destructive/80 transition-colors">
             {existingDoc}
           </a>
           <span>已存在！</span>
