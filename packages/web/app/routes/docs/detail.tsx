@@ -180,7 +180,7 @@ export default function DocsDetail() {
 
           {/* Chat Tab */}
           <TabsContent value="chat" className="mt-0">
-            <Chat libraryName={docQuery.data?.name || ''} />
+            <Chat libraryName={slug} />
           </TabsContent>
 
           {/* Context Tab */}

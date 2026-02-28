@@ -1,69 +1,71 @@
 import type { UIMessage } from 'ai'
-import type { Handler } from 'hono'
-import type { ChatMessage } from 'llamaindex'
-import { toUIMessageStream } from '@ai-sdk/llamaindex'
-import { createUIMessageStreamResponse } from 'ai'
+import { MetadataMode } from 'llamaindex'
 import { createChatEngine } from '@/modules/doc/infrastructure/agent/engine/chat'
 import { getServiceDeps } from '@/shared/deps'
+import { logger } from '@/shared/logger'
 
-export const chatHandler: Handler = async (c) => {
-  try {
-    const body = await c.req.json()
-    const { messages, data, libraryName }: { messages: UIMessage[], data?: any, libraryName?: string } = body
+
+export class ChatService {
+
+
+  async chat(messages: UIMessage[], libraryName?: string) {
     const userMessage = messages.pop()
     if (!messages || !userMessage || userMessage.role !== 'user') {
-      return c.json(
-        {
-          error:
-            'messages are required in the request body and the last message must be from the user',
-        },
-        400,
-      )
+      throw new Error('messages are required in the request body and the last message must be from the user')
     }
-
     if (libraryName) {
       const { rankService } = getServiceDeps()
       rankService.incrementDocScore(libraryName, 2)
     }
 
     const ids: string[] = libraryName ? [libraryName] : []
-    const chatEngine = await createChatEngine(ids, data)
+    const {chatEngine, retriever} = await createChatEngine(ids)
 
     const userText = (userMessage.parts ?? [])
       .map(p => (p.type === 'text' ? (p as any).text : ''))
       .join('')
+    // console.log('用户输入: %s', userText)
+    // // 打印 retriever 中间结果
+    // const retrievedNodes = await retriever.retrieve(userText)
+    // console.log('===== Retriever 中间结果 =====')
+    // console.log(`搜索到的节点数量: ${retrievedNodes.length}`)
+    // retrievedNodes.forEach((node, index) => {
+    //   console.log(`\n--- 节点 ${index + 1} ---`)
+    //   console.log('ID:', node.node.id_)
+    //   console.log('分数:', node.score)
+    //   console.log('内容摘要:', node.node.getContent(MetadataMode.NONE).slice(0, 400) + '...')
+    // })
+    // console.log('=============================')
 
     const stream = await chatEngine.chat({
       message: userText,
-      chatHistory: messages.map(m => ({
-        role: m.role as ChatMessage['role'],
+      chatHistory: messages.slice(-10).map(m => ({
+        role: m.role ,
         content: (m.parts ?? [])
           .map(p => (p.type === 'text' ? (p as any).text : ''))
           .join('') ?? '',
-      })) as ChatMessage[],
+      })),
       stream: true,
     })
 
-    // Using a custom async generator to inspect/fix chunks
-    async function* fixStream() {
-      for await (const chunk of stream) {
-        // Ensure delta exists
-        if (chunk.delta === undefined && (chunk as any).response) {
-          // Some versions use 'response' for the delta
-          yield { ...chunk, delta: (chunk as any).response }
-        }
-        else {
-          yield chunk
-        }
-      }
-    }
-    // TODO: 重构
-    return createUIMessageStreamResponse({
-      stream: toUIMessageStream(fixStream()),
-    })
-  }
-  catch (error) {
-    console.error('[LlamaIndex]', error)
-    return c.json({ detail: (error as Error).message }, 500)
+    // 调试：打印流式响应内容
+    // logger.info('===== LLM 流式响应开始 =====')
+    // let chunkCount = 0
+    // const originalIterator = stream[Symbol.asyncIterator]()
+    // const debugStream = {
+    //   [Symbol.asyncIterator]() {
+    //     return {
+    //       async next() {
+    //         const result = await originalIterator.next()
+    //         chunkCount++
+    //         const value = result.value
+    //         logger.info(`Chunk ${chunkCount}: ${JSON.stringify(value)}`)
+    //         return result
+    //       }
+    //     }
+    //   }
+    // }
+    // return debugStream;
+    return stream
   }
 }

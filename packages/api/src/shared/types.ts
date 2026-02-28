@@ -1,6 +1,7 @@
 import type { Logger } from 'pino'
 import type { RankService } from '@/modules/rank/rank.service'
 import type { TaskService } from '@/modules/task/task.service'
+import type { ChatService } from '@/modules/doc/chat.service'
 
 export interface AppBindings {
   Variables: {
@@ -14,5 +15,6 @@ export interface AppBindings {
     }
     taskService: TaskService
     rankService: RankService
+    chatService: ChatService
   }
 }

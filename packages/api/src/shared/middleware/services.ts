@@ -7,6 +7,7 @@ export function services() {
     const serviceDeps = getServiceDeps()
     c.set('taskService', serviceDeps.taskService)
     c.set('rankService', serviceDeps.rankService)
+    c.set('chatService', serviceDeps.chatService)
     await next()
   })
 }

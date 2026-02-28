@@ -1,6 +1,7 @@
 import type { IDocRepository } from '@/modules/doc/doc.repo.interface'
 import type { ITaskRepository } from '@/modules/task/task.repo.interface'
 import type { IUserRepository } from '@/modules/user/domain/user.repo.interface'
+import { ChatService } from '@/modules/doc/chat.service'
 import { PgDocRepository } from '@/modules/doc/infrastructure/doc.repo.pg'
 import { SqliteDocRepository } from '@/modules/doc/infrastructure/doc.repo.sqlite'
 import { RankService } from '@/modules/rank/rank.service'
@@ -25,6 +26,7 @@ export interface RepoDeps {
 export interface ServiceDeps {
   taskService: TaskService
   rankService: RankService
+  chatService: ChatService
 }
 
 let repoDeps: RepoDeps | null = null
@@ -93,6 +95,7 @@ export function getServiceDeps() {
   serviceDeps = {
     taskService: new TaskService(),
     rankService: new RankService(),
+    chatService: new ChatService(),
   }
 
   return serviceDeps

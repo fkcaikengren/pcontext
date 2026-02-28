@@ -6,7 +6,7 @@ import { math } from '@streamdown/math'
 import { useEffect, useMemo, useRef, useState, type UIEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, ArrowDown, StopCircle } from 'lucide-react'
+import { Send, ArrowDown, StopCircle, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import 'katex/dist/katex.min.css'
@@ -17,16 +17,25 @@ interface ChatProps {
 }
 
 export function Chat({ libraryName }: ChatProps) {
+  const [chatKey, setChatKey] = useState(0)
+  const libraryNameRef = useRef(libraryName)
+  libraryNameRef.current = libraryName
+
   const transport = useMemo(() => {
     const baseUrl = import.meta.env.VITE_BASE_URL || ''
     return new DefaultChatTransport({
       api: `${baseUrl}/api/chat`,
       credentials: 'include',
-      body: { libraryName },
+      get body() {
+        return { libraryName: libraryNameRef.current }
+      },
     }) as any
-  }, [libraryName])
+  }, [])
 
-  const { messages, sendMessage, stop, status } = useChat({ transport })
+  const { messages, sendMessage, stop, status } = useChat({
+    transport,
+    id: chatKey.toString(),
+  })
   const isLoading = status === 'streaming' || status === 'submitted'
 
   const [input, setInput] = useState('')
@@ -67,15 +76,30 @@ export function Chat({ libraryName }: ChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const handleNewChat = () => {
+    setChatKey((k) => k + 1)
+  }
+
   return (
-    <div className="flex flex-col h-[600px] relative border rounded-lg bg-background">
+    <div key={chatKey} className="flex flex-col h-[600px] relative border rounded-lg bg-background">
+      <div className="flex items-center justify-between p-2 border-b">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleNewChat}
+          disabled={viewMessages.length === 0 || isLoading}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          新建对话
+        </Button>
+      </div>
       <div
         className="flex-1 overflow-y-auto p-4 space-y-4"
         onScroll={handleScroll}
       >
         {viewMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <p>根据 {libraryName} 文档进行对话</p>
+            <p>开始对话</p>
           </div>
         )}
         
