@@ -18,7 +18,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const headers = new Headers();
     const cookie = request.headers.get("Cookie");
-    console.log('Request cookie:', cookie);
     if (cookie) {
       headers.set("Cookie", cookie);
     }
@@ -55,7 +54,7 @@ export default function AppLayout() {
 
   // 只有在 store 未初始化时才同步 loader 数据（首次挂载 hydration）
   useLayoutEffect(() => {
-    console.log('Loader data:', { user, isAuthenticated, initialized });
+    // console.log('Loader data:', { user, isAuthenticated, initialized });
     if (!initialized) {
       setUser(user, isAuthenticated);
     }

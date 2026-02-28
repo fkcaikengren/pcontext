@@ -31,7 +31,7 @@ export default function DocsDetail() {
 	const {docSlug:slug} = params;
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'chat';
+  const activeTab = searchParams.get('tab') || 'context';
   
   const setActiveTab = (tab: string) => {
     setSearchParams(prev => {
@@ -138,7 +138,7 @@ export default function DocsDetail() {
           status='completed'
 					labels={docQuery.data ? [
 						`来源: ${docQuery.data.source}`,
-						`访问次数: ${docQuery.data.accessCount}`,
+						// 更多信息
 					] : []}
 				/>
 
@@ -157,16 +157,16 @@ export default function DocsDetail() {
               <TabsTrigger value="benchmark" className="gap-2">
                 <TrendingUp className="w-4 h-4" />
                 Benchmark
-                <Badge variant="secondary" className="ml-1">74.4</Badge>
+                {/* <Badge variant="secondary" className="ml-1">74.4</Badge> */}
               </TabsTrigger>
             </TabsList>
             
             <div className="flex items-center gap-2">
-              
-              <Button variant="outline" size="sm" className="gap-2">
+              {/* TODO: 版本 */}
+              {/* <Button variant="outline" size="sm" className="gap-2">
                 <ArrowUpDown className="w-3 h-3" />
                 Latest
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -241,7 +241,7 @@ export default function DocsDetail() {
           {/* Benchmark Tab */}
           <TabsContent value="benchmark" className="mt-0">
             <Card className="p-6 bg-white border-2 border-gray-200 rounded-2xl">
-              <p className="text-gray-500 text-center py-12">Benchmark data would be displayed here</p>
+              <p className="text-gray-500 text-center py-12">计划中...</p>
             </Card>
           </TabsContent>
         </Tabs>

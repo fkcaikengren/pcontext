@@ -37,7 +37,6 @@
     "@tanstack/react-table": "^8.21.3",
     "@zilliz/milvus2-sdk-node": "^2.6.5",
     "ai": "^6.0.86",
-    "alova": "^3.4.1",
     "argon2": "^0.43.1",
     "bullmq": "^5.70.1",
     "casbin": "^5.45.0",

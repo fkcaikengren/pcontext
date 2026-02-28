@@ -6,7 +6,8 @@
       "Bash(bun remove vite-plugin-svg-icons)",
       "Bash(bun add -d vite-plugin-svgr @svgr/plugin-jsx @svgr/plugin-typescript)",
       "Bash(bun add -d vite-plugin-svgr)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(bun add milvus)"
     ]
   }
 }

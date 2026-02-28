@@ -16,8 +16,6 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 删除 useEffect，自动导航逻辑已在 handleSubmit 中处理
-  // useEffect 不再需要，因为 handleSubmit 中已经处理了登录后的导航
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
