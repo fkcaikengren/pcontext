@@ -12,8 +12,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
