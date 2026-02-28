@@ -73,7 +73,7 @@ export default function TaskDetailPage() {
 				if (entries.length === 0) return
 				setLines((prev) => [...prev, ...entries])
 
-        console.log('message日志：-------------', entries)
+        // console.log('message日志：-------------', entries)
 			} catch {
 				setError("日志数据解析失败")
 			}

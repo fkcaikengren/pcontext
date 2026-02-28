@@ -153,6 +153,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@llamaindex/openai@0.4.22": "patches/@llamaindex%2Fopenai@0.4.22.patch",
+  },
   "overrides": {
     "drizzle-orm": "0.45.0",
   },

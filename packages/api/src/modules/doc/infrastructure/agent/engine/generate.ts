@@ -108,7 +108,7 @@ export async function generateWebsiteData({
   const reader = new WebsiteCrawlReader({
     baseUrl: url,
     apiKey,
-    limit: 2,
+    limit: 20, // TODO：limit参数 可配置
     debug: true,
     progress: (event, data) => {
       switch (event) {

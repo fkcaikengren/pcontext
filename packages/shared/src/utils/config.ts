@@ -105,7 +105,7 @@ const PCONTEXT_CONFIG =  {
       api_key: '',
       base_url: 'https://api.siliconflow.cn/v1',
       temperature: 0.7,
-      max_tokens: undefined,
+      max_tokens: 100_000,
     },
     milvus: {
       address: '127.0.0.1:19530',

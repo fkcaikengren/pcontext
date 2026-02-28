@@ -3,7 +3,7 @@ import type { CreateTaskDTO, CreateTaskLogDTO } from '@/modules/task/task.dto'
 import type { TaskEntity, TaskLogEntity, TaskStatus } from '@/modules/task/task.entity'
 import type { ITaskRepository } from '@/modules/task/task.repo.interface'
 import type { PostgresqlDB } from '@/shared/db/connection'
-import { desc, eq, sql } from 'drizzle-orm'
+import { asc, desc, eq, sql } from 'drizzle-orm'
 import { taskLogPg, taskPg } from '@/modules/task/infrastructure/task.po'
 import { redis } from '@/shared/redis'
 
@@ -92,7 +92,7 @@ export class PgTaskRepository implements ITaskRepository {
   }
 
   async findRecentLogsByTaskId(taskId: string, limit: number): Promise<TaskLogEntity[]> {
-    const listKey = `task:${taskId}:logs`
+    const listKey = `task:${taskId}:logs:limit_${limit}`
     const redisLogs = await redis.lrange(listKey, -Math.max(limit, 1), -1)
 
     const parsedRedisLogs: TaskLogEntity[] = []
@@ -117,8 +117,8 @@ export class PgTaskRepository implements ITaskRepository {
     if (parsedRedisLogs.length > 0)
       return parsedRedisLogs
 
-    const rows = await this.db.select().from(taskLogPg).where(eq(taskLogPg.taskId, taskId)).orderBy(desc(taskLogPg.createdAt)).limit(limit)
-    const entities = rows.map(row => mapper(row)).reverse()
+    const rows = await this.db.select().from(taskLogPg).where(eq(taskLogPg.taskId, taskId)).orderBy(asc(taskLogPg.createdAt)).limit(limit)
+    const entities = rows.map(row => mapper(row))
 
     if (entities.length > 0) {
       const logEntries = entities.map(entity => JSON.stringify({
@@ -128,7 +128,7 @@ export class PgTaskRepository implements ITaskRepository {
         data: entity.extraData ?? undefined,
         traceId: entity.traceId ?? taskId,
       }))
-      await redis.lpush(listKey, ...logEntries)
+      await redis.rpush(listKey, ...logEntries)
       await redis.expire(listKey, 3600)
     }
 

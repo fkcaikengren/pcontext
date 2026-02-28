@@ -25,7 +25,7 @@ export class ChatService {
       .map(p => (p.type === 'text' ? (p as any).text : ''))
       .join('')
     // console.log('用户输入: %s', userText)
-    // // 打印 retriever 中间结果
+    // 打印 retriever 中间结果
     // const retrievedNodes = await retriever.retrieve(userText)
     // console.log('===== Retriever 中间结果 =====')
     // console.log(`搜索到的节点数量: ${retrievedNodes.length}`)
