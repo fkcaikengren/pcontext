@@ -8,6 +8,7 @@ export function services() {
     c.set('taskService', serviceDeps.taskService)
     c.set('rankService', serviceDeps.rankService)
     c.set('chatService', serviceDeps.chatService)
+    c.set('docService', serviceDeps.docService)
     await next()
   })
 }

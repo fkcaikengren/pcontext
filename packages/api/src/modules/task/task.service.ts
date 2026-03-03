@@ -11,7 +11,9 @@ import { TaskWorker } from '@/modules/task/infrastructure/mq/task-worker'
 import { getRepoDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
 import { createRedisClient } from '@/shared/redis'
+import { Cache, CacheableService } from '@/shared/redis/decorator'
 
+@CacheableService('task')
 export class TaskService {
   private worker: TaskWorker | null = null
   private queue: TaskQueue
@@ -76,29 +78,7 @@ export class TaskService {
     return job
   }
 
-  async listRunningTasksFromQueue(limit: number = 100): Promise<TaskVO<TaskDocDTO>[]> {
-    const jobs = await this.queue.getJobs(['active', 'waiting'], 0, Math.max(limit - 1, 0))
-
-    const jobMap = new Map<string, any>()
-    for (const job of jobs) {
-      if (job?.id)
-        jobMap.set(job.id, job)
-    }
-
-    return Array.from(jobMap.values())
-      .sort((a, b) => (b?.timestamp ?? 0) - (a?.timestamp ?? 0))
-      .map(job => ({
-        id: String(job.id),
-        status: 'running',
-        createdAt: job.timestamp ?? Date.now(),
-        updatedAt: job.processedOn ?? job.timestamp ?? Date.now(),
-        extraData: job.data as TaskDocDTO,
-        logs: [],
-        logsLength: 0,
-      }))
-  }
-
-  async listRecentTasksFromDb(limit: number = 20): Promise<TaskVO<TaskDocDTO>[]> {
+  async listRecentTasks(limit: number = 20): Promise<TaskVO<TaskDocDTO>[]> {
     const tasks = await this.taskRepo.findRecentTasks(limit)
 
     return tasks.map((task) => {
@@ -141,20 +121,17 @@ export class TaskService {
     }
   }
 
+  @Cache({ tags: () => ['task:list'], ttl: 300 })
   private async getTaskLogs(taskId: string, limit: number): Promise<TaskLogEntry[]> {
-    try {
-      const rows = await this.taskRepo.findRecentLogsByTaskId(taskId, limit)
-      return rows.map(row => ({
-        timestamp: row.createdAt,
-        level: (row.logLevel ?? 'info') as any,
-        message: row.content ?? '',
-        data: row.extraData ?? undefined,
-        traceId: row.traceId ?? taskId,
-      })) satisfies TaskLogEntry[]
-    }
-    catch {
-      return []
-    }
+    const rows = await this.taskRepo.findRecentLogsByTaskId(taskId, limit)
+    console.log('rows === ', rows)
+    return rows.map(row => ({
+      timestamp: row.createdAt,
+      level: (row.logLevel ?? 'info') as any,
+      message: row.content ?? '',
+      data: row.extraData ?? undefined,
+      traceId: row.traceId ?? taskId,
+    })) satisfies TaskLogEntry[]
   }
 
   async indexWebsiteDoc(task: TaskContext<TaskDocDTO>) {

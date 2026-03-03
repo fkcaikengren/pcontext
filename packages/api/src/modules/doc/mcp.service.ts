@@ -1,6 +1,5 @@
 import { z } from 'zod'
-import { queryDocSnippets } from '@/modules/doc/doc.service'
-import { getRepoDeps } from '@/shared/deps'
+import { getRepoDeps, getServiceDeps } from '@/shared/deps'
 import { createTool } from '@/shared/mcp/createTool'
 
 function normalizeText(input: string) {
@@ -117,7 +116,7 @@ IMPORTANT: Do not call this tool more than 3 times per question. If you cannot f
   handler: async ({ libraryId, query }) => {
     // Default tokens to 10000 as per previous implementation logic
     const tokens = 10000
-    const { snippets } = await queryDocSnippets(libraryId, query, tokens)
+    const { snippets } = await getServiceDeps().docService.queryDocSnippets(libraryId, query, tokens)
 
     if (snippets.length === 0) {
       return { content: [{ type: 'text', text: `未找到相关文档片段：${libraryId}` }] }

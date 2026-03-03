@@ -4,10 +4,7 @@ import { createChatEngine } from '@/modules/doc/infrastructure/agent/engine/chat
 import { getServiceDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
 
-
 export class ChatService {
-
-
   async chat(messages: UIMessage[], libraryName?: string) {
     const userMessage = messages.pop()
     if (!messages || !userMessage || userMessage.role !== 'user') {
@@ -19,7 +16,7 @@ export class ChatService {
     }
 
     const ids: string[] = libraryName ? [libraryName] : []
-    const {chatEngine, retriever} = await createChatEngine(ids)
+    const { chatEngine, retriever } = await createChatEngine(ids)
 
     const userText = (userMessage.parts ?? [])
       .map(p => (p.type === 'text' ? (p as any).text : ''))
@@ -40,7 +37,7 @@ export class ChatService {
     const stream = await chatEngine.chat({
       message: userText,
       chatHistory: messages.slice(-10).map(m => ({
-        role: m.role ,
+        role: m.role,
         content: (m.parts ?? [])
           .map(p => (p.type === 'text' ? (p as any).text : ''))
           .join('') ?? '',

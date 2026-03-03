@@ -9,8 +9,6 @@ import { docSqlite, favoriteSqlite } from '@/modules/doc/infrastructure/doc.po'
 import { logger } from '@/shared/logger'
 import { redis } from '@/shared/redis'
 
-const DOC_CACHE_TTL_SECONDS = 60 * 60
-
 function docCacheKey(slug: string) {
   return `docs:${slug}`
 }
@@ -146,47 +144,6 @@ export class SqliteDocRepository implements IDocRepository {
   async findBySlug(slug: string): Promise<DocEntity<Date> | null> {
     const row = await this.db.query.doc.findFirst({ where: eq(docSqlite.slug, slug) })
     return row ? mapper(row) : null
-  }
-
-  // TODO: 封装redis 优化
-  async findBySlugWithCache(slug: string): Promise<DocEntity<Date> | null> {
-    const key = docCacheKey(slug)
-    try {
-      const cached = await redis.get(key)
-      if (cached) {
-        const parsed = JSON.parse(cached) as Omit<DocEntity<number>, 'createdAt' | 'updatedAt'> & { createdAt: number, updatedAt: number }
-        return {
-          ...parsed,
-          createdAt: new Date(parsed.createdAt),
-          updatedAt: new Date(parsed.updatedAt),
-        }
-      }
-    }
-    catch (error: any) {
-      logger.error(`Redis GET failed: ${error?.message || 'unknown error'}`)
-    }
-
-    const doc = await this.findBySlug(slug)
-    if (!doc)
-      return null
-
-    try {
-      await redis.set(
-        key,
-        JSON.stringify({
-          ...doc,
-          createdAt: doc.createdAt.getTime(),
-          updatedAt: doc.updatedAt.getTime(),
-        }),
-        'EX',
-        DOC_CACHE_TTL_SECONDS,
-      )
-    }
-    catch (error: any) {
-      logger.error(`Redis SET failed: ${error?.message || 'unknown error'}`)
-    }
-
-    return doc
   }
 
   async invalidateCache(slug: string): Promise<void> {

@@ -5,7 +5,6 @@ import type { ITaskRepository } from '@/modules/task/task.repo.interface'
 import type { PostgresqlDB } from '@/shared/db/connection'
 import { asc, desc, eq, sql } from 'drizzle-orm'
 import { taskLogPg, taskPg } from '@/modules/task/infrastructure/task.po'
-import { redis } from '@/shared/redis'
 
 function mapper(row: TaskPgPO): TaskEntity
 function mapper(row: TaskLogPgPO): TaskLogEntity
@@ -92,47 +91,8 @@ export class PgTaskRepository implements ITaskRepository {
   }
 
   async findRecentLogsByTaskId(taskId: string, limit: number): Promise<TaskLogEntity[]> {
-    const listKey = `task:${taskId}:logs:limit_${limit}`
-    const redisLogs = await redis.lrange(listKey, -Math.max(limit, 1), -1)
-
-    const parsedRedisLogs: TaskLogEntity[] = []
-    for (const logStr of redisLogs) {
-      try {
-        const entry = JSON.parse(logStr)
-        if (entry && typeof entry.timestamp === 'number' && typeof entry.level === 'string') {
-          parsedRedisLogs.push({
-            id: 0,
-            taskId,
-            logLevel: entry.level,
-            content: entry.message ?? '',
-            createdAt: entry.timestamp,
-            extraData: entry.data ?? null,
-            traceId: entry.traceId ?? taskId,
-          })
-        }
-      }
-      catch {}
-    }
-
-    if (parsedRedisLogs.length > 0)
-      return parsedRedisLogs
-
     const rows = await this.db.select().from(taskLogPg).where(eq(taskLogPg.taskId, taskId)).orderBy(asc(taskLogPg.createdAt)).limit(limit)
-    const entities = rows.map(row => mapper(row))
-
-    if (entities.length > 0) {
-      const logEntries = entities.map(entity => JSON.stringify({
-        timestamp: entity.createdAt,
-        level: entity.logLevel ?? 'info',
-        message: entity.content ?? '',
-        data: entity.extraData ?? undefined,
-        traceId: entity.traceId ?? taskId,
-      }))
-      await redis.rpush(listKey, ...logEntries)
-      await redis.expire(listKey, 3600)
-    }
-
-    return entities
+    return rows.map(row => mapper(row))
   }
 
   async findRecentTasks(limit: number): Promise<TaskEntity[]> {

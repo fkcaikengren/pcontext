@@ -9,7 +9,6 @@ export interface IDocRepository {
   search: (q: string, limit: number) => Promise<DocEntity<Date>[]>
   findById: (id: number) => Promise<DocEntity<Date> | null>
   findBySlug: (slug: string) => Promise<DocEntity<Date> | null>
-  findBySlugWithCache: (slug: string) => Promise<DocEntity<Date> | null>
   invalidateCache: (slug: string) => Promise<void>
   create: (input: CreateDocDTO) => Promise<DocEntity<Date>>
   incrementAccess: (docId: number) => Promise<void>

@@ -1,5 +1,6 @@
 import type { Logger } from 'pino'
 import type { ChatService } from '@/modules/doc/chat.service'
+import type { DocService } from '@/modules/doc/doc.service'
 import type { RankService } from '@/modules/rank/rank.service'
 import type { TaskService } from '@/modules/task/task.service'
 
@@ -28,5 +29,6 @@ export interface AppBindings {
     taskService: TaskService
     rankService: RankService
     chatService: ChatService
+    docService: DocService
   }
 }

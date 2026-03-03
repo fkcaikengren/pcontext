@@ -4,6 +4,8 @@
     "composite": true, // 必须开启（for reference of web , for hono rpc）
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],

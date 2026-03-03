@@ -21,7 +21,7 @@ const router = createRouter()
   .get('/', queryValidator(listQuerySchema), async (c) => {
     const { limit } = c.req.valid('query')
 
-    const tasks = await c.var.taskService.listRecentTasksFromDb(limit)
+    const tasks = await c.var.taskService.listRecentTasks(limit)
     return c.json(Res200({ tasks }) as ApiSuccess<{
       tasks: TaskVO<TaskDocDTO>[]
     }>, 200)
