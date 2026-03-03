@@ -1,3 +1,4 @@
+import type { Redis } from 'ioredis'
 import type { Readable } from 'node:stream'
 import type { DocSourceEnumDTO, TaskDocDTO } from '@/modules/doc/doc.dto'
 import type { TaskLogEntry, TaskStatus } from '@/modules/task/task.entity'
@@ -9,11 +10,12 @@ import { TaskQueue } from '@/modules/task/infrastructure/mq/task-queue'
 import { TaskWorker } from '@/modules/task/infrastructure/mq/task-worker'
 import { getRepoDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
-import { redis } from '@/shared/redis'
+import { createRedisClient } from '@/shared/redis'
 
 export class TaskService {
   private worker: TaskWorker | null = null
   private queue: TaskQueue
+  private cache: Redis
 
   private get taskRepo() {
     return getRepoDeps().taskRepo
@@ -24,7 +26,8 @@ export class TaskService {
   }
 
   constructor() {
-    this.queue = new TaskQueue('task-queue')
+    this.cache = createRedisClient()
+    this.queue = new TaskQueue('task-queue', this.cache)
     this.initWorker()
   }
 
@@ -57,7 +60,7 @@ export class TaskService {
         ctx.logError(`Task updated in database with status failed: ${error.message}`)
         throw error
       }
-    })
+    }, this.cache)
 
     return this.worker
   }
@@ -192,7 +195,7 @@ export class TaskService {
       return stream
     }
 
-    const existingLogs = await redis.lrange(listKey, 0, -1)
+    const existingLogs = await this.cache.lrange(listKey, 0, -1)
     for (const logStr of existingLogs) {
       try {
         const entry = JSON.parse(logStr) as TaskLogEntry
@@ -203,7 +206,7 @@ export class TaskService {
       }
     }
 
-    const subRedis = redis.duplicate()
+    const subRedis = this.cache.duplicate()
     await subRedis.subscribe(channel)
 
     subRedis.on('message', (ch, message) => {

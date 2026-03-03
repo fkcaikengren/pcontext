@@ -1,6 +1,6 @@
 import type { DocSnippetsVO, DocVO } from './doc.vo'
 import type { DocListQueryDTO, PaginationVO } from '@/client'
-import type { ApiError, ApiSuccess } from '@/types'
+import type { ApiError, ApiSuccess } from '@/shared/types'
 import { z } from 'zod'
 import { DocAddBodySchema, DocListQuerySchema, DocSearchQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
 import { getDocDetail, listDocs, listFavoriteDocs, listLatestDocs, prepareDoc, queryDocSnippets, searchDocs, toggleFavorite } from '@/modules/doc/doc.service'

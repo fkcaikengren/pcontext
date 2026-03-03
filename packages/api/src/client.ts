@@ -1,9 +1,9 @@
-import type { AppType } from './server'
+import type { AppType } from './app'
 import { hc } from 'hono/client'
 
 export * from './shared/dto'
+export type * from './shared/types'
 export * from './shared/vo'
-export type * from './types'
 export * from '@/modules/doc/doc.dto'
 export * from '@/modules/doc/doc.vo'
 export * from '@/modules/rank/rank.vo'

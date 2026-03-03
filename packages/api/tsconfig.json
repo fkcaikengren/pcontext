@@ -20,6 +20,9 @@
     "outDir": "./dist",
     "esModuleInterop": true
   },
+  "references": [
+    { "path": "../shared" }
+  ],
   "include": [
     "drizzle-sqlite.config.ts",
     "drizzle-pg.config.ts",

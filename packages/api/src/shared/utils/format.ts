@@ -1,4 +1,4 @@
-import type { TaskLogEntry } from '@pcontext/shared/types'
+import type { TaskLogEntry } from '@/modules/task/task.entity'
 
 export function formatDateTime(date: Date, format: string = 'yyyy-MM-dd HH:mm:ss'): string {
   const year = date.getFullYear()
@@ -27,7 +27,8 @@ export function formatEntry(entry: TaskLogEntry): string {
   if (entry.data !== undefined) {
     try {
       parts.push(JSON.stringify(entry.data))
-    } catch {}
+    }
+    catch {}
   }
   return parts.join(' | ')
 }

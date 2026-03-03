@@ -2,11 +2,11 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { boolean, z } from 'zod'
-import { toMerged } from 'es-toolkit/object'
+import { toMerged, cloneDeep } from 'es-toolkit/object'
 import { DEFAULT_SQLITEDB_FILE_PATH } from '../constant'
 
 
-const PContextConfigSchema = z.object({
+export const PContextConfigSchema = z.object({
   port: z.coerce.number().int().min(1).max(65535),
   api_prefix: z.string().min(1),
   rate_limit_max: z.coerce.number().int().min(1).max(100000),
@@ -149,4 +149,9 @@ export async function loadPContextConfig(configPath?: string): Promise<PContextC
     throw new Error(`配置文件验证失败: ${JSON.stringify(details)}`)
   }
   return result.data
+}
+
+
+export function getDefaultPContextConfig(): PContextConfig {
+  return cloneDeep(PCONTEXT_CONFIG)
 }

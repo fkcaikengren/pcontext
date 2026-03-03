@@ -3,16 +3,17 @@
   "version": "0.0.1",
   "type": "module",
   "bin": {
-    "pcontext-server": "dist/cli.js"
+    "pcontext": "bin/pcontext"
   },
   "scripts": {
     "init": "bun run src/cli.ts init",
     "dev": "bun run src/cli.ts start --config ./pcontext.config.js",
-    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external minimist --external @hono/node-server && bun build ./src/server.ts --format=esm --target=node --outdir=dist --external @pcontext/api --external @hono/node-server"
+    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/shared --external @pcontext/api --external @pcontext/web --external commander --external @hono/node-server"
   },
   "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@pcontext/api": "workspace:*",
     "@pcontext/shared": "workspace:*",
-    "@pcontext/api": "workspace:*"
+    "commander": "^14.0.3"
   }
-  
 }

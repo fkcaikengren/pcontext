@@ -1,6 +1,6 @@
 import type { RankedDocVO } from './rank.vo'
 import type { DocEntity } from '@/modules/doc/doc.entity'
-import type { ApiError, ApiSuccess } from '@/types'
+import type { ApiError, ApiSuccess } from '@/shared/types'
 import { createRouter } from '@/shared/create-app'
 import { getRepoDeps, getServiceDeps } from '@/shared/deps'
 import { Res200, Res400 } from '@/shared/utils/response-template'

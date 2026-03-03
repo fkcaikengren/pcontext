@@ -1,10 +1,10 @@
 import { Queue } from 'bullmq'
-import { redis } from '@/shared/redis'
+import type { Redis } from 'ioredis'
 
 export class TaskQueue extends Queue {
-  constructor(queueName: string = 'task-queue') {
+  constructor(queueName: string, connection: Redis) {
     super(queueName, {
-      connection: redis,
+      connection,
     })
   }
 }

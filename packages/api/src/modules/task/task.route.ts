@@ -1,7 +1,7 @@
 import type { TaskLogEvent } from './task.entity'
 import type { TaskVO } from './task.vo'
 import type { TaskDocDTO } from '@/modules/doc/doc.dto'
-import type { ApiError, ApiSuccess } from '@/types'
+import type { ApiError, ApiSuccess } from '@/shared/types'
 import { streamSSE } from 'hono/streaming'
 import z from 'zod'
 import { createRouter } from '@/shared/create-app'

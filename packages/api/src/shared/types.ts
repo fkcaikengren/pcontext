@@ -1,7 +1,19 @@
 import type { Logger } from 'pino'
+import type { ChatService } from '@/modules/doc/chat.service'
 import type { RankService } from '@/modules/rank/rank.service'
 import type { TaskService } from '@/modules/task/task.service'
-import type { ChatService } from '@/modules/doc/chat.service'
+
+export interface ApiSuccess<T = unknown> {
+  code: number
+  data: T
+  message: string
+}
+
+export interface ApiError<T = unknown> {
+  code: number
+  data: T | null
+  message: string
+}
 
 export interface AppBindings {
   Variables: {

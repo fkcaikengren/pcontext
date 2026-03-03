@@ -1,0 +1,13 @@
+#!/bin/sh
+# 优先使用 bun，不存在则使用 node
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+if command -v bun >/dev/null 2>&1; then
+  exec bun "$SCRIPT_DIR/../dist/cli.js" "$@"
+elif command -v node >/dev/null 2>&1; then
+  exec node "$SCRIPT_DIR/../dist/cli.js" "$@"
+else
+  echo "Error: bun or node is required to run this CLI" >&2
+  exit 1
+fi

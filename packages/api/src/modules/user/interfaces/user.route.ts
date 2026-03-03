@@ -1,15 +1,15 @@
+import type { UserVO } from './user.vo'
 import type { UserLoginDTO } from '@/modules/user/interfaces/user.dto'
+import type { ApiSuccess } from '@/shared/types'
 import { randomUUID } from 'node:crypto'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { getUserById, login } from '@/modules/user/application/user.service'
 import { userLoginSchema } from '@/modules/user/interfaces/user.dto'
 import AppSettings from '@/settings'
 import { createRouter } from '@/shared/create-app'
+import { Res200 } from '@/shared/utils/response-template'
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator } from '@/shared/utils/validator'
-import { Res200 } from '@/shared/utils/response-template'
-import { UserVO } from './user.vo'
-import { ApiSuccess } from '@/types'
 
 const { config } = AppSettings
 
@@ -36,7 +36,7 @@ const router = createRouter()
       path: '/',
       maxAge: 86400,
     })
-    return c.json(Res200(user) as ApiSuccess<UserVO> , 200)
+    return c.json(Res200(user) as ApiSuccess<UserVO>, 200)
   })
   .post('/logout', async (c) => {
     const csrfToken = getCookie(c, 'csrf_token')
@@ -48,13 +48,13 @@ const router = createRouter()
   })
   .get('/me', async (c) => {
     const userId = getCurrentUserId(c)
-    
+
     let me = {
       id: null as number | null,
       name: null as string | null,
       role: 'guest',
       permissions: {
-      }
+      },
     }
     if (userId) {
       const user = await getUserById(userId)
@@ -63,11 +63,10 @@ const router = createRouter()
           id: user.id,
           name: user.name,
           role: user.role,
-          permissions: {  },
+          permissions: { },
         }
       }
     }
-
 
     return c.json(Res200(me) as ApiSuccess<typeof me>, 200)
   })

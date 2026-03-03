@@ -1,19 +1,18 @@
-import type { ApiSuccess } from './types'
+import type { ApiSuccess } from './shared/types'
 import { Hono } from 'hono'
-import { initSettings } from '@/modules/doc/infrastructure/agent/settings'
+
+import { initSettings as initAgentSettings } from '@/modules/doc/infrastructure/agent/settings'
 import { initEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
 import createApp from '@/shared/create-app'
 import { bootstrap } from '@/shared/db/bootstrap'
 import { initDb } from '@/shared/db/connection'
+import { initRedis } from '@/shared/redis'
 import chat from './modules/doc/chat.route'
 import docs from './modules/doc/doc.route'
 import mcp from './modules/doc/mcp.route'
 import ranking from './modules/rank/rank.route'
 import tasks from './modules/task/task.route'
 import users from './modules/user/interfaces/user.route'
-import AppSettings from './settings'
-
-const { config } = AppSettings
 
 const health = new Hono().get('/', (c) => {
   return c.json({
@@ -32,16 +31,14 @@ const api = new Hono()
 
 export const app = createApp()
   .route('/mcp', mcp)
-  .route(config.api_prefix, api)
+  .route('/api', api)
+
 export type AppType = typeof api // 是 api 作为app type
 
-await initDb()
-await bootstrap()
-await initEnforcer()
-initSettings()
-
-export default {
-  port: AppSettings.config.port,
-  fetch: app.fetch,
-  idleTimeout: 60,
+export async function initApp() {
+  await initDb()
+  await initRedis()
+  await bootstrap()
+  await initEnforcer()
+  initAgentSettings()
 }

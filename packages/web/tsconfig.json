@@ -1,14 +1,6 @@
 {
   "extends": "../../tsconfig.app.json",
-  "references": [
-    { "path": "../../packages/api" } // 指向后端项目的目录
-  ],
-  "include": [
-    "**/*",
-    "**/.server/**/*",
-    "**/.client/**/*",
-    ".react-router/types/**/*"
-  ],
+  
   "compilerOptions": {
     "rootDirs": [".", "./.react-router/types"],
     "baseUrl": ".",
@@ -25,5 +17,14 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-  }
+  },
+  "references": [
+    { "path": "../../packages/api" } // 指向后端项目的目录
+  ],
+  "include": [
+    "**/*",
+    "**/.server/**/*",
+    "**/.client/**/*",
+    ".react-router/types/**/*"
+  ],
 }

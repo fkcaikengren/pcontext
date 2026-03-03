@@ -7,7 +7,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "dev": "NODE_ENV=development bun run --hot src/server.ts --elide-lines=1000",
+    "dev": "NODE_ENV=development bun run --hot src/dev.ts --elide-lines=1000",
     "build": "NODE_ENV=production bun build ./src/index.ts --target node",
     "test": "NODE_ENV=test bun run src/index.ts",
     "mcp-inspector": "mcp-inspector",
