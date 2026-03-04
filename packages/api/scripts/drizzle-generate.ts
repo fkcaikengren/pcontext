@@ -1,5 +1,5 @@
+import process, { stdin as input, stdout as output } from 'node:process'
 import { createInterface } from 'node:readline/promises'
-import { stdin as input, stdout as output } from 'node:process'
 
 const configs = [
   './drizzle-pg.config.ts',
@@ -8,7 +8,8 @@ const configs = [
 
 async function getMigrationName() {
   const [, , argName] = process.argv
-  if (argName && argName.trim()) return argName.trim()
+  if (argName && argName.trim())
+    return argName.trim()
 
   const rl = createInterface({ input, output })
 
@@ -18,7 +19,8 @@ async function getMigrationName() {
       name = await rl.question('请输入本次迁移名称（例如 add_users_table）：')
     }
     return name.trim()
-  } finally {
+  }
+  finally {
     rl.close()
   }
 }
@@ -47,7 +49,7 @@ async function run() {
   }
 }
 
-run().catch(error => {
+run().catch((error) => {
   console.error(error)
   process.exit(1)
 })

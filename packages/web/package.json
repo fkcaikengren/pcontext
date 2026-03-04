@@ -1,7 +1,34 @@
 {
-  "name": "@pcontext/chat-web",
-  "private": true,
+  "name": "@pcontext/web",
+  "version": "0.1.0",
+  "description": "React 19 + React Router v7 based SPA application",
+  "private": false,
   "type": "module",
+  "main": "./build/server/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/server/index.js"
+    }
+  },
+  "files": [
+    "build"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/pcontext"
+  },
+  "keywords": [
+    "react",
+    "react-router",
+    "spa",
+    "web"
+  ],
+  "author": "Your Organization",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
@@ -9,6 +36,35 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.88",
+    "@react-router/serve": "7.10.1",
+    "@streamdown/code": "^1.0.2",
+    "@streamdown/math": "^1.0.2",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-table": "^8.21.3",
+    "ai": "^6.0.86",
+    "croner": "^9.1.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.0",
+    "drizzle-zod": "^0.8.3",
+    "es-toolkit": "^1.42.0",
+    "git-url-parse": "^16.1.0",
+    "hono": "^4.10.7",
+    "hono-rate-limiter": "^0.4.2",
+    "ioredis": "^5.9.3",
+    "katex": "^0.16.28",
+    "llamaindex": "~0.12.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router": "7.10.1",
+    "react-router-dom": "^7.10.1",
+    "react-use": "^17.6.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "streamdown": "^2.2.0",
+    "zod": "^4.1.13",
+
     "@llamaindex/chat-ui": "^0.6.1",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -33,6 +89,7 @@
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^5.0.9"
+    
   },
   "devDependencies": {
     "vite-plugin-svgr": "^4.5.0"
