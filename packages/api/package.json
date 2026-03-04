@@ -6,9 +6,13 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
+  "files": [
+    "dist",
+    "src/shared/db/migrations"
+  ],
   "scripts": {
     "dev": "NODE_ENV=development bun run --hot src/dev.ts --elide-lines=1000",
-    "build": "NODE_ENV=production bun build ./src/index.ts --target node",
+    "build": "NODE_ENV=production tsc",
     "test": "NODE_ENV=test bun run src/index.ts",
     "mcp-inspector": "mcp-inspector",
     "lint": "eslint . --ext .ts,.js",

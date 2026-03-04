@@ -9,17 +9,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
-      "@pcontext/*": ["../../packages/*/src/index.ts"]
+      "@pcontext/*": ["./node_modules/@pcontext/*"]
     },
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
     "strict": true,
     "declaration": true, // 必须生成声明文件
     "declarationMap": true, // 建议开启，方便点击跳转到源码
-    "emitDeclarationOnly": true, // 只生成声明文件，不生成js文件
     "noEmit": false, // 允许生成js文件
     "outDir": "./dist",
+    "sourceMap": false, // 不生成 .js.map 文件
     "esModuleInterop": true
   },
   "references": [

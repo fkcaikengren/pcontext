@@ -1,9 +1,16 @@
+import path from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { sql } from 'drizzle-orm'
-import { migrate as migratePg } from 'drizzle-orm/node-postgres/migrator'
 import { migrate as migrateSqlite } from 'drizzle-orm/libsql/migrator'
-import { logger } from '@/shared/logger'
+import { migrate as migratePg } from 'drizzle-orm/node-postgres/migrator'
 import { getDbProvider, getPgDb, getSqliteDb } from '@/shared/db/connection'
 import { runSeed } from '@/shared/db/seed'
+import { logger } from '@/shared/logger'
+
+// 获取当前文件所在目录，实现路径与运行工作目录无关
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const migrationsBaseDir = path.join(__dirname, 'migrations')
 
 export async function bootstrap() {
   try {
@@ -12,26 +19,30 @@ export async function bootstrap() {
       const db = getSqliteDb()
       const hasUserTableBefore = await hasSqliteUserTable()
       logger.info('Running SQLite migrations with Drizzle')
-      await migrateSqlite(db, { migrationsFolder: './src/shared/db/migrations/sqlite' })
+      await migrateSqlite(db, { migrationsFolder: path.join(migrationsBaseDir, 'sqlite') })
       logger.info('SQLite migrations applied')
       if (hasUserTableBefore) {
         logger.info('SQLite user table already exists, skip seeding')
-      } else {
+      }
+      else {
         await runSeed('sqlite')
       }
-    } else {
+    }
+    else {
       const db = getPgDb()
       const hasUserTableBefore = await hasPostgresUserTable()
       logger.info('Running PostgreSQL migrations with Drizzle')
-      await migratePg(db, { migrationsFolder: './src/shared/db/migrations/pg' })
+      await migratePg(db, { migrationsFolder: path.join(migrationsBaseDir, 'pg') })
       logger.info('PostgreSQL migrations applied')
       if (hasUserTableBefore) {
         logger.info('PostgreSQL user table already exists, skip seeding')
-      } else {
+      }
+      else {
         await runSeed('postgresql')
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     logger.error(error, 'Database bootstrap failed')
     process.exit(1)
   }

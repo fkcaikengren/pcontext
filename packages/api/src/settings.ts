@@ -35,6 +35,7 @@ export async function loadSettingsConfig(customConfigPath: string) {
   Object.assign(AppSettings.config, validatedConfig)
 
   console.log(`load pcontext config from ${configPath}`)
+  return AppSettings.config
 }
 
 export default AppSettings

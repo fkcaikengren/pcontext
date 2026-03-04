@@ -9,7 +9,7 @@ import { authorization } from '@/shared/middleware/authorization'
 import { httpLogger } from '@/shared/middleware/http-logger'
 import { jwt } from '@/shared/middleware/jwt'
 import { services } from '@/shared/middleware/services'
-import { errorHandler } from '@/shared/utils/errorHandler'
+import { errorHandler } from '@/shared/utils/error-handler'
 
 const { config } = AppSettings
 

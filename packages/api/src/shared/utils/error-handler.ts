@@ -11,7 +11,8 @@ export const errorHandler: ErrorHandler = (err, c) => {
     if (typeof anyErr.message === 'string' && anyErr.message.length > 0) {
       message = anyErr.message
     }
-  } else if (err instanceof Error) {
+  }
+  else if (err instanceof Error) {
     message = err.message
   }
 
@@ -19,5 +20,5 @@ export const errorHandler: ErrorHandler = (err, c) => {
     logger.error({ err, path: c.req.path, method: c.req.path, status }, 'Unhandled error')
   }
 
-  return c.json({ message }, status)
+  return c.json({ message }, status as any)
 }

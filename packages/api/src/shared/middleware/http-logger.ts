@@ -23,7 +23,7 @@ export function httpLogger(): MiddlewareHandler {
       const status = c.res.status
       const duration = Date.now() - start
 
-      const ignore = config.log.autoLoggingIgnorePaths.some(path => url.startsWith(path))
+      const ignore = config.log.autoLoggingIgnorePaths.some((path: string) => url.startsWith(path))
       if (!ignore) {
         const user = c.get('user')
         scoped.info({ method, url, status, duration, user: {
