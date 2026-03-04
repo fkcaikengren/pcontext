@@ -2,18 +2,47 @@
   "name": "@pcontext/server",
   "version": "0.0.1",
   "type": "module",
-  "bin": {
-    "pcontext": "bin/pcontext"
+  "description": "PContext Server - CLI tool for starting the PContext service",
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://github.com/fkcaikengren/pcontext#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fkcaikengren/pcontext.git",
+    "directory": "packages/server"
   },
+  "bugs": {
+    "url": "https://github.com/fkcaikengren/pcontext/issues"
+  },
+  "bin": {
+    "pcontext": "./bin/pcontext"
+  },
+  "main": "./dist/cli.js",
+  "exports": {
+    ".": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
-    "init": "bun run src/cli.ts init",
+    "init": "bun run src/cli.ts emit-config",
     "dev": "bun run src/cli.ts start --config ./pcontext.config.js",
-    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/shared --external @pcontext/api --external @pcontext/web --external commander --external @hono/node-server"
+    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/shared --external @pcontext/api --external @pcontext/web --external commander --external @hono/node-server",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
     "@pcontext/api": "workspace:*",
     "@pcontext/shared": "workspace:*",
     "commander": "^14.0.3"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "pcontext",
+    "server",
+    "cli"
+  ]
 }
