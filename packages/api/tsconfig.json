@@ -8,6 +8,8 @@
     "experimentalDecorators": true,
     "baseUrl": ".",
     "rootDir": "./src",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"],
       "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],

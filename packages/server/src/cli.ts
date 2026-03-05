@@ -2,17 +2,72 @@
 import { Command } from 'commander';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getRuntime, type PContextConfig } from '@pcontext/shared';
+
+import { getRuntime, getDirname, type PContextConfig } from '@pcontext/shared';
 import { initApp, loadSettingsConfig } from '@pcontext/api';
+
 
 import app from '@pcontext/api'
 import { CONFIG_TEMPLATE } from './config-template';
+
+
+// 根据运行时环境获取 serveStatic 中间件
+async function getServeStatic(runtime: string, root: string) {
+  switch (runtime) {
+    case 'bun': {
+      const { serveStatic } = await import('hono/bun');
+      return serveStatic({ root });
+    }
+    case 'deno': {
+      const { serveStatic } = await import('hono/deno');
+      return serveStatic({ root });
+    }
+    case 'node': {
+      // Node.js 使用 hono/serve-static 配合 Node.js fs
+      const { serveStatic } = await import('@hono/node-server/serve-static');
+      // const getContent = async (filePath: string) => {
+      //   try {
+      //     const file = await fs.promises.readFile(filePath);
+      //     return file;
+      //   } catch {
+      //     return null;
+      //   }
+      // };
+      // const isDir = async (filePath: string) => {
+      //   try {
+      //     const stat = await fs.promises.stat(filePath);
+      //     return stat.isDirectory();
+      //   } catch {
+      //     return false;
+      //   }
+      // };
+      // return serveStatic({ root, getContent, isDir });
+      return serveStatic({ root })
+    }
+    default:
+      throw new Error(`不支持的运行时环境: ${runtime}`);
+  }
+}
 
 
 // 根据运行时环境启动服务
 async function startServer(port: number, hostname: string) {
   const runtime = getRuntime();
   console.log(`🔍 检测到运行时环境: ${runtime}`);
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const webClientPath = path.resolve(getDirname(import.meta.url), isProduction ? './build/client' : '../../web/build/client')
+
+  // 获取静态文件中间件
+  const serveStatic = await getServeStatic(runtime, webClientPath);
+
+  // 静态资源
+  app.get('/assets/*', serveStatic)
+  app.get('/favicon.ico', serveStatic)
+  app.get('/', serveStatic)
+
+  // TODO: /llm? 路径 逻辑 单独处理
+
 
   switch (runtime) {
     case 'bun': {
@@ -27,13 +82,8 @@ async function startServer(port: number, hostname: string) {
     }
 
     case 'node': {
-      // Node.js 使用 @hono/node-server
-      const { createServer } = await import('@hono/node-server');
-      createServer({
-        fetch: app.fetch,
-        port,
-        hostname,
-      });
+      const { serve } = await import('@hono/node-server');
+      serve(app);
       break;
     }
 
@@ -51,8 +101,6 @@ async function startServer(port: number, hostname: string) {
     default:
       // 未知环境，尝试使用 fetch API (Cloudflare Workers 等)
       console.warn('⚠️ 未识别的运行时环境，尝试使用标准 fetch API');
-      // 对于不支持直接启动服务器的环境，返回配置信息
-      // 实际部署时需要根据具体环境配置
       throw new Error(`不支持的运行时环境: ${runtime}`);
   }
 }
@@ -176,8 +224,9 @@ program
 
       console.log(`✅ 服务已成功启动在 ${hostname}:${finalPort}`);
     } catch (error) {
-      const errorMessage = (error instanceof Error) ? error.message : '未知错误';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`❌ 启动失败，配置加载失败：${errorMessage}`);
+      console.error(error);
     }
   });
 

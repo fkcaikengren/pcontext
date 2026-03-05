@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run --filter @pcontext/server start --config ./packages/server/pcontext.config.js -p 3000)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(bun run build)",
+      "Bash(bun add hono/static)",
+      "WebSearch",
+      "Bash(bun add @hono/serve-static)"
+    ]
+  }
+}

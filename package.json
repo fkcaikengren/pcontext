@@ -15,9 +15,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    
-  },
+  "dependencies": {},
   "devDependencies": {
     "@antfu/eslint-config": "^5.1.0",
     "@commitlint/cli": "^19.8.1",
@@ -46,13 +44,13 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
+    "tsdown": "^0.20.3",
     "tsx": "^4.20.3",
     "typescript": "^5.9.3",
     "vite": "^7.2.6",
     "vite-tsconfig-paths": "^5.1.1",
     "vitest": "^4.0.15"
   },
-
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"

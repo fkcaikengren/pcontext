@@ -4,16 +4,15 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "tsc --build",
+    "build": "tsdown",
     "test": "tsc --noEmit && vitest --run",
     "test:bun": "bun test"
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": "./dist/index.mjs",
     "./*": "./dist/*"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "dependencies": {
     "es-toolkit": "^1.42.0",
     "zod": "^4.1.13"

@@ -1,6 +1,11 @@
 {
   "name": "@pcontext/api",
+  "type": "module",
   "version": "0.0.1",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "module": "./dist/index.mjs",
   "public": true,
   "publishConfig": {
     "access": "public",
@@ -12,7 +17,7 @@
   "scripts": {
     "dev": "NODE_ENV=development bun run --hot src/dev.ts --elide-lines=1000",
     "clean": "rm -rf dist",
-    "build": "NODE_ENV=production tsc --build && cp -r src/shared/db/migrations dist/shared/db/migrations",
+    "build": "NODE_ENV=production tsdown && cp -r src/shared/db/migrations dist/shared/db/migrations",
     "test": "NODE_ENV=test bun run src/index.ts",
     "mcp-inspector": "mcp-inspector",
     "lint": "eslint . --ext .ts,.js",
