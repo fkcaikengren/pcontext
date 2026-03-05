@@ -1,51 +1,44 @@
 import { useEffect, useLayoutEffect } from "react"
+import { use, Suspense } from "react"
+import { useLoaderData, type ClientLoaderFunctionArgs } from "react-router"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Outlet, useLocation, useNavigate } from "react-router"
 import { useAuthStore } from "@/stores/auth"
 import { Toaster } from "@/components/ui/sonner"
 import { checkRoutePermission } from "@/permissions"
+import { client, parseRes } from "~/APIs"
 
-export default function AppLayout() {
-  const setUser = useAuthStore((state) => state.setUser);
-  const initialized = useAuthStore((state) => state.initialized);
+
+// AuthLoading 组件
+function AuthLoading() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="text-sm text-muted-foreground">加载中...</p>
+      </div>
+    </div>
+  );
+}
+
+function AppLayout() {
+
+
+  const {loading, initialized, auth} = useAuthStore((state) => state);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 客户端获取用户信息
-  useLayoutEffect(() => {
-    if (initialized) return;
-
-    const fetchUser = async () => {
-      const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
-      const apiUrl = `${baseUrl}/api/users/me`;
-
-      try {
-        const response = await fetch(apiUrl, {
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const res = await response.json();
-          const user = res.data;
-          const userRole = user?.role;
-          const isAuthenticated = (userRole ?? 'guest') !== 'guest';
-          setUser(user, isAuthenticated);
-        } else {
-          setUser(null, false);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        setUser(null, false);
-      }
-    };
-
-    fetchUser();
-  }, [initialized, setUser]);
+  // 初始化用户信息
+  useEffect(() => {
+    if (!initialized) {
+      auth();
+    }
+  }, [initialized, auth]);
 
   // 路由守卫：检查权限
-  useEffect(() => {
-    const {user, isAuthenticated} = useAuthStore.getState(); // 直接从 store 获取最新状态
+  useLayoutEffect(() => {
+    const { user, isAuthenticated } = useAuthStore.getState();
     const hasPermission = checkRoutePermission(
       location.pathname,
       user?.role,
@@ -55,7 +48,18 @@ export default function AppLayout() {
     if (!hasPermission) {
       navigate(isAuthenticated ? "/" : "/login");
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -64,8 +68,10 @@ export default function AppLayout() {
         <main>
           <Outlet />
         </main>
-
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
+
+
+export default AppLayout

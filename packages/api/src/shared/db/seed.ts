@@ -1,13 +1,14 @@
 import argon2 from 'argon2'
-import { logger } from '@/shared/logger'
-import { getDbProvider, getPgDb, getSqliteDb } from '@/shared/db/connection'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
+import { getDbProvider, getPgDb, getSqliteDb } from '@/shared/db/connection'
+import { logger } from '@/shared/logger'
 
 export async function runSeed(provider?: 'postgresql' | 'sqlite') {
   const currentProvider = provider ?? getDbProvider()
   if (currentProvider === 'sqlite') {
     await seedAdminSqlite()
-  } else {
+  }
+  else {
     await seedAdminPostgres()
   }
 }

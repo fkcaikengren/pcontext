@@ -67,7 +67,7 @@ const PCONTEXT_CONFIG =  {
   // 限流配置
   rate_limit_max: 100,
   // JWT 密钥
-  jwt_secret: 'A7SJKNEOMAWN2EDJ8JDSN2SK59KS8SJEL0KS8AJNN2',
+  jwt_secret: '',
   is_dev: true,
 
   // 请求头配置

@@ -5,7 +5,7 @@
   "scripts": {
     "dev:api": "bun run --filter @pcontext/api dev",
     "dev:server": "bun run --filter @pcontext/server dev",
-    "dev:web": "bun run --filter @pcontext/chat-web dev",
+    "dev:web": "bun run --filter @pcontext/web dev",
     "db:generate": "bun run --filter @pcontext/api db:generate",
     "mcp-inspect": "bun run --filter @pcontext/api mcp-inspector",
     "commit": "git-cz",

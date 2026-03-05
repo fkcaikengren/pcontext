@@ -2,16 +2,15 @@ import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { verify } from 'hono/jwt'
 import AppSettings from '@/settings'
-
-const { config } = AppSettings
+import { logger } from '@/shared/logger'
 
 export function jwt(): MiddlewareHandler {
   return async (c, next) => {
     const accessToken = getCookie(c, 'access_token')
-
+    // console.log('JWT Middleware, access_token:', accessToken)
     if (accessToken) {
       try {
-        const payload = await verify(accessToken, config.jwt_secret)
+        const payload = await verify(accessToken, AppSettings.config.jwt_secret, 'HS256')
         if (payload && typeof payload === 'object') {
           const sub = typeof payload.sub === 'string'
             ? Number.parseInt(payload.sub, 10)
@@ -24,8 +23,9 @@ export function jwt(): MiddlewareHandler {
           }
         }
       }
-      catch {
+      catch (err: any) {
         c.set('user', null)
+        logger.error('JWT verification failed:', err)
       }
     }
     else {

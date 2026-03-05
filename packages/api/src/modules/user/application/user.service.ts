@@ -22,7 +22,6 @@ export async function login(input: Pick<CreateUserDTO, 'username' | 'password'>)
   if (!valid) {
     throw new Error('密码错误')
   }
-
   const user = new UserEntity({
     id: authUser.id,
     username: authUser.username,
@@ -36,8 +35,7 @@ export async function login(input: Pick<CreateUserDTO, 'username' | 'password'>)
     updatedAt: Date.now(),
   })
   user.ensureActive()
-
-  const token = await sign({ sub: String(user.id), username: user.username, role: user.role }, AppSettings.config.jwt_secret)
+  const token = await sign({ sub: String(user.id), username: user.username, role: user.role }, AppSettings.config.jwt_secret, 'HS256')
   logger.info({ userId: user.id, username: user.username }, 'user login')
   return { user: userSchema.parse(user), token }
 }
