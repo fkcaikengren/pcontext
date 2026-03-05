@@ -177,7 +177,6 @@ export default function DocsPage() {
           <div className="flex justify-end">
             <Button size="sm" variant="outline" asChild className="transition-all duration-200 ease-in-out hover:bg-accent active:scale-[0.98]">
               <Link to={`/docs/${row.original.slug}`}>
-                <ExternalLink className="w-3 h-3 mr-1" />
                 查看
               </Link>
             </Button>

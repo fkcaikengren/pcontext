@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 
 
 import { client, parseRes } from '@/APIs'
+import { buildInternalUrl } from '~/utils/router';
 
 
 export default function DocsDetail() {
@@ -105,7 +106,7 @@ export default function DocsDetail() {
 
   const getLlmUrl = () => {
     const url = new URL(window.location.origin);
-    url.pathname = `/web/docs/${slug}/llm.txt`;
+    url.pathname = buildInternalUrl(`/docs/${slug}/llm.txt`);
     if (topic) url.searchParams.set('topic', topic);
     if (tokens) url.searchParams.set('tokens', tokens);
     return url.toString();

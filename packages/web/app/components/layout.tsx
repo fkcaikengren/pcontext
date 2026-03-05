@@ -1,26 +1,9 @@
 import { useEffect, useLayoutEffect } from "react"
-import { use, Suspense } from "react"
-import { useLoaderData, type ClientLoaderFunctionArgs } from "react-router"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Outlet, useLocation, useNavigate } from "react-router"
 import { useAuthStore } from "@/stores/auth"
-import { Toaster } from "@/components/ui/sonner"
 import { checkRoutePermission } from "@/permissions"
-import { client, parseRes } from "~/APIs"
-
-
-// AuthLoading 组件
-function AuthLoading() {
-  return (
-    <div className="flex h-screen w-full items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="text-sm text-muted-foreground">加载中...</p>
-      </div>
-    </div>
-  );
-}
 
 function AppLayout() {
 

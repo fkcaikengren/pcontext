@@ -8,7 +8,7 @@ import { bootstrap } from '@/shared/db/bootstrap'
 import { initDb } from '@/shared/db/connection'
 import { initRedis } from '@/shared/redis'
 import chat from './modules/doc/chat.route'
-import docs from './modules/doc/doc.route'
+import docs, { llmTxtHandler } from './modules/doc/doc.route'
 import mcp from './modules/doc/mcp.route'
 import ranking from './modules/rank/rank.route'
 import tasks from './modules/task/task.route'
@@ -32,6 +32,10 @@ const api = new Hono()
 export const app = createApp()
   .route('/mcp', mcp)
   .route('/api', api)
+
+// TODO: 优化路由设计（这里 暂时dev下 导致llm.txt 路由无法正常工作 可以考虑开发时转到3000端口）
+// /docs/:docSlug/llm.txt 路由 - 获取文档的 LLM 格式内容
+app.get('/docs/:slug/llm.txt', llmTxtHandler)
 
 export type AppType = typeof api // 是 api 作为app type
 

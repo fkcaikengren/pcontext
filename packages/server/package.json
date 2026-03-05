@@ -24,7 +24,9 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "package.json",
+    "README.md"
   ],
   "scripts": {
     "init": "bun src/cli.ts emit-config",
@@ -42,7 +44,7 @@
     "commander": "^14.0.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "keywords": [
     "pcontext",

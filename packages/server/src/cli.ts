@@ -4,45 +4,29 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { getRuntime, getDirname, type PContextConfig } from '@pcontext/shared';
-import { initApp, loadSettingsConfig } from '@pcontext/api';
+import { initApp, loadSettingsConfig} from '@pcontext/api';
 
 
 import app from '@pcontext/api'
 import { CONFIG_TEMPLATE } from './config-template';
 
 
+
 // 根据运行时环境获取 serveStatic 中间件
-async function getServeStatic(runtime: string, root: string) {
+async function getServeStatic(runtime: string) {
   switch (runtime) {
     case 'bun': {
       const { serveStatic } = await import('hono/bun');
-      return serveStatic({ root });
+      return serveStatic;
     }
     case 'deno': {
       const { serveStatic } = await import('hono/deno');
-      return serveStatic({ root });
+      return serveStatic;
     }
     case 'node': {
       // Node.js 使用 hono/serve-static 配合 Node.js fs
       const { serveStatic } = await import('@hono/node-server/serve-static');
-      // const getContent = async (filePath: string) => {
-      //   try {
-      //     const file = await fs.promises.readFile(filePath);
-      //     return file;
-      //   } catch {
-      //     return null;
-      //   }
-      // };
-      // const isDir = async (filePath: string) => {
-      //   try {
-      //     const stat = await fs.promises.stat(filePath);
-      //     return stat.isDirectory();
-      //   } catch {
-      //     return false;
-      //   }
-      // };
-      // return serveStatic({ root, getContent, isDir });
-      return serveStatic({ root })
+      return serveStatic;
     }
     default:
       throw new Error(`不支持的运行时环境: ${runtime}`);
@@ -59,15 +43,22 @@ async function startServer(port: number, hostname: string) {
   const webClientPath = path.resolve(getDirname(import.meta.url), isProduction ? './build/client' : '../../web/build/client')
 
   // 获取静态文件中间件
-  const serveStatic = await getServeStatic(runtime, webClientPath);
+  const serveStatic = await getServeStatic(runtime);
 
   // 静态资源
-  app.get('/assets/*', serveStatic)
-  app.get('/favicon.ico', serveStatic)
-  app.get('/', serveStatic)
-
-  // TODO: /llm? 路径 逻辑 单独处理
-
+  app.get('/assets/*', serveStatic({root:webClientPath}))
+  app.get('/favicon.ico', serveStatic({root:webClientPath, path:'favicon.ico'}))
+  
+  app.get('/', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/login', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/docs', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/docs/*', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/add-docs', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/tasks', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/tasks/*', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/users', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/permissions', serveStatic({root:webClientPath, path:'index.html'}))
+  app.get('/profile', serveStatic({root:webClientPath, path:'index.html'}))
 
   switch (runtime) {
     case 'bun': {

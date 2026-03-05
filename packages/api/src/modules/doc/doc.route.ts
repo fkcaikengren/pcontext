@@ -1,10 +1,12 @@
+import type { Context } from 'hono'
 import type { DocSnippetsVO, DocVO } from './doc.vo'
 import type { DocListQueryDTO, PaginationVO } from '@/client'
-import type { ApiError, ApiSuccess } from '@/shared/types'
+import type { ApiError, ApiSuccess, AppBindings } from '@/shared/types'
+import { logger } from '@zilliz/milvus2-sdk-node'
 import { z } from 'zod'
+
 import { DocAddBodySchema, DocListQuerySchema, DocSearchQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
 import { createRouter } from '@/shared/create-app'
-
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator, queryValidator } from '@/shared/utils/validator'
@@ -91,5 +93,33 @@ const router = createRouter()
       return c.json(Res200(result) as ApiSuccess<DocSnippetsVO>, 200)
     },
   )
+
+export async function llmTxtHandler(c: Context<AppBindings>) {
+  try {
+    const { slug } = c.req.param()
+    const { topic, tokens } = c.req.query()
+    const decTopic = decodeURIComponent(topic)
+
+    const result = await c.var.docService.queryDocSnippets(slug, decTopic, Number(tokens))
+    const content = result.snippets?.map(n => `### ${n.filePath}\n${n.content}`).join('\n\n--------------------------------\n\n')
+    return new Response(content, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    })
+  }
+  catch (error: any) {
+    logger.error('Error fetching LLM content:', error)
+    return new Response(`Error fetching LLM content: ${error?.message}`, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    })
+  }
+}
 
 export default router

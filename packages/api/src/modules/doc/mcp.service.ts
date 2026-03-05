@@ -75,7 +75,7 @@ Code Snippets: Unknown
 Source Reputation: Unknown
 Benchmark Score: Unknown
 Versions: Latest
-`).join('\n----------\n')
+`).join('\n\n--------------------------------\n\n')
 
     const responseText = `
 Available Libraries:
@@ -122,7 +122,7 @@ IMPORTANT: Do not call this tool more than 3 times per question. If you cannot f
       return { content: [{ type: 'text', text: `未找到相关文档片段：${libraryId}` }] }
     }
 
-    const llmText = snippets.map(n => `### ${n.filePath}\n${n.content}`).join('\n----------\n')
+    const llmText = snippets.map(n => `### ${n.filePath}\n${n.content}`).join('\n\n--------------------------------\n\n')
 
     return {
       content: [{ type: 'text', text: llmText }],
