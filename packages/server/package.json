@@ -1,6 +1,6 @@
 {
   "name": "@pcontext/server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "PContext Server - CLI tool for starting the PContext service",
   "author": "fkcaikengren",
@@ -38,7 +38,7 @@
     "build": "./scripts/build.sh",
     "start": "./bin/pcontext start --config ./pcontext.config.js",
     "start:node": "node dist/cli.js  start --config ./pcontext.config.js",
-    "start:bun": "bun dist/cli.js  start --config ./pcontext.config.js",
+    "start:bun": "bun dist/cli.js  start --config ./pcontext.config.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

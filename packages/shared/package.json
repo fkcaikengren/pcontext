@@ -1,6 +1,6 @@
 {
   "name": "@pcontext/shared",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "PContext Shared - Shared types, utilities, and schemas for PContext",
   "author": "fkcaikengren",
@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsdown",
     "test": "tsc --noEmit && vitest --run",
-    "test:bun": "bun test",
+    "test:bun": "bun test"
   },
   "exports": {
     ".": "./dist/index.mjs",
