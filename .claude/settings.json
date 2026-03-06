@@ -6,7 +6,9 @@
       "Bash(bun run build)",
       "Bash(bun add hono/static)",
       "WebSearch",
-      "Bash(bun add @hono/serve-static)"
+      "Bash(bun add @hono/serve-static)",
+      "Bash(bun add -w)",
+      "Bash(bun install)"
     ]
   }
 }
