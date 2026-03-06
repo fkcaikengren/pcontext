@@ -42,8 +42,7 @@
     "mcp-inspector": "mcp-inspector",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
-    "db:generate": "bun run scripts/drizzle-generate.ts",
-    "prepublishOnly": "bun run build"
+    "db:generate": "bun run scripts/drizzle-generate.ts"
   },
   "dependencies": {
     "@ai-sdk/llamaindex": "^1.0.106",

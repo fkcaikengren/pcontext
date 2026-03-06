@@ -39,7 +39,6 @@
     "start": "./bin/pcontext start --config ./pcontext.config.js",
     "start:node": "node dist/cli.js  start --config ./pcontext.config.js",
     "start:bun": "bun dist/cli.js  start --config ./pcontext.config.js",
-    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

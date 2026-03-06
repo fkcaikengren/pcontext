@@ -2,6 +2,7 @@
   "name": "pcontext-monorepo",
   "module": "index.ts",
   "private": true,
+  "version": "0.0.2",
   "scripts": {
     "dev:api": "bun run --filter @pcontext/api dev",
     "dev:server": "bun run --filter @pcontext/server dev",
@@ -9,12 +10,17 @@
     "db:generate": "bun run --filter @pcontext/api db:generate",
     "mcp-inspect": "bun run --filter @pcontext/api mcp-inspector",
     "commit": "git-cz",
-    "commit:lint": "commitlint --edit"
+    "commit:lint": "commitlint --edit",
+    "build": "./scripts/build.sh",
+
+    "ci:version": "./scripts/version.sh",
+    "ci:publish": "./scripts/build.sh && ./scripts/publish.sh"
   },
   "type": "module",
   "workspaces": [
     "packages/*"
   ],
+ 
   "dependencies": {},
   "devDependencies": {
     "@antfu/eslint-config": "^5.1.0",

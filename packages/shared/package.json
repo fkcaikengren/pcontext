@@ -23,7 +23,6 @@
     "build": "tsdown",
     "test": "tsc --noEmit && vitest --run",
     "test:bun": "bun test",
-    "prepublishOnly": "bun run build"
   },
   "exports": {
     ".": "./dist/index.mjs",
