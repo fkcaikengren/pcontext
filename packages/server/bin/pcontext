@@ -1,7 +1,13 @@
 #!/bin/sh
 # 优先使用 bun，不存在则使用 node
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# 获取脚本的真实路径（处理 npm bin 链接的情况）
+SCRIPT_PATH="$0"
+# 如果是符号链接，跟随它获取真实路径
+if [ -L "$SCRIPT_PATH" ]; then
+  SCRIPT_PATH="$(readlink -f "$SCRIPT_PATH")"
+fi
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
 if command -v bun >/dev/null 2>&1; then
   exec bun "$SCRIPT_DIR/../dist/cli.js" "$@"
