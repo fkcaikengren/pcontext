@@ -1,7 +1,7 @@
 {
   "name": "@pcontext/api",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "PContext API - Backend API service for PContext",
   "author": "fkcaikengren",
   "license": "MIT",
@@ -42,7 +42,8 @@
     "mcp-inspector": "mcp-inspector",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
-    "db:generate": "bun run scripts/drizzle-generate.ts"
+    "db:generate": "bun run scripts/drizzle-generate.ts",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@ai-sdk/llamaindex": "^1.0.106",
