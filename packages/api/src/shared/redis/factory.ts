@@ -15,6 +15,15 @@ export function createRedisClient(): Redis {
     port: config.redis.port,
     password: config.redis.password,
     maxRetriesPerRequest: null,
+    // lazyConnect: true,
+    retryStrategy(times: number) {
+      if (times > 3) {
+        return null // 停止重试
+      }
+      return Math.min(times * 200, 2000) // 重试间隔
+    },
+    connectTimeout: 20000,
+    commandTimeout: 20000,
   }
   return new Redis(redisConfig)
 }
@@ -26,6 +35,7 @@ export async function initRedis() {
   if (initialized)
     return
   redisClient = createRedisClient()
+  // await redisClient.connect()
   initialized = true
 }
 

@@ -3,7 +3,7 @@ import type { Redis } from 'ioredis'
 import type { ITaskRepository } from '../../task.repo.interface'
 import { Worker } from 'bullmq'
 import { logger } from '@/shared/logger'
-import { createRedisClient } from '@/shared/redis'
+import { getRedis } from '@/shared/redis'
 
 export type TaskProcessor = (job: Job) => Promise<any>
 
@@ -13,7 +13,7 @@ export class TaskWorker {
   constructor(
     queueName: string,
     processor: TaskProcessor,
-    connection: Redis = createRedisClient(),
+    connection: Redis = getRedis(),
   ) {
     this.worker = new Worker(queueName, processor, {
       connection,

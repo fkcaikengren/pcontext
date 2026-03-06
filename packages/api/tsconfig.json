@@ -16,6 +16,7 @@
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strict": true,
     "declaration": true, // 必须生成声明文件
     "declarationMap": true, // 建议开启，方便点击跳转到源码

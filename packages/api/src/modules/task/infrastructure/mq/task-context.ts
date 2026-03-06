@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq'
+import type { Redis } from 'ioredis'
 import type { Logger } from 'pino'
-import { redis } from '@/shared/redis'
+import { getRedis } from '@/shared/redis'
 
 export interface TaskLogEntry {
   timestamp: number
@@ -16,6 +17,7 @@ export class TaskContext<T = any> {
   readonly id: string
   readonly data: T
   readonly traceId: string
+  readonly cache: Redis
 
   static readonly LOG_MAX_ENTRIES = 150
   static readonly LOG_TRIM_TO_ENTRIES = 100
@@ -26,6 +28,7 @@ export class TaskContext<T = any> {
     this.id = job.id!
     this.data = job.data
     this.traceId = (job.data as any).traceId || job.id!
+    this.cache = getRedis()
   }
 
   async log(level: 'info' | 'error' | 'warn', message: string, data?: any) {
@@ -51,7 +54,7 @@ export class TaskContext<T = any> {
       redis.call('EXPIRE', KEYS[1], ARGV[4])
       return len
     `
-    await redis.eval(
+    await this.cache.eval(
       luaScript,
       1,
       key,
@@ -62,7 +65,7 @@ export class TaskContext<T = any> {
     )
 
     // 2. Publish real-time event for SSE
-    await redis.publish(`task:${this.id}:events`, JSON.stringify({
+    await this.cache.publish(`task:${this.id}:events`, JSON.stringify({
       type: 'log',
       entry,
     }))

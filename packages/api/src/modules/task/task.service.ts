@@ -1,6 +1,7 @@
 import type { Redis } from 'ioredis'
 import type { Readable } from 'node:stream'
 import type { DocSourceEnumDTO, TaskDocDTO } from '@/modules/doc/doc.dto'
+import type { TaskLogEntry as RedisTaskLogEntry } from '@/modules/task/infrastructure/mq/task-context'
 import type { TaskLogEntry, TaskStatus } from '@/modules/task/task.entity'
 import type { TaskVO } from '@/modules/task/task.vo'
 import { PassThrough } from 'node:stream'
@@ -10,7 +11,7 @@ import { TaskQueue } from '@/modules/task/infrastructure/mq/task-queue'
 import { TaskWorker } from '@/modules/task/infrastructure/mq/task-worker'
 import { getRepoDeps } from '@/shared/deps'
 import { logger } from '@/shared/logger'
-import { createRedisClient } from '@/shared/redis'
+import { getRedis } from '@/shared/redis'
 import { Cache, CacheableService } from '@/shared/redis/decorator'
 
 @CacheableService('task')
@@ -28,8 +29,11 @@ export class TaskService {
   }
 
   constructor() {
-    this.cache = createRedisClient()
-    this.queue = new TaskQueue('task-queue', this.cache)
+    this.cache = getRedis()
+    this.queue = new TaskQueue('task-queue', {
+      // @ts-expect-error BullMQ 依赖ioredis版本较低5.9.3，实际ioredis 5.10.0
+      connection: this.cache,
+    })
     this.initWorker()
   }
 
@@ -56,10 +60,12 @@ export class TaskService {
 
         await this.taskRepo.updateStatus(taskId, 'completed')
         ctx.logInfo('Task updated in database with status completed')
+        await this.flushLogsToDB(taskId)
       }
       catch (error: any) {
         await this.taskRepo.updateStatus(taskId, 'failed', error.message)
         ctx.logError(`Task updated in database with status failed: ${error.message}`)
+        await this.flushLogsToDB(taskId)
         throw error
       }
     }, this.cache)
@@ -210,5 +216,42 @@ export class TaskService {
     })
 
     return stream
+  }
+
+  /**
+   * 将 Redis 中的任务日志批量写入数据库
+   * @param taskId 任务 ID
+   * @param deleteAfterFlush 写入后是否删除 Redis 中的日志 key，默认 true
+   */
+  async flushLogsToDB(taskId: string, deleteAfterFlush: boolean = true): Promise<number> {
+    const listKey = `task:${taskId}:logs`
+    const logs = await this.cache.lrange(listKey, 0, -1)
+
+    if (logs.length === 0) {
+      logger.info(`[TaskService] No logs to flush for task ${taskId}`)
+      return 0
+    }
+
+    const logEntries = logs.map((logStr) => {
+      const entry = JSON.parse(logStr) as RedisTaskLogEntry
+      return {
+        taskId,
+        logLevel: entry.level,
+        content: entry.message,
+        createdAt: entry.timestamp,
+        extraData: entry.data,
+        traceId: entry.traceId,
+      }
+    })
+
+    await this.taskRepo.createLogs(logEntries)
+    logger.info(`[TaskService] Flushed ${logEntries.length} logs to DB for task ${taskId}`)
+
+    if (deleteAfterFlush) {
+      await this.cache.del(listKey)
+      logger.info(`[TaskService] Deleted Redis log key for task ${taskId}`)
+    }
+
+    return logEntries.length
   }
 }
