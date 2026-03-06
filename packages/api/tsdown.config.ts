@@ -42,8 +42,6 @@ export default defineConfig({
     'cross-env',
     'dotenv',
     'ioredis',
-    'isbot',
-    'katex',
     'pg',
     'pino',
     'pino-http',

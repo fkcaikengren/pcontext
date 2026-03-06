@@ -2,6 +2,23 @@
   "name": "@pcontext/api",
   "type": "module",
   "version": "0.0.1",
+  "description": "PContext API - Backend API service for PContext",
+  "author": "fkcaikengren",
+  "license": "MIT",
+  "homepage": "https://github.com/fkcaikengren/pcontext#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fkcaikengren/pcontext.git",
+    "directory": "packages/api"
+  },
+  "bugs": {
+    "url": "https://github.com/fkcaikengren/pcontext/issues"
+  },
+  "keywords": [
+    "pcontext",
+    "api",
+    "hono"
+  ],
   "exports": {
     ".": "./dist/index.mjs"
   },
@@ -14,6 +31,9 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "NODE_ENV=development bun run --hot src/dev.ts --elide-lines=1000",
     "clean": "rm -rf dist",
@@ -44,7 +64,6 @@
     "bullmq": "^5.70.1",
     "casbin": "^5.45.0",
     "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "croner": "^9.1.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
@@ -56,13 +75,11 @@
     "hono-rate-limiter": "^0.4.2",
     "ioredis": "^5.9.3",
     "isbot": "^5.1.31",
-    "katex": "^0.16.28",
     "llamaindex": "~0.12.1",
     "pg": "^8.16.3",
     "pino": "^10.1.0",
     "pino-http": "^11.0.0",
     "stoker": "^2.0.1",
-
     "uuidv7": "^1.1.0",
     "zod": "^4.1.13"
   }

@@ -2,20 +2,49 @@
   "name": "@pcontext/shared",
   "version": "0.0.1",
   "type": "module",
+  "description": "PContext Shared - Shared types, utilities, and schemas for PContext",
+  "author": "fkcaikengren",
+  "license": "MIT",
+  "homepage": "https://github.com/fkcaikengren/pcontext#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fkcaikengren/pcontext.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/fkcaikengren/pcontext/issues"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
-    "clean": "rm -rf dist",
     "build": "tsdown",
     "test": "tsc --noEmit && vitest --run",
-    "test:bun": "bun test"
+    "test:bun": "bun test",
+    "prepublishOnly": "bun run build"
   },
   "exports": {
     ".": "./dist/index.mjs",
     "./*": "./dist/*"
   },
   "module": "./dist/index.mjs",
+  "public": true,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "dependencies": {
     "es-toolkit": "^1.42.0",
     "zod": "^4.1.13"
-  }
-  
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "pcontext",
+    "shared",
+    "utils"
+  ]
 }

@@ -110,7 +110,7 @@ const PCONTEXT_CONFIG =  {
     milvus: {
       address: '127.0.0.1:19530',
       username: 'root',
-      password: 'Milvus',
+      password: '',
       collection_name: 'default',
       metric_type: 'COSINE',
       index_type: 'HNSW',

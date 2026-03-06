@@ -2,7 +2,7 @@
   "name": "@pcontext/web",
   "version": "0.1.0",
   "description": "React 19 + React Router v7 based SPA application",
-  "private": false,
+  "private": true,
   "type": "module",
   "main": "./build/server/index.js",
   "exports": {
@@ -10,9 +10,6 @@
       "import": "./build/server/index.js"
     }
   },
-  "files": [
-    "build"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/your-org/pcontext"
@@ -25,10 +22,6 @@
   ],
   "author": "Your Organization",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
@@ -53,7 +46,6 @@
     "remark-gfm": "^4.0.1",
     "streamdown": "^2.2.0",
     "zod": "^4.1.13",
-
     "@llamaindex/chat-ui": "^0.6.1",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -70,15 +62,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "immer": "^11.0.1",
-    "isbot": "^5",
     "lucide-react": "^0.556.0",
     "next-themes": "^0.4.6",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
-    "zustand": "^5.0.9"
-    
+    "zustand": "^5.0.9",
+    "isbot": "^5"
   },
   "devDependencies": {
     "vite-plugin-svgr": "^4.5.0"

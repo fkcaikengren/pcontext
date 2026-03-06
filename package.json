@@ -18,6 +18,7 @@
   "dependencies": {},
   "devDependencies": {
     "@antfu/eslint-config": "^5.1.0",
+    "@changesets/cli": "^2.30.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@modelcontextprotocol/inspector": "^0.20.0",

@@ -24,7 +24,7 @@ async function getServeStatic(runtime: string) {
       return serveStatic;
     }
     case 'node': {
-      // Node.js 使用 hono/serve-static 配合 Node.js fs
+    
       const { serveStatic } = await import('@hono/node-server/serve-static');
       return serveStatic;
     }

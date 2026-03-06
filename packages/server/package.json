@@ -22,6 +22,10 @@
   "exports": {
     ".": "./dist/cli.js"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "files": [
     "dist",
     "bin",
@@ -31,7 +35,7 @@
   "scripts": {
     "init": "bun src/cli.ts emit-config",
     "dev": "bun src/cli.ts start --config ./pcontext.config.js",
-    "build": "bun build ./src/cli.ts --format=esm --target=node --outdir=dist --external @pcontext/shared --external @pcontext/api --external @pcontext/web --external commander --external @hono/node-server --external hono/bun --external hono/deno --external hono/serve-static",
+    "build": "./scripts/build.sh",
     "start": "./bin/pcontext start --config ./pcontext.config.js",
     "start:node": "node dist/cli.js  start --config ./pcontext.config.js",
     "start:bun": "bun dist/cli.js  start --config ./pcontext.config.js",
