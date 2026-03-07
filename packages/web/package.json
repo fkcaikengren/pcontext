@@ -28,6 +28,7 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "ai": "^6.0.86",
     "@ai-sdk/react": "^3.0.88",
     "@react-router/serve": "7.10.1",
     "@streamdown/code": "^1.0.2",

@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { bigint, pgEnum, integer as pgInteger, pgTable, serial, uuid, varchar } from 'drizzle-orm/pg-core'
-import { integer as sqliteInteger, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 
@@ -33,24 +33,24 @@ export type FavoritePgPO = typeof favoritePg.$inferSelect
 export type InsertFavoritePgPO = typeof favoritePg.$inferInsert
 
 export const docSqlite = sqliteTable('doc', {
-  id: sqliteInteger('id').primaryKey({ autoIncrement: true }),
+  id: integer('id').primaryKey(),
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   source: text('source').notNull(),
   url: text('url').notNull(),
   taskId: text('task_id').references(() => taskSqlite.id),
-  accessCount: sqliteInteger('access_count').notNull().default(0),
-  tokens: sqliteInteger('tokens').notNull().default(0),
-  snippets: sqliteInteger('snippets').notNull().default(0),
-  createdAt: sqliteInteger('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
-  updatedAt: sqliteInteger('updated_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
+  accessCount: integer('access_count').notNull().default(0),
+  tokens: integer('tokens').notNull().default(0),
+  snippets: integer('snippets').notNull().default(0),
+  createdAt: integer('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
+  updatedAt: integer('updated_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
 })
 
 export const favoriteSqlite = sqliteTable('favorite', {
-  id: sqliteInteger('id').primaryKey({ autoIncrement: true }),
-  userId: sqliteInteger('user_id').notNull().references(() => userSqlite.id),
-  docId: sqliteInteger('doc_id').notNull().references(() => docSqlite.id),
-  createdAt: sqliteInteger('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
+  id: integer('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => userSqlite.id),
+  docId: integer('doc_id').notNull().references(() => docSqlite.id),
+  createdAt: integer('created_at').notNull().default(sql`(strftime('%s','now') * 1000)`),
 })
 
 export type DocSqlitePO = typeof docSqlite.$inferSelect

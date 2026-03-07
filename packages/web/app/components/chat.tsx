@@ -3,14 +3,16 @@ import { DefaultChatTransport } from 'ai'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
 import { math } from '@streamdown/math'
-import { useEffect, useMemo, useRef, useState, type UIEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type UIEvent, Fragment } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, ArrowDown, StopCircle, Plus } from 'lucide-react'
+import { Send, ArrowDown, StopCircle, Plus, FileText, Loader2, Wrench, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import 'katex/dist/katex.min.css'
 import 'streamdown/styles.css'
+
+
 
 interface ChatProps {
   libraryName: string
@@ -38,26 +40,48 @@ export function Chat({ libraryName }: ChatProps) {
   })
   const isLoading = status === 'streaming' || status === 'submitted'
 
+
   const [input, setInput] = useState('')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
+  const [expandedTools, setExpandedTools] = useState<Set<string>>(new Set())
 
   const viewMessages = useMemo(() => {
+    // console.log('Raw messages from useChat -> ', messages)
     return messages
       .map((m) => {
-        const content = (m.parts ?? [])
+        const textParts = (m.parts ?? [])
           .map((p) => (p.type === 'text' ? p.text : ''))
           .join('')
           .trim()
 
+
+        // 提取 toolInvocations
+        // 根据 UIMessage 定义，工具调用部分的 type 是 'tool-${TOOL_NAME}' 格式
+        const toolInvocations = (m.parts ?? [])
+          .filter((p) => p.type.startsWith('tool-'))
+          .map((part) => {
+            // 从 type 中提取工具名称，如 'tool-myFunction' -> 'myFunction'
+            const toolName = part.type.replace(/^tool-/, '')
+            return {
+              toolCallId: part.toolCallId,
+              toolName,
+              input: part.input,
+              output: part.output,
+              state: part.state,
+              errorText: part.errorText,
+            }
+          })
+
         return {
           id: m.id,
           role: m.role,
-          content,
+          content: textParts,
+          toolInvocations,
         }
       })
-      .filter((m) => m.content.length > 0)
+      .filter((m) => m.content.length > 0 || m.toolInvocations.length > 0)
   }, [messages])
 
   useEffect(() => {
@@ -74,6 +98,18 @@ export function Chat({ libraryName }: ChatProps) {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const toggleToolExpanded = (toolCallId: string) => {
+    setExpandedTools((prev) => {
+      const next = new Set(prev)
+      if (next.has(toolCallId)) {
+        next.delete(toolCallId)
+      } else {
+        next.add(toolCallId)
+      }
+      return next
+    })
   }
 
   const handleNewChat = () => {
@@ -104,26 +140,62 @@ export function Chat({ libraryName }: ChatProps) {
         )}
         
         {viewMessages.map((m) => (
-          <div
-            key={m.id}
-            className={cn(
-              "flex w-full",
-              m.role === 'user' ? "justify-end" : "justify-start"
+          <Fragment key={m.id}>
+            {/* 工具调用展示 - 独立消息块 */}
+            {m.toolInvocations.length > 0 && m.toolInvocations.map((tool) => {
+              const isExpanded = expandedTools.has(tool.toolCallId)
+              const hasContent = tool.state === 'output-available' && tool.output
+              return (
+                <div key={tool.toolCallId} className="flex w-full justify-start">
+                  <div className="max-w-[80%] rounded-lg px-4 py-2 text-sm bg-muted text-foreground border-l-2 border-primary">
+                    <div
+                      className="flex items-center gap-1 text-primary font-medium cursor-pointer"
+                      onClick={() => toggleToolExpanded(tool.toolCallId)}
+                    >
+                      {hasContent ? (
+                        isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />
+                      ) : (
+                        <Wrench className="h-3 w-3" />
+                      )}
+                      <span>{tool.toolName}</span>
+                      {tool.input && typeof tool.input === 'object' && 'query' in tool.input && (
+                        <span className="text-muted-foreground font-normal ml-1">
+                          - {String(tool.input.query)}
+                        </span>
+                      )}
+                      <span className="text-muted-foreground font-normal">
+                        {tool.state === 'output-available' ? ' ✓' : tool.state === 'output-error' ? ' ✗' : '...'}
+                      </span>
+                    </div>
+                    {isExpanded && hasContent && (
+                      <div className="mt-1 ml-4 text-muted-foreground max-h-[220px] overflow-y-auto">
+                        <Streamdown plugins={{ code, math }}>
+                          {typeof tool.output === 'object' && tool.output !== null && 'content' in tool.output
+                            ? tool.output.content
+                            : String(tool.output)}
+                        </Streamdown>
+                      </div>
+                    )}
+                    {tool.state === 'output-error' && tool.errorText && (
+                      <div className="mt-1 ml-4 text-destructive">
+                        {tool.errorText}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+            {/* 文本内容 - 独立消息块 */}
+            {m.content && (
+              <div className={cn("flex w-full", m.role === 'user' ? "justify-end" : "justify-start")}>
+                <div className={cn("max-w-[80%] rounded-lg px-4 py-2 text-sm", m.role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted text-foreground")}>
+                  <Streamdown plugins={{ code, math }}>
+                    {m.content}
+                  </Streamdown>
+                </div>
+              </div>
             )}
-          >
-            <div
-              className={cn(
-                "max-w-[80%] rounded-lg px-4 py-2 text-sm",
-                m.role === 'user' 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted text-foreground"
-              )}
-            >
-              <Streamdown plugins={{ code, math }}>
-                {m.content}
-              </Streamdown>
-            </div>
-          </div>
+          </Fragment>
         ))}
         
         {isLoading && viewMessages[viewMessages.length - 1]?.role === 'user' && (
@@ -133,7 +205,8 @@ export function Chat({ libraryName }: ChatProps) {
              </div>
            </div>
         )}
-        
+
+
         <div ref={messagesEndRef} />
       </div>
 

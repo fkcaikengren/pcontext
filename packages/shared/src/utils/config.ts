@@ -13,6 +13,7 @@ export const PContextConfigSchema = z.object({
   jwt_secret: z.string().min(16),
   is_dev: z.boolean().default(true),
   http: z.record(z.string(), z.string()).default({}),
+  admin_password: z.string().min(1).default('admin123'),
   log: z.object({
     level: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
     enabled: z.boolean().default(true),
@@ -27,6 +28,7 @@ export const PContextConfigSchema = z.object({
   }),
   agent: z.object({
     model: z.string().min(1),
+    reranker: z.string().optional(),
     embedding: z.object({
       model: z.string().min(1),
       dim: z.coerce.number().int().min(1),
@@ -69,6 +71,8 @@ const PCONTEXT_CONFIG =  {
   // JWT 密钥
   jwt_secret: '',
   is_dev: true,
+  // 管理员密码
+  admin_password: 'admin123',
 
   // 请求头配置
   http: {
@@ -97,6 +101,7 @@ const PCONTEXT_CONFIG =  {
   // Llamaindex Agent 配置
   agent: {
     model: 'Qwen/Qwen3-32B',
+    reranker: '',
     embedding: {
       model: 'Qwen/Qwen3-Embedding-4B',
       dim: 1536,

@@ -8,6 +8,7 @@ export const CONFIG_TEMPLATE = `export default {
   // JWT 密钥
   jwt_secret: 'fill_your_jwt_secret(at least 32 characters)',
   is_dev: false,
+  admin_password: 'admin123',
 
   // 数据库
   database: {

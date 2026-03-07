@@ -8,7 +8,18 @@
       "WebSearch",
       "Bash(bun add @hono/serve-static)",
       "Bash(bun add -w)",
-      "Bash(bun install)"
+      "Bash(bun install)",
+      "Bash(cat node_modules/.bun/@llamaindex+core@0.6.22/*/dist/**/*.d.ts)",
+      "Bash(xargs -I {} sh -c 'cat {} | grep -A 10 \"\"ChatMessage\\\\|MessageContent\"\"')",
+      "Bash(npx tsc --noEmit src/modules/doc/infrastructure/agent/engine/message-convertor.ts)",
+      "Bash(grep -r \"experimental_useMessageStream\\\\|useMessageStream\" node_modules/@ai-sdk/react/dist/*.d.ts)",
+      "Bash(bun add @llamaindex/cohere)",
+      "Bash(bun add @llamaindex/workflow-core)",
+      "Bash(npx tsc --noEmit src/modules/doc/infrastructure/agent/engine/workflow.ts)",
+      "WebFetch(domain:docs.siliconflow.cn)",
+      "Bash(node -e \"const li = require\\(''llamaindex''\\); console.log\\(Object.keys\\(li\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''node''\\) || k.toLowerCase\\(\\).includes\\(''post''\\) || k.toLowerCase\\(\\).includes\\(''score''\\)\\)\\)\")",
+      "Bash(node -e \"const li = require\\(''llamaindex''\\); console.log\\(Object.keys\\(li\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''postprocessor''\\) || k.toLowerCase\\(\\).includes\\(''rerank''\\) || k.toLowerCase\\(\\).includes\\(''query''\\)\\)\\)\")",
+      "Bash(ls /Users/tangshiwen/Documents/vscode/web/startup/pcontext/packages/web/node_modules/@ai-sdk/react/dist/*.d.ts)"
     ]
   }
 }
