@@ -13,6 +13,7 @@ import { generateFilters } from './query-filter'
  * @param documentIds
  * @param params
  * @returns
+ * @deprecated 请使用workflow
  */
 export async function createChatEngine(documentIds?: string[], params?: any) {
   const index = await getIndex()

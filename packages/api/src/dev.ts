@@ -11,5 +11,6 @@ await initApp()
 export default {
   port: AppSettings.config.port,
   fetch: app.fetch,
-  idleTimeout: 60,
+  idleTimeout: 255, // Bun 支持的最大空闲超时（约4.25分钟），防止流式响应被过早关闭
+  development: false, // 在流式路由中关闭热重载的副作用
 }

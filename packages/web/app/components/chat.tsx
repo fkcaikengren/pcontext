@@ -34,9 +34,16 @@ export function Chat({ libraryName }: ChatProps) {
     }) as any
   }, [])
 
+
   const { messages, sendMessage, stop, status } = useChat({
     transport,
     id: chatKey.toString(),
+    onFinish: (result) => {
+      console.log('onFinish triggered:', result)
+    },
+    onError: (error) => {
+      console.error('Chat error:', error)
+    }
   })
   const isLoading = status === 'streaming' || status === 'submitted'
 
@@ -198,7 +205,7 @@ export function Chat({ libraryName }: ChatProps) {
           </Fragment>
         ))}
         
-        {isLoading && viewMessages[viewMessages.length - 1]?.role === 'user' && (
+        {isLoading  && (
            <div className="flex justify-start">
              <div className="bg-muted text-foreground max-w-[80%] rounded-lg px-4 py-2 text-sm">
                <span className="animate-pulse">Thinking...</span>

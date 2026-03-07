@@ -140,8 +140,14 @@ export default function AddDocsPage() {
           </CardHeader>
           <CardContent>
             <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
-              <li>只会读取 md/mdx 等文档</li>
-              <li>系统会自动处理并索引文档内容</li>
+              {source === "website" ? (
+                <li>采用爬虫转 markdown 然后进行索引</li>
+              ) : (
+                <>
+                  <li>只会读取 md/mdx 等文档</li>
+                  <li>系统会自动处理并索引文档内容</li>
+                </>
+              )}
             </ol>
           </CardContent>
         </Card>

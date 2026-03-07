@@ -19,7 +19,10 @@
       "WebFetch(domain:docs.siliconflow.cn)",
       "Bash(node -e \"const li = require\\(''llamaindex''\\); console.log\\(Object.keys\\(li\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''node''\\) || k.toLowerCase\\(\\).includes\\(''post''\\) || k.toLowerCase\\(\\).includes\\(''score''\\)\\)\\)\")",
       "Bash(node -e \"const li = require\\(''llamaindex''\\); console.log\\(Object.keys\\(li\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''postprocessor''\\) || k.toLowerCase\\(\\).includes\\(''rerank''\\) || k.toLowerCase\\(\\).includes\\(''query''\\)\\)\\)\")",
-      "Bash(ls /Users/tangshiwen/Documents/vscode/web/startup/pcontext/packages/web/node_modules/@ai-sdk/react/dist/*.d.ts)"
+      "Bash(ls /Users/tangshiwen/Documents/vscode/web/startup/pcontext/packages/web/node_modules/@ai-sdk/react/dist/*.d.ts)",
+      "Bash(bun pm ls)",
+      "Bash(bun pm ls ai)",
+      "Bash(lsof -i :3000)"
     ]
   }
 }

@@ -68,6 +68,7 @@ async function startServer(port: number, hostname: string) {
         port,
         hostname,
         fetch: app.fetch,
+        idleTimeout: 120, // 设置较大空闲超时（最大255s），防止流式响应被过早关闭
       });
       break;
     }

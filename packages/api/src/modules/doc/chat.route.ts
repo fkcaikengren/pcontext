@@ -2,6 +2,7 @@ import type { UIMessage } from 'ai'
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
+  generateId,
 } from 'ai'
 import { createRouter } from '@/shared/create-app'
 import { convertUIMessagesToLlamaIndex } from './infrastructure/agent/engine/message-convert'
@@ -14,6 +15,7 @@ const router = createRouter()
   .post('/', async (c) => {
     const body = await c.req.json()
     const { messages }: { messages: UIMessage[], libraryName?: string } = body
+    const abortSignal = c.req.raw.signal
 
     const chatMessages = convertUIMessagesToLlamaIndex(messages)
     // 获取最后一条用户消息作为 query
@@ -22,76 +24,111 @@ const router = createRouter()
     const query = typeof lastUserMessage?.content === 'string' ? lastUserMessage.content : lastUserMessage?.content.join('\n') || ''
     const stream = createUIMessageStream<UIMessage>({
       execute: async ({ writer }) => {
-        // 执行两阶段 RAG 查询
-        const index = await getIndex()
-        const workflow = createTwoStageRAGWorkflow(index)
+        // 动态生成 messageId
+        const messageId = generateId()
 
-        writer.write({
-          type: 'start',
-          messageId: 'msg-1',
-        })
-        // 遵循 vercel ai sdk的Data Stream Protocol, 保证事件的顺序正确
-        const eventStream = await queryTwoStageRAG(workflow, query)
-        // 遍历 workflow 事件，将 streamingResponseEvent 的 delta 发送出去
+        // 监听客户端中止信号
+        const handleAbort = () => {
+          console.log('[chat] Client aborted the request')
+        }
+        abortSignal.addEventListener('abort', handleAbort)
 
-        for await (const event of eventStream) {
-          if (streamingResponseEvent.include(event)) {
-            const { isFirst, delta, isLast } = event.data
-
-            if (isFirst) {
-              writer.write({
-                type: 'text-start',
-                id: 'msg-1',
-              })
-            }
-            else if (isLast) {
-              // 如果是最后一个事件，发送 text-end
-              writer.write({
-                type: 'text-end',
-                id: 'msg-1',
-              })
-            }
-            else {
-              // 发送 text-delta
-              writer.write({
-                type: 'text-delta',
-                delta,
-                id: 'msg-1',
-              })
-            }
+        try {
+          // 如果已经中止，直接退出
+          if (abortSignal.aborted) {
+            return
           }
 
-          if (retrievalCompleteEvent.include(event)) {
-            writer.write({
-              type: 'tool-input-start',
-              toolCallId: 'call_fJdQDqnXeGxTmr4E3YPSR7Ar',
-              toolName: 'query Docs',
-            })
-            writer.write({
-              type: 'tool-input-delta',
-              toolCallId: 'call_fJdQDqnXeGxTmr4E3YPSR7Ar',
-              inputTextDelta: query,
-            })
-            writer.write(
-              { type: 'tool-input-available', toolCallId: 'call_fJdQDqnXeGxTmr4E3YPSR7Ar', toolName: 'query Docs', input: { query } },
-            )
-          }
+          // 执行两阶段 RAG 查询
+          const index = await getIndex()
+          const workflow = createTwoStageRAGWorkflow(index)
 
-          if (rerankCompleteEvent.include(event)) {
-            const { nodes } = event.data
+          writer.write({
+            type: 'start',
+            messageId,
+          })
 
-            // 注意：tool-output-available 不应该有 id 字段
-            writer.write({
-              type: 'tool-output-available',
-              toolCallId: 'call_fJdQDqnXeGxTmr4E3YPSR7Ar',
-              output: {
-                content: nodes.map(node => node.node.getContent()).join('\n\n'),
-              },
-            })
+          // 生成唯一的 toolCallId
+          const toolCallId = generateId()
+
+          // 遵循 vercel ai sdk的Data Stream Protocol, 保证事件的顺序正确
+          const eventStream = await queryTwoStageRAG(workflow, query)
+          // 遍历 workflow 事件，将 streamingResponseEvent 的 delta 发送出去
+
+          for await (const event of eventStream) {
+            // 检查是否已中止，如果是则停止处理更多事件
+            if (abortSignal.aborted) {
+              console.log('[chat] Request aborted, stopping stream')
+              break
+            }
+
+            if (streamingResponseEvent.include(event)) {
+              const { isFirst, delta, isLast } = event.data
+
+              if (isFirst) {
+                writer.write({
+                  type: 'text-start',
+                  id: messageId,
+                })
+              }
+              else if (isLast) {
+                // 如果是最后一个事件，发送 text-end
+                writer.write({
+                  type: 'text-end',
+                  id: messageId,
+                })
+                writer.write({ type: 'finish', finishReason: 'stop' })
+                // TODO：原因检查
+                // type: 'finish' 无法终止，write一个字符串可以强行终止流
+                // @ts-expect-error
+                writer.write('[DONE]')
+              }
+              else {
+                // 发送 text-delta
+                writer.write({
+                  type: 'text-delta',
+                  delta,
+                  id: messageId,
+                })
+              }
+            }
+
+            if (retrievalCompleteEvent.include(event)) {
+              writer.write({
+                type: 'tool-input-start',
+                toolCallId,
+                toolName: 'query Docs',
+              })
+              writer.write({
+                type: 'tool-input-delta',
+                toolCallId,
+                inputTextDelta: query,
+              })
+              writer.write(
+                { type: 'tool-input-available', toolCallId, toolName: 'query Docs', input: { query } },
+              )
+            }
+
+            if (rerankCompleteEvent.include(event)) {
+              const { nodes } = event.data
+
+              // 注意：tool-output-available 不应该有 id 字段
+              writer.write({
+                type: 'tool-output-available',
+                toolCallId,
+                output: {
+                  content: nodes.map(node => node.node.getContent()).join('\n\n'),
+                },
+              })
+            }
           }
         }
-        // TODO：finish事件前端没有收到
-        writer.write({ type: 'finish', finishReason: 'stop' })
+        finally {
+          abortSignal.removeEventListener('abort', handleAbort)
+        }
+      },
+      onFinish: ({ _messages, finishReason }) => {
+        console.log('Stream finished:', finishReason)
       },
     })
 
