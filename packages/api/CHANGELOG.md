@@ -1,5 +1,13 @@
 # @pcontext/api
 
+## 0.0.5
+
+### Patch Changes
+
+- 优化 chat
+- Updated dependencies
+  - @pcontext/shared@0.0.4
+
 ## 0.0.4
 
 ### Patch Changes

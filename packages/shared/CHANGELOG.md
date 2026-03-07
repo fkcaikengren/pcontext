@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.0.4
+
+### Patch Changes
+
+- 优化 chat
+
 ## 0.0.3
 
 ### Patch Changes
