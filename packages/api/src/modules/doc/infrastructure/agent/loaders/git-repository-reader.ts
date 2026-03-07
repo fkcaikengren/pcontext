@@ -79,6 +79,25 @@ export class GitRepositoryReader {
       name: string,
       status: number,
     ): boolean => {
+      // 过滤临时文件和隐藏文件
+      const basename = path.basename(name)
+      // 排除以 .# 开头的文件（Vim 交换文件）
+      if (basename.startsWith('.#')) {
+        return false
+      }
+      // 排除以 ~ 结尾的文件（Vim 备份文件）
+      if (basename.endsWith('~')) {
+        return false
+      }
+      // 排除 .swp 和 .swo 文件（Vim 交换文件）
+      if (basename.endsWith('.swp') || basename.endsWith('.swo')) {
+        return false
+      }
+      // 排除 .DS_Store 文件（macOS）
+      if (basename === '.DS_Store') {
+        return false
+      }
+
       if (category === 'file' && status === 0) {
         const rel = path.relative(repoDir, name)
         const inExcludeDir = excludes.some(
@@ -113,11 +132,21 @@ export class GitRepositoryReader {
       const exists = await pathExists(root)
       if (!exists)
         continue
-      const part = await reader.loadData({
-        directoryPath: root,
-        numWorkers: this.numWorkers,
-      })
-      docs.push(...part)
+      try {
+        const part = await reader.loadData({
+          directoryPath: root,
+          numWorkers: this.numWorkers,
+        })
+        docs.push(...part)
+      }
+      catch (error) {
+        // 忽略文件系统遍历过程中的错误（如临时文件被删除）
+        if (error instanceof Error && (error.message.includes('ENOENT') || error.message.includes('no such file or directory'))) {
+          logger.warn(`[git warning]: skipped file/directory due to error: ${error.message}`)
+          continue
+        }
+        throw error
+      }
     }
     return docs
   }
