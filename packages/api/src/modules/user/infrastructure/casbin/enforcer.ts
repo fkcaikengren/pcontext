@@ -26,26 +26,28 @@ const SEED_POLICIES: [string, string, string][] = [
 
   ['user', '/api/health', 'GET'],
   ['user', '/api/users', 'GET'],
-  ['user', '/api/docs', 'POST'],
+  ['guest', '/api/docs/query', 'GET'],
+  ['guest', '/api/docs/latest', 'GET'],
   ['user', '/api/docs/*/favorite', 'POST'],
-
+  ['guest', '/api/chat', 'POST'],
+  ['guest', '/api/ranking/docs', 'GET'],
   ['user', '/api/users/login', 'POST'],
   ['user', '/api/users/logout', 'POST'],
   ['user', '/api/users/me', 'GET'],
   ['user', '/api/tasks/*', 'GET'],
   ['user', '/api/tasks/*/progress', 'GET'],
+  ['guest', '/api/mcp', '.*'],
 
   ['guest', '/api/health', 'GET'],
   ['guest', '/api/docs', 'GET'],
   ['guest', '/api/docs/query', 'GET'],
-  ['guest', '/api/docs/*/check', 'POST'],
+  ['guest', '/api/docs/latest', 'GET'],
   ['guest', '/api/chat', 'POST'],
   ['guest', '/api/ranking/docs', 'GET'],
-  ['guest', '/api/mcp', '.*'],
-
   ['guest', '/api/users/login', 'POST'],
   ['guest', '/api/users/logout', 'POST'],
   ['guest', '/api/users/me', 'GET'],
+  ['guest', '/api/mcp', '.*'],
 ]
 
 // TODO: 增加表配置前端权限
