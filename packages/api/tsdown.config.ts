@@ -1,4 +1,14 @@
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'tsdown'
+
+// 读取 package.json 获取版本
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const packageJsonPath = join(__dirname, 'package.json')
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+const version = packageJson.version
 
 export default defineConfig({
   entry: ['src/**/*.ts'],
@@ -11,6 +21,10 @@ export default defineConfig({
   dts: true,
   sourcemap: false,
   clean: true,
+  // 注入构建时常量
+  define: {
+    __VERSION__: JSON.stringify(version),
+  },
   external: [
     'zod',
     'es-toolkit',

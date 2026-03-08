@@ -1,7 +1,7 @@
 import type { ApiSuccess } from './shared/types'
 import { Hono } from 'hono'
-
 import { initSettings as initAgentSettings } from '@/modules/doc/infrastructure/agent/settings'
+
 import { initEnforcer } from '@/modules/user/infrastructure/casbin/enforcer'
 import createApp from '@/shared/create-app'
 import { bootstrap } from '@/shared/db/bootstrap'
@@ -13,11 +13,15 @@ import mcp from './modules/doc/mcp.route'
 import ranking from './modules/rank/rank.route'
 import tasks from './modules/task/task.route'
 import users from './modules/user/interfaces/user.route'
+import AppSettings from './settings'
 
 const health = new Hono().get('/', (c) => {
   return c.json({
     code: 200,
     message: 'ok',
+    data: {
+      version: AppSettings.global.version,
+    },
   } as ApiSuccess)
 })
 

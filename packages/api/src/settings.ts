@@ -4,6 +4,9 @@ import { getDefaultPContextConfig, getDirname, loadPContextConfig, PContextConfi
 
 import { z } from 'zod'
 
+// 声明构建时注入的变量
+declare const __VERSION__: string
+
 interface GlobalAppSettings {
   config: PContextConfig
   global: Record<string, any>
@@ -11,7 +14,9 @@ interface GlobalAppSettings {
 
 const AppSettings: GlobalAppSettings = {
   config: getDefaultPContextConfig(),
-  global: {},
+  global: {
+    version: typeof __VERSION__ !== 'undefined' ? __VERSION__ : '0.0.0',
+  },
 }
 
 export async function loadSettingsConfig(customConfigPath: string) {
