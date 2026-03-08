@@ -61,7 +61,14 @@ export default function TaskDetailPage() {
     if (!task) return
     if (task.status !== "running") return
 
-		const baseUrl = `${import.meta.env.VITE_BASE_URL}/api/tasks/${taskId}/progress`
+		const getProgressUrl = () => {
+      if (import.meta.env.VITE_BASE_URL) {
+        return `${import.meta.env.VITE_BASE_URL}/api/tasks/${taskId}/progress`
+      }
+      // 生产环境使用同域名的相对路径
+      return `/api/tasks/${taskId}/progress`
+    }
+		const baseUrl = getProgressUrl()
 		const es = new EventSource(baseUrl)
 
     es.onmessage = (event) => {

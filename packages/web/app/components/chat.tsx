@@ -24,9 +24,15 @@ export function Chat({ libraryName }: ChatProps) {
   libraryNameRef.current = libraryName
 
   const transport = useMemo(() => {
-    const baseUrl = import.meta.env.VITE_BASE_URL || ''
+    const getChatApiUrl = () => {
+      if (import.meta.env.VITE_BASE_URL) {
+        return `${import.meta.env.VITE_BASE_URL}/api/chat`
+      }
+      // 生产环境使用同域名的相对路径
+      return '/api/chat'
+    }
     return new DefaultChatTransport({
-      api: `${baseUrl}/api/chat`,
+      api: getChatApiUrl(),
       credentials: 'include',
       get body() {
         return { libraryName: libraryNameRef.current }

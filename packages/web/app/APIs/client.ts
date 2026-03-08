@@ -2,8 +2,17 @@
 import { getCookie } from '@/utils/cookie'
 import { createClient } from '@pcontext/api/client'
 
-const baseUrl = import.meta.env.VITE_BASE_URL || ''
-const apiBaseUrl = `${baseUrl}/api`
+// 动态获取 API 基础 URL
+// 生产环境自动使用同域名，开发环境可通过 VITE_BASE_URL 指定
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_BASE_URL) {
+    return `${import.meta.env.VITE_BASE_URL}/api`
+  }
+  // 生产环境使用同域名的相对路径
+  return '/api'
+}
+
+const apiBaseUrl = getApiBaseUrl()
 
 
 // function isJsonContentType(contentType: string) {
