@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.0.5
+
+### Patch Changes
+
+- fix chat libraryName 等问题
+
 ## 0.0.4
 
 ### Patch Changes

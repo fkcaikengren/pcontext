@@ -1,6 +1,6 @@
 {
   "name": "@pcontext/server",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "description": "PContext Server - CLI tool for starting the PContext service",
   "author": "fkcaikengren",

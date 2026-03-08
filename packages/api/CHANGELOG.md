@@ -1,5 +1,13 @@
 # @pcontext/api
 
+## 0.0.6
+
+### Patch Changes
+
+- fix chat libraryName 等问题
+- Updated dependencies
+  - @pcontext/shared@0.0.5
+
 ## 0.0.5
 
 ### Patch Changes
