@@ -1,5 +1,14 @@
 # @pcontext/server
 
+## 0.1.1
+
+### Patch Changes
+
+- 增加应用版本,修改 guest 权限
+- Updated dependencies
+  - @pcontext/api@0.1.1
+  - @pcontext/shared@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

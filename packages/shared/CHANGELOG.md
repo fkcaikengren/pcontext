@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.1.1
+
+### Patch Changes
+
+- 增加应用版本,修改 guest 权限
+
 ## 0.1.0
 
 ### Minor Changes
