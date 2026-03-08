@@ -1,5 +1,16 @@
 # @pcontext/api
 
+## 0.1.0
+
+### Minor Changes
+
+- 支持 zilliz milvus
+
+### Patch Changes
+
+- Updated dependencies
+  - @pcontext/shared@0.1.0
+
 ## 0.0.8
 
 ### Patch Changes

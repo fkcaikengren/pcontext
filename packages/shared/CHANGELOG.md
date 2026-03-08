@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.1.0
+
+### Minor Changes
+
+- 支持 zilliz milvus
+
 ## 0.0.7
 
 ### Patch Changes
