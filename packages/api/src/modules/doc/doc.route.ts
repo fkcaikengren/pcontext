@@ -2,11 +2,11 @@ import type { Context } from 'hono'
 import type { DocSnippetsVO, DocVO } from './doc.vo'
 import type { DocListQueryDTO, PaginationVO } from '@/client'
 import type { ApiError, ApiSuccess, AppBindings } from '@/shared/types'
-import { logger } from '@zilliz/milvus2-sdk-node'
 import { z } from 'zod'
-
 import { DocAddBodySchema, DocListQuerySchema, DocSearchQuerySchema, DocSnippetsQuerySchema, PositiveIntOptionalSchema } from '@/modules/doc/doc.dto'
+
 import { createRouter } from '@/shared/create-app'
+import { logger } from '@/shared/logger'
 import { Res200, Res201, Res400, Res401, Res404, Res409 } from '@/shared/utils/response-template'
 import { getCurrentUserId } from '@/shared/utils/user'
 import { jsonValidator, queryValidator } from '@/shared/utils/validator'

@@ -28,7 +28,7 @@ export class VectorStoreProvider {
         configOrAddress: milvus.address,
         username: milvus.username,
         password: milvus.password,
-        ssl: false, // TODO: 增加配置
+        ssl: !config.is_dev,
       },
       collection: milvus.collection_name,
     })

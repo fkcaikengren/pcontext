@@ -50,7 +50,6 @@
     "@hono/vite-dev-server": "^0.23.0",
     "@hono/zod-validator": "^0.7.2",
     "@libsql/client": "^0.15.15",
-    "@llamaindex/cohere": "^0.0.36",
     "@llamaindex/milvus": "^0.1.31",
     "@llamaindex/openai": "0.4.22",
     "@llamaindex/readers": "~3.1.4",
