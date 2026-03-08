@@ -228,7 +228,7 @@ export function Chat({ libraryName }: ChatProps) {
         </Button>
       )}
 
-      <div className="p-4 border-t bg-background sticky bottom-0 z-20">
+      <div className="p-4 border-t bg-background sticky bottom-0 z-20 rounded-lg">
         <form
           onSubmit={(e) => {
             e.preventDefault()
