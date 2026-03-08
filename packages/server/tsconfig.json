@@ -8,6 +8,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
+      "@pcontext/shared/node": ["../../packages/shared/src/node/index.ts"],
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "jsx": "preserve",

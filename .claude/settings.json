@@ -22,7 +22,11 @@
       "Bash(ls /Users/tangshiwen/Documents/vscode/web/startup/pcontext/packages/web/node_modules/@ai-sdk/react/dist/*.d.ts)",
       "Bash(bun pm ls)",
       "Bash(bun pm ls ai)",
-      "Bash(lsof -i :3000)"
+      "Bash(lsof -i :3000)",
+      "Bash(timeout 10 bun run dev:api)",
+      "Bash(bun run dev:api)",
+      "Bash(git checkout HEAD -- packages/shared/src/constant.ts)",
+      "Bash(curl -X POST http://localhost:3000/api/users/login -H \"Content-Type: application/json\" -d '{\"\"username\"\":\"\"invalid_user\"\",\"\"password\"\":\"\"wrong_password\"\"}')"
     ]
   }
 }

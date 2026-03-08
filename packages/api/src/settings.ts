@@ -1,7 +1,6 @@
-import type { PContextConfig } from '@pcontext/shared'
+import type { PContextConfig } from '@pcontext/shared/node'
 import path from 'node:path'
-
-import { getDefaultPContextConfig, getDirname, loadPContextConfig, PContextConfigSchema } from '@pcontext/shared'
+import { getDefaultPContextConfig, getDirname, loadPContextConfig, PContextConfigSchema } from '@pcontext/shared/node'
 
 import { z } from 'zod'
 

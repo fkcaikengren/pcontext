@@ -44,14 +44,9 @@ export const useAuthStore = create<AuthState>()(devtools((set) => ({
     }
   },
   async login({ username, password }) {
-    // 登录请求，服务器会设置 cookie
-    try {
-      const user = await parseRes(client.users.login.$post({json: { username, password }}))
-      set({ user, isAuthenticated:true, initialized: true, loading: false, error: null });
-      console.log('Login successful:', user);
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
+    const user = await parseRes(client.users.login.$post({json: { username, password }}))
+    set({ user, isAuthenticated:true, initialized: true, loading: false, error: null });
+    // console.log('Login successful:', user);
   },
   async logout() {
     await parseRes(client.users.logout.$post());

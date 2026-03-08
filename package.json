@@ -18,7 +18,9 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "hono": "^4.10.7"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",
     "@changesets/cli": "^2.30.0",

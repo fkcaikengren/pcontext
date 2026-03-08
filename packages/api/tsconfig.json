@@ -13,10 +13,10 @@
     "paths": {
       "@/*": ["src/*"],
       "@pcontext/shared/types": ["../../packages/shared/src/types/index.ts"],
+      "@pcontext/shared/node": ["../../packages/shared/src/node/index.ts"],
       "@pcontext/*": ["../../packages/*/src/index.ts"]
     },
     "resolveJsonModule": true,
-    "skipLibCheck": true,
     "strict": true,
     "declaration": true, // 必须生成声明文件
     "declarationMap": true, // 建议开启，方便点击跳转到源码

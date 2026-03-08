@@ -26,7 +26,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./*": "./dist/*"
+    "./node": "./dist/node/index.mjs"
   },
   "module": "./dist/index.mjs",
   "public": true,

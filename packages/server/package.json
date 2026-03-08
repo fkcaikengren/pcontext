@@ -49,9 +49,6 @@
   "peerDependencies": {
     "hono": "^4.10.7"
   },
-  "devDependencies": {
-    "hono": "^4.10.7"
-  },
   "engines": {
     "node": ">=22.0.0"
   },

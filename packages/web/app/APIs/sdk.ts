@@ -2,16 +2,7 @@ import { client } from './client'
 
 import type { ClientResponse } from 'hono/client'
 
-export class HttpError extends Error {
-  constructor(
-    message: string,
-    public code: number,
-    public data: Record<string, any> | null = null
-  ) {
-    super(message)
-    this.name = 'HttpError'
-  }
-}
+import { HttpError } from '@pcontext/shared'
 
 type JsonResponse = ClientResponse<any, number, 'json'>
 

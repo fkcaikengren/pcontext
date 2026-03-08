@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { getRuntime, getDirname, type PContextConfig } from '@pcontext/shared';
+import { getRuntime, getDirname, type PContextConfig } from '@pcontext/shared/node';
 import { initApp, loadSettingsConfig} from '@pcontext/api';
 
 

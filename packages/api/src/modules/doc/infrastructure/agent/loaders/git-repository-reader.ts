@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { SimpleDirectoryReader } from '@llamaindex/readers/directory'
-import { TMP_GIT_REPOS_PATH } from '@pcontext/shared'
+import { TMP_GIT_REPOS_PATH } from '@pcontext/shared/node'
 import { logger } from '@/shared/logger'
 
 const exec = promisify(execCb)

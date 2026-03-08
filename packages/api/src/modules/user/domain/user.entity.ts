@@ -1,4 +1,5 @@
 import type { UserPgPO, UserSqlitePO } from '../infrastructure/user.po'
+import { HttpError } from '@pcontext/shared'
 
 type UserPO = UserPgPO | UserSqlitePO
 export type UserRole = 'admin' | 'user'
@@ -35,7 +36,7 @@ export class UserEntity {
 
   ensureActive(): void {
     if (!this.isActive()) {
-      throw new Error('用户已被禁用')
+      throw new HttpError('用户已被禁用', 422)
     }
   }
 }
