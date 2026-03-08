@@ -13,11 +13,14 @@ export class TaskWorker {
   constructor(
     queueName: string,
     processor: TaskProcessor,
-    connection: Redis = getRedis(),
+    connection: Redis,
   ) {
     this.worker = new Worker(queueName, processor, {
       connection,
       concurrency: 5, // Default concurrency
+      lockDuration: 3600000, // 1 hour - extended for long-running tasks like git indexing
+      stalledInterval: 30000, // Check for stalled jobs every 30 seconds
+      maxStalledCount: 1, // Allow only one stall before marking job as failed
     })
 
     this.worker.on('completed', async (job) => {

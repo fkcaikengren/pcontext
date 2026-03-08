@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { bigint, bigserial, jsonb, index as pgIndex, integer as pgInteger, pgTable, text as pgText, serial, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
-import { integer, index as sqliteIndex, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { bigint, bigserial, jsonb, index as pgIndex, integer as pgInteger, pgTable, text as pgText, uniqueIndex as pgUniqueIndex, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { integer, index as sqliteIndex, sqliteTable, uniqueIndex as sqliteUniqueIndex, text } from 'drizzle-orm/sqlite-core'
 
 export const taskPg = pgTable('task', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v7()`),
@@ -24,11 +24,12 @@ export const taskLogPg = pgTable('task_logs', {
   taskId: uuid('task_id').notNull(),
   logLevel: varchar('log_level', { length: 10 }),
   content: pgText('content'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true, precision: 3 }).defaultNow(),
   extraData: jsonb('extra_data'),
   traceId: varchar('trace_id', { length: 64 }),
 }, t => ({
   idxTaskIdTime: pgIndex('idx_task_id_time').on(t.taskId, t.createdAt),
+  uniqueTaskTimeContent: pgUniqueIndex('unique_task_time_content').on(t.taskId, t.createdAt, t.content),
 }))
 
 export type TaskLogPgPO = typeof taskLogPg.$inferSelect
@@ -61,6 +62,7 @@ export const taskLogSqlite = sqliteTable('task_logs', {
   traceId: text('trace_id'),
 }, t => ({
   idxTaskIdTime: sqliteIndex('idx_task_id_time').on(t.taskId, t.createdAt),
+  uniqueTaskTimeContent: sqliteUniqueIndex('unique_task_time_content').on(t.taskId, t.createdAt, t.content),
 }))
 
 export type TaskLogSqlitePO = typeof taskLogSqlite.$inferSelect

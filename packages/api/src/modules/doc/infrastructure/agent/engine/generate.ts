@@ -44,9 +44,6 @@ export async function generateGitRepositoryData({
   })
   task.logInfo('generateGitRepositoryData: storage context created')
 
-  // load documents from current directory into an index
-  // const reader = new SimpleDirectoryReader();
-  // const documents = await reader.loadData("data/test");
   const reader = new GitRepositoryReader({
     repo,
     filterDirectories: {
@@ -59,6 +56,7 @@ export async function generateGitRepositoryData({
     },
     debug: true, // TODO: 处理debug参数
   })
+  task.logInfo('generateGitRepositoryData: start fetching git repository and loading documents')
   const documents = await reader.loadData()
   task.logInfo({ repo, docCount: documents.length }, 'generateGitRepositoryData: documents loaded from repository')
 
@@ -106,7 +104,6 @@ export async function generateWebsiteData({
     throw new Error('FIRECRAWL_API_KEY is not set')
   }
 
-  task.logInfo('generateWebsiteData: crawling the website')
   const reader = new WebsiteCrawlReader({
     baseUrl: url,
     apiKey,
@@ -126,6 +123,7 @@ export async function generateWebsiteData({
       }
     },
   })
+  task.logInfo('generateWebsiteData: start crawling the website')
   const documents = await reader.loadData()
   task.logInfo({ docCount: documents.length }, 'generateWebsiteData: documents loaded from website')
 

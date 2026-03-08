@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "unique_task_time_content" ON "task_logs" USING btree ("task_id","created_at","content");

@@ -82,7 +82,7 @@ export class PgTaskRepository implements ITaskRepository {
       createdAt: input.createdAt ? new Date(input.createdAt) : undefined,
       extraData: input.extraData ?? null,
       traceId: input.traceId ?? null,
-    }))).returning()
+    }))).onConflictDoNothing().returning()
   }
 
   async findLogsByTaskId(taskId: string): Promise<TaskLogEntity[]> {

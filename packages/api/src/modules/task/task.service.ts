@@ -46,7 +46,7 @@ export class TaskService {
       const taskId = job.data.id
       const source = job.data?.source
 
-      ctx.logInfo('Task started')
+      ctx.logInfo('Index Task started...')
       try {
         if (source === 'website') {
           await this.indexWebsiteDoc(ctx)
@@ -61,11 +61,13 @@ export class TaskService {
         await this.taskRepo.updateStatus(taskId, 'completed')
         ctx.logInfo('Task updated in database with status completed')
         await this.flushLogsToDB(taskId)
+        ctx.logInfo('Task logs flushed to database')
       }
       catch (error: any) {
         await this.taskRepo.updateStatus(taskId, 'failed', error.message)
         ctx.logError(`Task updated in database with status failed: ${error.message}`)
         await this.flushLogsToDB(taskId)
+        ctx.logInfo('Task logs flushed to database')
         throw error
       }
     }, this.cache)
@@ -167,6 +169,7 @@ export class TaskService {
   }
 
   async createLogStream(taskId: string): Promise<Readable> {
+    console.log('createLogStream for taskId === ', taskId)
     const stream = new PassThrough({ objectMode: true })
     const channel = `task:${taskId}:events`
     const listKey = `task:${taskId}:logs`

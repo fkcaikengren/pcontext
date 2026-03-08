@@ -22,6 +22,13 @@
       "when": 1772008695911,
       "tag": "0002_change_task_id_to_uuid_v7",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772955823443,
+      "tag": "0003_add_task_log_unique_constraint",
+      "breakpoints": true
     }
   ]
 }

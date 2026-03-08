@@ -87,7 +87,7 @@ export class SqliteTaskRepository implements ITaskRepository {
       createdAt: input.createdAt ?? undefined,
       extraData: input.extraData ?? null,
       traceId: input.traceId ?? null,
-    }))).returning()
+    }))).onConflictDoNothing().returning()
   }
 
   async findLogsByTaskId(taskId: string): Promise<TaskLogEntity[]> {
