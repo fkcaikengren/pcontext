@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.0.7
+
+### Patch Changes
+
+- 修复 bug: redis 连接/日志
+
 ## 0.0.6
 
 ### Patch Changes

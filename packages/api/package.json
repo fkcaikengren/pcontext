@@ -1,7 +1,7 @@
 {
   "name": "@pcontext/api",
   "type": "module",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "PContext API - Backend API service for PContext",
   "author": "fkcaikengren",
   "license": "MIT",

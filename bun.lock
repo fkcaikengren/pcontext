@@ -46,7 +46,7 @@
     },
     "packages/api": {
       "name": "@pcontext/api",
-      "version": "0.0.7",
+      "version": "0.0.8",
       "dependencies": {
         "@ai-sdk/llamaindex": "^1.0.106",
         "@hono/node-server": "^1.19.6",
@@ -92,7 +92,7 @@
     },
     "packages/server": {
       "name": "@pcontext/server",
-      "version": "0.0.8",
+      "version": "0.0.9",
       "bin": {
         "pcontext": "./bin/pcontext",
       },
@@ -108,7 +108,7 @@
     },
     "packages/shared": {
       "name": "@pcontext/shared",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "dependencies": {
         "es-toolkit": "^1.42.0",
         "zod": "^4.1.13",
@@ -116,7 +116,7 @@
     },
     "packages/web": {
       "name": "@pcontext/web",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@ai-sdk/react": "^3.0.88",
         "@llamaindex/chat-ui": "^0.6.1",

@@ -1,5 +1,14 @@
 # @pcontext/server
 
+## 0.0.9
+
+### Patch Changes
+
+- 修复 bug: redis 连接/日志
+- Updated dependencies
+  - @pcontext/api@0.0.8
+  - @pcontext/shared@0.0.7
+
 ## 0.0.8
 
 ### Patch Changes
