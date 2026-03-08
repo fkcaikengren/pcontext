@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router"
 import { client, parseRes } from "@/APIs"
-import type { TaskVO } from '@pcontext/api/client'
 import { TaskStatusBadge } from "@/components/task-status-badge"
-import { ListTodo, ExternalLink } from "lucide-react"
+import { ListTodo } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 function formatDate(timestamp: number): string {
   if (!timestamp) return "-"
@@ -15,35 +14,15 @@ function formatDate(timestamp: number): string {
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<TaskVO[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: async () => {
+      const { tasks } = await parseRes(client.tasks.$get())
+      return tasks || []
+    },
+  })
 
-  useEffect(() => {
-    let cancelled = false
-
-    const fetchTasks = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const { tasks } = await parseRes(client.tasks.$get())
-        if (cancelled) return
-        setTasks(tasks || [])
-      } catch (err) {
-        if (cancelled) return
-        const message = err instanceof Error ? err.message : "加载任务失败"
-        setError(message)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    fetchTasks()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const tasks = data || []
 
   return (
     <div className="flex flex-1 flex-col items-center p-6 pt-16 md:p-8 md:pt-20">
@@ -57,18 +36,18 @@ export default function TasksPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {loading && (
+            {isLoading && (
               <div className="py-12 text-center text-sm text-muted-foreground">加载中...</div>
             )}
-            {!loading && error && (
+            {!isLoading && error && (
               <div className="py-4 px-4 rounded-md bg-destructive/5 text-sm text-destructive">
-                {error}
+                {error instanceof Error ? error.message : "加载任务失败"}
               </div>
             )}
-            {!loading && !error && tasks.length === 0 && (
+            {!isLoading && !error && tasks.length === 0 && (
               <div className="py-12 text-center text-sm text-muted-foreground">暂无任务</div>
             )}
-            {!loading && !error && tasks.length > 0 && (
+            {!isLoading && !error && tasks.length > 0 && (
               <div className="flex flex-col divide-y divide-border/50">
                 {tasks.map((task) => (
                     <div key={task.id} className="flex items-center justify-between py-4 hover:bg-muted/30 transition-colors -mx-4 px-4">

@@ -20,17 +20,20 @@ function AppLayout() {
   }, [initialized, auth]);
 
   // 路由守卫：检查权限
-  useLayoutEffect(() => {
-    const { user, isAuthenticated } = useAuthStore.getState();
-    const hasPermission = checkRoutePermission(
-      location.pathname,
-      user?.role,
-      isAuthenticated
-    );
+  useEffect(() => {
+    const {initialized, user, isAuthenticated } = useAuthStore.getState();
+    if(initialized){
+      const hasPermission = checkRoutePermission(
+        location.pathname,
+        user?.role,
+        isAuthenticated
+      );
 
-    if (!hasPermission) {
-      navigate(isAuthenticated ? "/" : "/login");
+      if (!hasPermission) {
+        navigate(isAuthenticated ? "/" : "/login");
+      }
     }
+    
   }, [location.pathname, navigate]);
 
   if (loading) {

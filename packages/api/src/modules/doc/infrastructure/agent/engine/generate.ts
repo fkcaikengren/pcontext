@@ -81,6 +81,8 @@ export async function generateGitRepositoryData({
     },
   }
 
+  task.logInfo('generateGitRepositoryData: start indexing...')
+
   const index = await VectorStoreIndex.fromDocuments(documents, args)
 
   task.logInfo({ repo, docCount: documents.length }, 'generateGitRepositoryData: vector index created')
@@ -156,6 +158,7 @@ export async function generateWebsiteData({
     },
   }
 
+  task.logInfo('generateWebsiteData: start indexing...')
   const index = await VectorStoreIndex.fromDocuments(documents, args)
 
   task.logInfo({ url, docCount: documents.length }, 'generateWebsiteData: vector index created')
