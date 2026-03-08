@@ -195,16 +195,37 @@ export class TaskService {
     const subRedis = this.cache.duplicate()
     await subRedis.subscribe(channel)
 
+    let isClosed = false
+
+    const closeResources = async () => {
+      if (isClosed)
+        return
+      isClosed = true
+
+      try {
+        await subRedis.unsubscribe(channel)
+      }
+      catch (err) {
+        logger.error(`Error during unsubscribe: ${err}`)
+      }
+
+      try {
+        await subRedis.quit()
+      }
+      catch (err) {
+        logger.error(`Error during Redis quit: ${err}`)
+      }
+    }
+
     subRedis.on('message', (ch, message) => {
-      if (ch !== channel)
+      if (ch !== channel || isClosed)
         return
       try {
         const event = JSON.parse(message)
         stream.write(event)
 
         if (event.type === 'end') {
-          subRedis.unsubscribe()
-          subRedis.quit()
+          closeResources()
           stream.end()
         }
       }
@@ -213,9 +234,10 @@ export class TaskService {
       }
     })
 
-    stream.on('close', () => {
-      subRedis.unsubscribe()
-      subRedis.quit()
+    stream.on('close', closeResources)
+    stream.on('error', (err) => {
+      logger.error(`Log stream error for task ${taskId}: ${err}`)
+      closeResources()
     })
 
     return stream
