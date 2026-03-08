@@ -1,6 +1,6 @@
 {
   "name": "@pcontext/web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React 19 + React Router v7 based SPA application",
   "private": true,
   "type": "module",

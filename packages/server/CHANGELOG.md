@@ -1,5 +1,14 @@
 # @pcontext/server
 
+## 0.0.8
+
+### Patch Changes
+
+- web BASE_URL
+- Updated dependencies
+  - @pcontext/api@0.0.7
+  - @pcontext/shared@0.0.6
+
 ## 0.0.7
 
 ### Patch Changes

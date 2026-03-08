@@ -1,6 +1,6 @@
 {
   "name": "@pcontext/shared",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "PContext Shared - Shared types, utilities, and schemas for PContext",
   "author": "fkcaikengren",

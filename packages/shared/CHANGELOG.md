@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.0.6
+
+### Patch Changes
+
+- web BASE_URL
+
 ## 0.0.5
 
 ### Patch Changes
