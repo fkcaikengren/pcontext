@@ -14,7 +14,7 @@ import { getIndex } from './infrastructure/agent/storage'
 const router = createRouter()
   .post('/', async (c) => {
     const body = await c.req.json()
-    const { messages }: { messages: UIMessage[], libraryName?: string } = body
+    const { messages, libraryName }: { messages: UIMessage[], libraryName?: string } = body
     const abortSignal = c.req.raw.signal
 
     const chatMessages = convertUIMessagesToLlamaIndex(messages)
@@ -52,7 +52,7 @@ const router = createRouter()
           const toolCallId = generateId()
 
           // 遵循 vercel ai sdk的Data Stream Protocol, 保证事件的顺序正确
-          const eventStream = await queryTwoStageRAG(workflow, query)
+          const eventStream = await queryTwoStageRAG(workflow, query, libraryName ? [libraryName] : [])
           // 遍历 workflow 事件，将 streamingResponseEvent 的 delta 发送出去
 
           for await (const event of eventStream) {
