@@ -9,6 +9,7 @@ import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
 import { casbinRulePg, casbinRuleSqlite } from '@/modules/user/infrastructure/casbin-rule.po'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 import AppSettings from '@/settings'
+import { initAppInfoDB } from '@/shared/system'
 
 const pgSchema = { user: userPg, doc: docPg, favorite: favoritePg, casbinRule: casbinRulePg, task: taskPg }
 const sqliteSchema = { user: userSqlite, doc: docSqlite, favorite: favoriteSqlite, casbinRule: casbinRuleSqlite, task: taskSqlite }
@@ -26,6 +27,9 @@ export type SqliteDB = LibSQLDatabase<typeof sqliteSchema>
 export async function initDb() {
   if (initialized)
     return
+  // 初始化app-info的数据库
+  await initAppInfoDB()
+
   provider = config.database.provider
   const dbUrl = config.database.url
   if (provider === 'postgresql') {
@@ -36,6 +40,7 @@ export async function initDb() {
     const sqliteClient = createClient({ url: dbUrl })
     sqliteDb = drizzleSqlite(sqliteClient, { schema: sqliteSchema })
   }
+
   initialized = true
 }
 

@@ -1,5 +1,6 @@
 import { newEnforcer, newModelFromString } from 'casbin'
 import AppSettings from '@/settings'
+import { getVersion } from '@/shared/system'
 import { getCasbinAdapter } from './adapter'
 
 const RBAC_MODEL = `
@@ -23,27 +24,15 @@ let enforcerPromise: Promise<import('casbin').Enforcer> | null = null
 
 const SEED_POLICIES: [string, string, string][] = [
   ['admin', '/api/*', '.*'],
-
-  ['user', '/api/health', 'GET'],
-  ['user', '/api/users', 'GET'],
-  ['guest', '/api/docs/query', 'GET'],
-  ['guest', '/api/docs/latest', 'GET'],
-  ['user', '/api/docs/*/favorite', 'POST'],
-  ['guest', '/api/chat', 'POST'],
-  ['guest', '/api/ranking/docs', 'GET'],
-  ['user', '/api/users/login', 'POST'],
-  ['user', '/api/users/logout', 'POST'],
-  ['user', '/api/users/me', 'GET'],
-  ['user', '/api/tasks/*', 'GET'],
-  ['user', '/api/tasks/*/progress', 'GET'],
-  ['guest', '/api/mcp', '.*'],
+  // TODO: 补充user权限，和添加用户功能一起完成
 
   ['guest', '/api/health', 'GET'],
   ['guest', '/api/docs', 'GET'],
+  ['guest', '/api/docs/*', 'GET'],
   ['guest', '/api/docs/query', 'GET'],
   ['guest', '/api/docs/latest', 'GET'],
-  ['guest', '/api/chat', 'POST'],
   ['guest', '/api/ranking/docs', 'GET'],
+  ['guest', '/api/chat', 'POST'],
   ['guest', '/api/users/login', 'POST'],
   ['guest', '/api/users/logout', 'POST'],
   ['guest', '/api/users/me', 'GET'],
@@ -66,12 +55,12 @@ export async function initEnforcer(adapter?: import('casbin').Adapter) {
       const actualAdapter = adapter ?? getCasbinAdapter()
       const e = await newEnforcer(model, actualAdapter)
 
-      const policies = await e.getPolicy()
-      const existing = new Set((policies ?? []).map(p => p.join('|')))
-      const missing = SEED_POLICIES.filter(p => !existing.has(p.join('|')))
-      if (missing.length > 0) {
+      const appVersion = await getVersion()
+      if (AppSettings.config.is_dev || AppSettings.global.version !== appVersion) {
+        // 用 SEED_POLICIES 覆盖原有数据
         e.enableAutoSave(false)
-        await e.addPolicies(missing)
+        e.clearPolicy()
+        await e.addPolicies(SEED_POLICIES)
         await e.savePolicy()
         e.enableAutoSave(true)
       }

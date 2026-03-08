@@ -4,9 +4,11 @@ import { fileURLToPath } from 'node:url'
 import { sql } from 'drizzle-orm'
 import { migrate as migrateSqlite } from 'drizzle-orm/libsql/migrator'
 import { migrate as migratePg } from 'drizzle-orm/node-postgres/migrator'
+import AppSettings from '@/settings'
 import { getDbProvider, getPgDb, getSqliteDb } from '@/shared/db/connection'
 import { runSeed } from '@/shared/db/seed'
 import { logger } from '@/shared/logger'
+import { setVersion } from '@/shared/system'
 
 // 获取当前文件所在目录，实现路径与运行工作目录无关
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -14,6 +16,9 @@ const migrationsBaseDir = path.join(__dirname, 'migrations')
 
 export async function bootstrap() {
   try {
+    // 更新app-info
+    await setVersion(AppSettings.global.version)
+
     const provider = getDbProvider()
     if (provider === 'sqlite') {
       const db = getSqliteDb()
