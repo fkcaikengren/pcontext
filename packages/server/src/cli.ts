@@ -186,7 +186,7 @@ program
     }
 
     const configPath = options.config;
-    const port = options.port ? parseInt(options.port, 10) : 3000;
+    const port = options.port ? parseInt(options.port, 10) : undefined;
     const hostname = options.hostname;
 
     if (typeof configPath !== 'string') {
