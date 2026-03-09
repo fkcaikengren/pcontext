@@ -1,5 +1,11 @@
 # @pcontext/shared
 
+## 0.1.3
+
+### Patch Changes
+
+- app-info 数据库记录系统元数据
+
 ## 0.1.2
 
 ### Patch Changes
