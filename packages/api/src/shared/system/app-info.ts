@@ -30,7 +30,7 @@ export async function initAppInfoDB(): Promise<void> {
 // 获取版本信息
 export async function getVersion(): Promise<string | null> {
   const result = await client.execute({
-    sql: 'SELECT value FROM app_meta WHERE key = ?',
+    sql: 'SELECT value FROM app_info WHERE key = ?',
     args: ['version'],
   })
   return result.rows[0]?.value as string | null
@@ -39,7 +39,7 @@ export async function getVersion(): Promise<string | null> {
 // 设置版本信息（覆盖式）
 export async function setVersion(version: string): Promise<void> {
   await client.execute({
-    sql: 'INSERT INTO app_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    sql: 'INSERT INTO app_info (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     args: ['version', version],
   })
 }
