@@ -1,5 +1,14 @@
 # @pcontext/server
 
+## 0.1.2
+
+### Patch Changes
+
+- 版本更新检测
+- Updated dependencies
+  - @pcontext/api@0.1.2
+  - @pcontext/shared@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

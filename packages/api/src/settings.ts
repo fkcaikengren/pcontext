@@ -14,8 +14,6 @@ const AppSettings: GlobalAppSettings = {
   global: { },
 }
 
-console.log(`📦 api应用版本: ${AppSettings.global.version}`)
-
 export async function loadSettingsConfig(customConfigPath: string) {
   const __dirname = getDirname(import.meta.url)
 

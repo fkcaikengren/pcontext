@@ -1,5 +1,11 @@
 # @pcontext/web
 
+## 0.1.4
+
+### Patch Changes
+
+- 版本更新检测
+
 ## 0.1.3
 
 ### Patch Changes
