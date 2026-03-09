@@ -4,6 +4,7 @@
   "private": true,
   "version": "0.0.2",
   "scripts": {
+    "init": "bun run --filter @pcontext/server init",
     "dev:api": "bun run --filter @pcontext/api dev",
     "dev:web": "bun run --filter @pcontext/web dev",
     "build": "./scripts/build.sh",

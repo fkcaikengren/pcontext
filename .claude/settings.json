@@ -28,7 +28,10 @@
       "Bash(git checkout HEAD -- packages/shared/src/constant.ts)",
       "Bash(curl -X POST http://localhost:3000/api/users/login -H \"Content-Type: application/json\" -d '{\"\"username\"\":\"\"invalid_user\"\",\"\"password\"\":\"\"wrong_password\"\"}')",
       "Bash(bun run db:generate add_task_log_unique_constraint)",
-      "Bash(bunx tsc --noEmit)"
+      "Bash(bunx tsc --noEmit)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/upstash/context7/main/README.md)",
+      "Bash(curl -s \"https://registry.npmjs.org/@modelcontextprotocol/server-remote\")"
     ]
   }
 }
