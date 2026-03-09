@@ -171,3 +171,4 @@ dist
 
 pcontext.config.js
 .pcontext.pid
+*.db

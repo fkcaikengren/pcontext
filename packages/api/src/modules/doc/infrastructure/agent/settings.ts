@@ -7,7 +7,7 @@ import { VectorStoreProvider } from './storage/vector-store'
 const { config } = AppSettings
 
 export function initSettings() {
-  logger.info('Start')
+  logger.info('initSettings: init agent settings, start...')
   const agent = config.agent
   const client = agent.client
   const embedding = agent.embedding
@@ -86,4 +86,6 @@ export function initSettings() {
 
     Settings.callbackManager = callbackManager
   }
+
+  logger.info('initSettings: init agent settings, done.')
 }

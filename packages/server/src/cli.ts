@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { getRuntime, getDirname, type PContextConfig } from '@pcontext/shared/node';
-import { initApp, loadSettingsConfig} from '@pcontext/api';
+import { initApp, loadSettingsConfig, system } from '@pcontext/api';
 
 
 import app from '@pcontext/api'
@@ -186,7 +186,7 @@ program
     }
 
     const configPath = options.config;
-    const port = options.port ? parseInt(options.port, 10) : undefined;
+    const port = options.port ? parseInt(options.port, 10) : 3000;
     const hostname = options.hostname;
 
     if (typeof configPath !== 'string') {

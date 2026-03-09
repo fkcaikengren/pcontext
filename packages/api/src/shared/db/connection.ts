@@ -9,6 +9,7 @@ import { taskPg, taskSqlite } from '@/modules/task/infrastructure/task.po'
 import { casbinRulePg, casbinRuleSqlite } from '@/modules/user/infrastructure/casbin-rule.po'
 import { userPg, userSqlite } from '@/modules/user/infrastructure/user.po'
 import AppSettings from '@/settings'
+import { logger } from '@/shared/logger'
 import { initAppInfoDB } from '@/shared/system'
 
 const pgSchema = { user: userPg, doc: docPg, favorite: favoritePg, casbinRule: casbinRulePg, task: taskPg }
@@ -25,6 +26,7 @@ export type PostgresqlDB = NodePgDatabase<typeof pgSchema>
 export type SqliteDB = LibSQLDatabase<typeof sqliteSchema>
 
 export async function initDb() {
+  logger.info('initDb: connet database, starting...')
   if (initialized)
     return
   // 初始化app-info的数据库
@@ -42,6 +44,7 @@ export async function initDb() {
   }
 
   initialized = true
+  logger.info('initDb: connect database, done.')
 }
 
 function ensureInitialized() {

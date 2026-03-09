@@ -1,6 +1,6 @@
 import { newEnforcer, newModelFromString } from 'casbin'
 import AppSettings from '@/settings'
-import { getVersion } from '@/shared/system'
+import { logger } from '@/shared/logger'
 import { getCasbinAdapter } from './adapter'
 
 const RBAC_MODEL = `
@@ -54,15 +54,17 @@ export async function initEnforcer(adapter?: import('casbin').Adapter) {
       const model = newModelFromString(RBAC_MODEL)
       const actualAdapter = adapter ?? getCasbinAdapter()
       const e = await newEnforcer(model, actualAdapter)
+      logger.info('enforcer: init casbin policies')
 
-      const appVersion = await getVersion()
-      if (AppSettings.config.is_dev || AppSettings.global.version !== appVersion) {
+      if (AppSettings.config.is_dev || AppSettings.global.isVersionChanged) {
+        logger.info('enforcer: Version change detected, updating SEED_POLICIES to database, starting...')
         // 用 SEED_POLICIES 覆盖原有数据
         e.enableAutoSave(false)
         e.clearPolicy()
         await e.addPolicies(SEED_POLICIES)
         await e.savePolicy()
         e.enableAutoSave(true)
+        logger.info('enforcer: Version change detected, updating SEED_POLICIES to database, done.')
       }
 
       AppSettings.global.enforcer = e

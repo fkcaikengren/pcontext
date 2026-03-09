@@ -1,4 +1,8 @@
 import { createClient } from '@libsql/client'
+import AppSettings from '@/settings'
+
+// 声明构建时注入的变量
+declare const __VERSION__: string
 
 // 数据库配置
 const DB_PATH = './app-info.db'
@@ -9,11 +13,18 @@ const client = createClient({
 // 初始化数据库表
 export async function initAppInfoDB(): Promise<void> {
   await client.execute(`
-    CREATE TABLE IF NOT EXISTS app_meta (
+    CREATE TABLE IF NOT EXISTS app_info (
       key TEXT PRIMARY KEY,
       value TEXT
     )
   `)
+
+  const oldVersion = await getVersion()
+  const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '0.0.0'
+  // 版本信息修改
+  await setVersion(version)
+
+  AppSettings.global.isVersionChanged = (version !== oldVersion)
 }
 
 // 获取版本信息
